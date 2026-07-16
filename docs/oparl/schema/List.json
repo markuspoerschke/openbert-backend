@@ -1,0 +1,55 @@
+{
+    "title": "List",
+    "description": "OParl 1.1 List object containing links (URLs) to resources.",
+    "type": "object",
+    "required": [
+        "id",
+        "type",
+        "data"
+    ],
+    "properties": {
+        "id": {
+            "type": "string",
+            "format": "url"
+        },
+        "type": {
+            "type": "string",
+            "pattern": "^https\\:\\/\\/schema\\.oparl\\.org\\/1\\.1\\/List$"
+        },
+        "data": {
+            "type": "array",
+            "items": {
+                "type": "string",
+                "format": "url"
+            }
+        },
+        "pagination": {
+            "type": "object",
+            "description": "Pagination information for paginated lists (OParl 1.1).",
+            "required": [
+                "totalElements",
+                "elementsPerPage",
+                "currentPage",
+                "totalPages"
+            ],
+            "properties": {
+                "totalElements": { "type": "integer", "minimum": 0 },
+                "elementsPerPage": { "type": "integer", "minimum": 0 },
+                "currentPage": { "type": "integer", "minimum": 1 },
+                "totalPages": { "type": "integer", "minimum": 1 }
+            }
+        },
+        "links": {
+            "type": "object",
+            "description": "Navigation links for paginated lists (OParl 1.1).",
+            "properties": {
+                "first": { "type": "string", "format": "url" },
+                "prev": { "type": "string", "format": "url" },
+                "self": { "type": "string", "format": "url" },
+                "next": { "type": "string", "format": "url" },
+                "last": { "type": "string", "format": "url" },
+                "web": { "type": "string", "format": "url", "description": "Web UI link (new in OParl 1.1)." }
+            }
+        }
+    }
+}

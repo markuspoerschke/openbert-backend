@@ -1,0 +1,173 @@
+{
+    "title": "Paper",
+    "description": "Dieser Objekttyp dient der Abbildung von Drucksachen in der parlamentarischen Arbeit, wie zum Beispiel Anfragen, Anträgen und Beschlussvorlagen.\\nDrucksachen werden in Form einer Beratung (oparl:Consultation) im Rahmen eines Tagesordnungspunkts (oparl:AgendaItem) einer Sitzung (oparl:Meeting) behandelt.\\n\\nDrucksachen spielen in der schriftlichen wie mündlichen Kommunikation eine besondere Rolle, da in vielen Texten auf bestimmte Drucksachen Bezug genommen wird. Hierbei kommen in parlamentarischen Informationssystemen in der Regel unveränderliche Kennungen der Drucksachen zum Einsatz.",
+    "type": "object",
+    "definitions": {
+        "Location": {
+            "title": "Location",
+            "allOf": [
+                { "$ref": "Location.json#/definitions/Location" }
+            ]
+        },
+        "File": {
+            "title": "File",
+            "allOf": [
+                { "$ref": "File.json" }
+            ]
+        },
+        "Consultation": {
+            "title": "Consultation",
+            "allOf": [
+                { "$ref": "Consultation.json" }
+            ]
+        }
+    },
+    "required": [
+        "id",
+        "type"
+    ],
+    "properties": {
+        "id": {
+            "type": "string",
+            "format": "url"
+        },
+        "type": {
+            "type": "string",
+            "pattern": "^https\\:\\/\\/schema\\.oparl\\.org\\/1\\.1\\/Paper$"
+        },
+        "body": {
+            "description": "Körperschaft, zu der die Drucksache gehört.",
+            "references": "Body",
+            "backreference": "meeting",
+            "cardinality": "n:1",
+            "type": "string",
+            "format": "url"
+        },
+        "name": {
+            "description": "Titel der Drucksache.",
+            "type": "string"
+        },
+        "reference": {
+            "description": "Kennung bzw. Aktenzeichen der Drucksache, mit der sie in der parlamentarischen Arbeit eindeutig referenziert werden kann.",
+            "type": "string"
+        },
+        "date": {
+            "description": "Datum, welches als Startpunkt für Fristen u.ä. verwendet ist.",
+            "type": "string",
+            "format": "date"
+        },
+        "paperType": {
+            "description": "Art der Drucksache, z. B. Beantwortung einer Anfrage.",
+            "type": "string"
+        },
+        "relatedPaper": {
+            "description": "Inhaltlich verwandte Drucksachen.",
+            "references": "Paper",
+            "cardinality": "1:n",
+            "type": "array",
+            "items": {
+                "type": "string",
+                "format": "url"
+            }
+        },
+        "superordinatedPaper": {
+            "description": "Übergeordnete Drucksachen.",
+            "references": "Paper",
+            "cardinality": "1:n",
+            "type": "array",
+            "items": {
+                "type": "string",
+                "format": "url"
+            }
+        },
+        "subordinatedPaper": {
+            "description": "Untergeordnete Drucksachen.",
+            "references": "Paper",
+            "cardinality": "1:n",
+            "type": "array",
+            "items": {
+                "type": "string",
+                "format": "url"
+            }
+        },
+        "mainFile": {
+            "description": "Die Hauptdatei zu dieser Drucksache. Beispiel: Die Drucksache repräsentiert eine Beschlussvorlage und die Hauptdatei enthält den Text der Beschlussvorlage. Sollte keine eindeutige Hauptdatei vorhanden sein, wird diese Eigenschaft nicht ausgegeben.",
+            "$ref": "#/definitions/File"
+        },
+        "auxiliaryFile": {
+            "description": "Alle weiteren Dateien zur Drucksache ausgenommen der gegebenenfalls in `mainFile` angegebenen.",
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/File"
+            }
+        },
+        "location": {
+            "description": "Sofern die Drucksache einen inhaltlichen Ortsbezug hat, beschreibt diese Eigenschaft den Ort in Textform und/oder in Form von Geodaten.",
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/Location"
+            }
+        },
+        "originatorPerson": {
+            "description": "Urheber der Drucksache, falls der Urheber eine Person ist. Es können auch mehrere Personen angegeben werden.",
+            "references": "Person",
+            "cardinality": "n:m",
+            "type": "array",
+            "items": {
+                "type": "string",
+                "format": "url"
+            }
+        },
+        "underDirectionOf": {
+            "description": "Federführung. Amt oder Abteilung, für die Inhalte oder Beantwortung der Drucksache verantwortlich.",
+            "references": "Organization",
+            "cardinality": "n:m",
+            "type": "array",
+            "items": {
+                "type": "string",
+                "format": "url"
+            }
+        },
+        "originatorOrganization": {
+            "description": "Urheber der Drucksache, falls der Urheber eine Gruppierung ist. Es können auch mehrere Gruppierungen angegeben werden.",
+            "references": "Organization",
+            "cardinality": "n:m",
+            "type": "array",
+            "items": {
+                "type": "string",
+                "format": "url"
+            }
+        },
+        "consultation": {
+            "description": "Beratungen der Drucksache.",
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/Consultation"
+            }
+        },
+        "license": {
+            "type": "string"
+        },
+        "keyword": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+        "created": {
+            "type": "string",
+            "format": "date-time"
+        },
+        "modified": {
+            "type": "string",
+            "format": "date-time"
+        },
+        "web": {
+            "type": "string",
+            "format": "url"
+        },
+        "deleted": {
+            "type": "boolean"
+        }
+    }
+}

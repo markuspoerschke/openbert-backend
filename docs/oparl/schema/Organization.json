@@ -1,0 +1,150 @@
+{
+    "title": "Organization",
+    "description": "Dieser Objekttyp dient dazu, Gruppierungen von Personen abzubilden, die in der parlamentarischen Arbeit eine Rolle spielen. Dazu zählen in der Praxis insbesondere Fraktionen und Gremien.",
+    "type": "object",
+    "definitions": {
+        "Location": {
+            "title": "Location",
+            "allOf": [
+                { "$ref": "Location.json#/definitions/Location" }
+            ]
+        }
+    },
+    "required": [
+        "id",
+        "type"
+    ],
+    "properties": {
+        "id": {
+            "type": "string",
+            "format": "url"
+        },
+        "type": {
+            "type": "string",
+            "pattern": "^https\\:\\/\\/schema\\.oparl\\.org\\/1\\.1\\/Organization$"
+        },
+        "body": {
+            "description": "Körperschaft, zu der diese Gruppierung gehört.",
+            "references": "Body",
+            "backreference": "organization",
+            "cardinality": "n:1",
+            "type": "string",
+            "format": "url"
+        },
+        "name": {
+            "description": "Offizielle (lange) Form des Namens der Gruppierung.",
+            "type": "string"
+        },
+        "membership": {
+            "description": "Mitgliedschaften dieser Gruppierung.",
+            "references": "Membership",
+            "cardinality": "1:n",
+            "backreference": "organization",
+            "type": "array",
+            "items": {
+                "type": "string",
+                "format": "url"
+            }
+        },
+        "meeting": {
+            "description": "URL auf eine externe Objektliste mit den Sitzungen dieser Gruppierung. Invers zur Eigenschaft `organization` der Klasse `oparl:Meeting`",
+            "type": "string",
+            "format": "url",
+            "references": "externalList",
+            "items": {
+                "type": "object",
+                "schema": "Meeting.json"
+            },
+            "backreference": "organization",
+            "cardinality": "n:m"
+        },
+        "consultation": {
+            "description": "URL auf eine externe Objektliste mit den Beratungen dieser Gruppierung. Invers zur Eigenschaft `organization` der Klasse `oparl:Consultation`",
+            "type": "string",
+            "format": "url",
+            "references": "externalList",
+            "items": {
+                "type": "object",
+                "schema": "Consultation.json"
+            },
+            "backreference": "organization",
+            "cardinality": "n:m"
+        },
+        "shortName": {
+            "description": "Der Name der Gruppierung als Kurzform.",
+            "type": "string"
+        },
+        "post": {
+            "description": "Positionen, die für diese Gruppierung vorgesehen sind.",
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+        "subOrganizationOf": {
+            "description": "URL einer eventuellen übergeordneten Gruppierung.",
+            "references": "Organization",
+            "cardinality": "n:1",
+            "type": "string",
+            "format": "url"
+        },
+        "organizationType": {
+            "description": "Grobe Kategorisierung der Gruppierung. Mögliche Werte sind \"Gremium\", \"Partei\", \"Fraktion\", \"Verwaltungsbereich\", \"externes Gremium\", \"Institution\" und \"Sonstiges\".",
+            "type": "string"
+        },
+        "classification": {
+            "description": "Die Art der Gruppierung. In Frage kommen z.B. \"Parlament\", \"Ausschuss\", \"Beirat\", \"Projektbeirat\", \"Kommission\", \"AG\", \"Verwaltungsrat\", \"Fraktion\" oder \"Partei\". Die Angabe **sollte** möglichst präzise erfolgen. Außerdem **sollten** Abkürzungen vermieden werden. Für die höchste demokratische Instanz in der Kommune **sollte** immer der Begriff \"Parlament\" verwendet werden, nicht \"Rat\" oder \"Hauptausschuss\".",
+            "type": "string"
+        },
+        "startDate": {
+            "description": "Gründungsdatum der Gruppierung. Kann z. B. das Datum der konstituierenden Sitzung sein.",
+            "type": "string",
+            "format": "date"
+        },
+        "endDate": {
+            "description": "Datum des letzten Tages der Existenz der Gruppierung.",
+            "type": "string",
+            "format": "date"
+        },
+        "website": {
+            "description": "Allgemeine Website der Gruppierung.",
+            "type": "string",
+            "format": "url"
+        },
+        "location": {
+            "description": "Ort, an dem die Organisation beheimatet ist",
+            "$ref": "#/definitions/Location"
+        },
+        "externalBody": {
+            "description": "Externer OParl Body, der dieser Organisation entspricht. Diese Eigenschaft ist dafür gedacht auf eventuelle konkretere OParl-Schnittstellen zu verweisen. Ein Beispiel hierfür wäre eine Stadt, die sowohl ein übergreifendes parlamentarisches Informationssystem, als auch bezirksspezifische Systeme hat.",
+            "references": "Body",
+            "cardinality": "n:1",
+            "type": "string",
+            "format": "url"
+        },
+        "license": {
+            "type": "string"
+        },
+        "keyword": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+        "created": {
+            "type": "string",
+            "format": "date-time"
+        },
+        "modified": {
+            "type": "string",
+            "format": "date-time"
+        },
+        "web": {
+            "type": "string",
+            "format": "url"
+        },
+        "deleted": {
+            "type": "boolean"
+        }
+    }
+}

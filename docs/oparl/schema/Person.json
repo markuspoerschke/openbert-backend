@@ -1,0 +1,144 @@
+{
+    "title": "Person",
+    "description": "Jede natürliche Person, die in der parlamentarischen Arbeit tätig und insbesondere\\nMitglied in einer Gruppierung ([oparl:Organization](#oparl_organization)) ist, wird\\nmit einem Objekt vom Typ `oparl:Person` abgebildet.",
+    "type": "object",
+    "definitions": {
+        "Location": {
+            "title": "Location",
+            "allOf": [
+                { "$ref": "Location.json#/definitions/Location" }
+            ]
+        },
+        "Membership": {
+            "title": "Membership",
+            "allOf": [
+                { "$ref": "Membership.json" }
+            ]
+        }
+    },
+    "required": [
+        "id",
+        "type"
+    ],
+    "properties": {
+        "id": {
+            "type": "string",
+            "format": "url"
+        },
+        "type": {
+            "type": "string",
+            "pattern": "^https\\:\\/\\/schema\\.oparl\\.org\\/1\\.1\\/Person$"
+        },
+        "body": {
+            "description": "Körperschaft, zu der die Person gehört.",
+            "references": "Body",
+            "backreference": "person",
+            "cardinality": "n:1",
+            "type": "string",
+            "format": "url"
+        },
+        "name": {
+            "description": "Der vollständige Name der Person mit akademischem Grad und dem gebräuchlichen Vornamen,\\nwie er zur Anzeige durch den Client genutzt werden kann.",
+            "type": "string"
+        },
+        "familyName": {
+            "description": "Familienname bzw. Nachname.",
+            "type": "string"
+        },
+        "givenName": {
+            "description": "Vorname bzw. Taufname.",
+            "type": "string"
+        },
+        "formOfAddress": {
+            "description": "Anrede.",
+            "type": "string"
+        },
+        "affix": {
+            "description": "Namenszusatz (z.B. `jun.` oder `MdL.`)",
+            "type": "string"
+        },
+        "title": {
+            "description": "Akademische Titel",
+            "items": {
+                "type": "string"
+            },
+            "type": "array"
+        },
+        "gender": {
+            "description": "Geschlecht. Vorgegebene Werte sind `female` und `male`, weitere werden durch die durchgehend klein geschriebene englische Bezeichnung angegeben. Für den Fall, dass\\ndas Geschlecht der Person unbekannt ist, **sollte** die Eigenschaft nicht ausgegeben werden.",
+            "type": "string"
+        },
+        "phone": {
+            "description": "Telefonnummern der Person.",
+            "items": {
+                "type": "string"
+            },
+            "type": "array"
+        },
+        "email": {
+            "description": "E-Mail-Adressen der Person.",
+            "items": {
+                "type": "string"
+            },
+            "type": "array"
+        },
+        "location": {
+            "description": "Referenz der Kontakt-Anschrift der Person.",
+            "references": "Location",
+            "backreference": "person",
+            "cardinality": "n:1",
+            "type": "string",
+            "format": "url"
+        },
+        "locationObject": {
+            "description": "Kontakt-Anschrift der Person. Wenn diese Eigenschaft ausgegeben wird, dann **muss**\\nauch die Eigenschaft `location` ausgegeben werden und auf das gleiche Location-Objekt verweisen.\\nDieses Feld sollte die eigentliche Ausgabeform von `location` in OParl 1.0 werden.\\nvgl. https://github.com/OParl/spec/issues/373. Neu in OParl 1.1",
+            "$ref": "#/definitions/Location"
+        },
+        "status": {
+            "description": "Status, d.h. Rollen in der Kommune.",
+            "items": {
+                "type": "string"
+            },
+            "type": "array"
+        },
+        "membership": {
+            "description": "Mitgliedschaften der Person in Gruppierungen, z. B. Gremien und Fraktionen. Es **sollen**\\nsowohl aktuelle als auch vergangene Mitgliedschaften angegeben werden",
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/Membership"
+            }
+        },
+        "life": {
+            "description": "Kurzer Informationstext zur Person. Eine Länge von weniger als 300 Zeichen ist **empfohlen**",
+            "type": "string"
+        },
+        "lifeSource": {
+            "description": "Angabe der Quelle, aus der die Informationen für `life` stammen. Bei Angabe von `life` ist diese Eigenschaft **empfohlen**",
+            "type": "string"
+        },
+        "license": {
+            "type": "string"
+        },
+        "keyword": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+        "created": {
+            "type": "string",
+            "format": "date-time"
+        },
+        "modified": {
+            "type": "string",
+            "format": "date-time"
+        },
+        "web": {
+            "type": "string",
+            "format": "url"
+        },
+        "deleted": {
+            "type": "boolean"
+        }
+    }
+}

@@ -1,0 +1,47 @@
+package nrw.openbert.backend.domain.oparl.entity
+
+import jakarta.persistence.Column
+import jakarta.persistence.Convert
+import jakarta.persistence.MappedSuperclass
+import nrw.openbert.backend.domain.oparl.valueObject.OparlEntityId
+import org.hibernate.annotations.JdbcTypeCode
+import org.hibernate.type.SqlTypes
+
+@MappedSuperclass
+abstract class AbstractLocation(id: OparlEntityId) : AbstractOparlEntity(id) {
+    companion object {
+        const val TYPE = "https://schema.oparl.org/1.1/Location"
+    }
+
+    @Column
+    private var description: String? = null
+
+    @Column
+    private var streetAddress: String? = null
+
+    @Column
+    private var postalCode: String? = null
+
+    @Column
+    private var locality: String? = null
+
+    @Column
+    private var subLocality: String? = null
+
+    @Column
+    private var room: String? = null
+
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(columnDefinition = "jsonb")
+    private var keyword: Array<String> = emptyArray()
+
+    fun applyValuesFrom(other: AbstractLocation) {
+        description = other.description
+        streetAddress = other.streetAddress
+        postalCode = other.postalCode
+        locality = other.locality
+        subLocality = other.subLocality
+        room = other.room
+        keyword = other.keyword
+    }
+}

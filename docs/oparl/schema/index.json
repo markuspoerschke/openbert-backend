@@ -1,0 +1,41 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "https://schema.oparl.org/1.1/index.json",
+    "title": "OParl Object (Union)",
+    "description": "A document that can be any OParl object.",
+    "type": "object",
+    "definitions": {
+        "AgendaItem": { "$ref": "./AgendaItem.json#" },
+        "Body": { "$ref": "./Body.json#" },
+        "Consultation": { "$ref": "./Consultation.json#" },
+        "File": { "$ref": "./File.json#" },
+        "LegislativeTerm": { "$ref": "./LegislativeTerm.json#" },
+        "List": { "$ref": "./List.json#" },
+        "Location": { "$ref": "./Location.json#/definitions/Location" },
+        "Meeting": { "$ref": "./Meeting.json#" },
+        "Membership": { "$ref": "./Membership.json#" },
+        "Organization": { "$ref": "./Organization.json#" },
+        "Paper": { "$ref": "./Paper.json#" },
+        "Person": { "$ref": "./Person.json#" },
+        "System": { "$ref": "./System.json#" }
+    },
+    "oneOf": [
+        { "$ref": "#/definitions/AgendaItem" },
+        { "$ref": "#/definitions/Body" },
+        { "$ref": "#/definitions/Consultation" },
+        { "$ref": "#/definitions/File" },
+        { "$ref": "#/definitions/LegislativeTerm" },
+        { "$ref": "#/definitions/List" },
+        { "$ref": "#/definitions/Location" },
+        { "$ref": "#/definitions/Meeting" },
+        { "$ref": "#/definitions/Membership" },
+        { "$ref": "#/definitions/Organization" },
+        { "$ref": "#/definitions/Paper" },
+        { "$ref": "#/definitions/Person" },
+        { "$ref": "#/definitions/System" }
+    ],
+    "properties": {
+        "id": { "type": "string", "format": "uri" },
+        "type": { "type": "string" }
+    }
+}

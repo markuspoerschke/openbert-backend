@@ -1,0 +1,143 @@
+{
+    "title": "File",
+    "description": "Ein Objekt vom Typ `oparl:File` repräsentiert eine Datei, beispielsweise eine PDF-Datei, ein RTF- oder ODF-Dokument,\\nund hält Metadaten zu der Datei sowie URLs zum Zugriff auf  die Datei bereit.\\n\\nObjekte vom Typ `oparl:File` können unter anderem mit Drucksachen (`oparl:Paper`) oder Sitzungen (`oparl:Meeting`) in Beziehung stehen.\\nDies wird durch  die Eigenschaft `paper` bzw. `meeting` angezeigt. Mehrere Objekte vom Typ `oparl:File` können mit einander in direkter\\nBeziehung stehen, z.B. wenn sie den selben Inhalt in unterschiedlichen technischen Formaten wiedergeben. Hierfür werden die\\nEigenschaften `masterFile` bzw. `derivativeFile` eingesetzt. Das gezeigte Beispiel-Objekt repräsentiert eine PDF-Datei\\n(zu erkennen an der Eigenschaft `mimeType`) und zeigt außerdem über die Eigenschaft  `masterFile` an, von welcher anderen Datei es\\nabgeleitet wurde. Umgekehrt **kann** über die Eigenschaft `derivativeFile` angezeigt werden, welche Ableitungen einer Datei existieren.",
+    "type": "object",
+    "required": [
+        "id",
+        "type",
+        "accessUrl"
+    ],
+    "properties": {
+        "id": {
+            "type": "string",
+            "format": "url"
+        },
+        "type": {
+            "type": "string",
+            "pattern": "^https\\:\\/\\/schema\\.oparl\\.org\\/1\\.1\\/File$"
+        },
+        "name": {
+            "description": "Ein zur Anzeige für Endnutzer bestimmter Name für dieses Objekt. Leerzeichen **dürfen** enthalten sein, Datei-Endungen wie \".pdf\" **sollten nicht** enthalten sein.",
+            "type": "string"
+        },
+        "fileName": {
+            "description": "Dateiname, unter dem die Datei in einem Dateisystem gespeichert werden kann. Beispiel: \"einedatei.pdf\". Da der Name den kompletten Unicode-Zeichenumfang nutzen kann, **sollten** Clients ggfs. selbst dafür sorgen, diesen beim Speichern in ein Dateisystem den lokalen Erfordernissen anzupassen.",
+            "type": "string"
+        },
+        "mimeType": {
+            "description": "MIME-Type der Datei ^[vgl. RFC2046: <http://tools.ietf.org/html/rfc2046>].",
+            "type": "string"
+        },
+        "date": {
+            "description": "Datum, welches als Startpunkt für Fristen u.ä. verwendet ist.",
+            "type": "string",
+            "format": "date"
+        },
+        "size": {
+            "description": "Größe der Datei in Bytes.",
+            "type": "integer"
+        },
+        "sha1Checksum": {
+            "description": "[Veraltet] SHA1-Prüfsumme des Dateiinhalts in Hexadezimal-Schreibweise. Sollte nicht mehr verwendet werden, da sha1 als unsicher gilt. Stattdessen sollte `sha512checksum` verwendet werden.",
+            "type": "string"
+        },
+        "sha512Checksum": {
+            "description": "SHA512-Prüfsumme des Dateiinhalts in Hexadezimal-Schreibweise.",
+            "type": "string"
+        },
+        "text": {
+            "description": "Reine Text-Wiedergabe des Dateiinhalts, sofern dieser in Textform wiedergegeben werden kann.",
+            "type": "string"
+        },
+        "accessUrl": {
+            "description": "URL zum allgemeinen Zugriff auf die Datei. Näheres unter [Dateizugriffe](#dateizugriff).",
+            "type": "string",
+            "format": "url"
+        },
+        "downloadUrl": {
+            "description": "URL zum Download der Datei. Näheres unter [Dateizugriffe](#dateizugriff).",
+            "type": "string",
+            "format": "url"
+        },
+        "externalServiceUrl": {
+            "description": "Externe URL, welche eine zusätzliche Zugriffsmöglichkeit bietet. Beispiel: YouTube-Video.",
+            "type": "string",
+            "format": "url"
+        },
+        "masterFile": {
+            "description": "Datei, von der das aktuelle Objekt abgeleitet wurde. Details dazu in der allgemeinen Beschreibung weiter oben.",
+            "references": "File",
+            "backreference": "derivativeFile",
+            "cardinality": "n:1",
+            "type": "string",
+            "format": "url"
+        },
+        "derivativeFile": {
+            "description": "Dateien, die von dem aktuellen Objekt abgeleitet wurden. Details dazu in der allgemeinen Beschreibung weiter oben.",
+            "references": "File",
+            "backreference": "masterFile",
+            "cardinality": "1:n",
+            "type": "array",
+            "items": {
+                "type": "string",
+                "format": "url"
+            }
+        },
+        "fileLicense": {
+            "description": "Lizenz, unter der die Datei angeboten wird. Wenn diese Eigenschaft nicht verwendet wird, ist der Wert von `license` beziehungsweise die Lizenz eines übergeordneten Objektes maßgeblich. Siehe [license](#eigenschaft_license)",
+            "type": "string",
+            "format": "url"
+        },
+        "meeting": {
+            "description": "Rückreferenzen auf Meeting-Objekte. Wird nur dann ausgegeben, wenn das File-Objekt nicht als eingebettetes Objekt aufgerufen wird.",
+            "type": "array",
+            "references": "Meeting",
+            "items": {
+                "type": "string",
+                "format": "url"
+            }
+        },
+        "agendaItem": {
+            "description": "Rückreferenzen auf AgendaItem-Objekte. Wird nur dann ausgegeben, wenn das File-Objekt nicht als eingebettetes Objekt aufgerufen wird.",
+            "type": "array",
+            "references": "AgendaItem",
+            "items": {
+                "type": "string",
+                "format": "url"
+            }
+        },
+        "paper": {
+            "description": "Rückreferenzen auf Paper-Objekte. Wird nur dann ausgegeben, wenn das File-Objekt nicht als eingebettetes Objekt aufgerufen wird.",
+            "type": "array",
+            "references": "Paper",
+            "items": {
+                "type": "string",
+                "format": "url"
+            }
+        },
+        "license": {
+            "type": "string"
+        },
+        "keyword": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+        "created": {
+            "type": "string",
+            "format": "date-time"
+        },
+        "modified": {
+            "type": "string",
+            "format": "date-time"
+        },
+        "web": {
+            "type": "string",
+            "format": "url"
+        },
+        "deleted": {
+            "type": "boolean"
+        }
+    }
+}

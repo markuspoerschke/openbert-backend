@@ -1,0 +1,111 @@
+{
+    "title": "AgendaItem",
+    "description": "Tagesordnungspunkte sind die Bestandteile von Sitzungen (`oparl:Meeting`).\\nJeder Tagesordnungspunkt widmet sich inhaltlich einem bestimmten Thema, wozu\\nin der Regel auch die Beratung bestimmter Drucksachen gehört.\\n\\nDie Beziehung zwischen einem Tagesordnungspunkt und einer Drucksache wird\\nüber ein Objekt vom Typ `oparl:Consultation` hergestellt, das über die\\nEigenschaft `consultation` referenziert werden kann.",
+    "type": "object",
+    "definitions": {
+        "File": {
+            "title": "File",
+            "allOf": [
+                { "$ref": "File.json" }
+            ]
+        }
+    },
+    "required": [
+        "id",
+        "type",
+        "order"
+    ],
+    "properties": {
+        "id": {
+            "type": "string",
+            "format": "url"
+        },
+        "type": {
+            "type": "string",
+            "pattern": "^https\\:\\/\\/schema\\.oparl\\.org\\/1\\.1\\/AgendaItem$"
+        },
+        "meeting": {
+            "description": "Rückreferenz auf das Meeting, welches nur dann ausgegeben werden muss,\\nwenn das agendaItem-Objekt einzeln abgerufen wird, d.h. nicht Teil einer\\ninternen Ausgabe ist.",
+            "type": "string",
+            "format": "url",
+            "references": "Meeting"
+        },
+        "number": {
+            "description": "Gliederungs-\"Nummer\" des Tagesordnungspunktes. Eine beliebige Zeichenkette,\\nwie z. B. \"10.\", \"10.1\", \"C\", \"c)\" o. ä. Die Reihenfolge wird nicht dadurch,\\nsondern durch die Reihenfolge der TOPs im `agendaItem`-Attribut von `oparl:Meeting`\\nfestgelegt, **sollte** allerdings zu dieser identisch sein.",
+            "type": "string"
+        },
+        "order": {
+            "description": "Neu in OParl 1.1: Die Position des Tagesordnungspunkts in der Sitzung,\\nwenn alle Tagesordnungspunkte von 0 an durchgehend numeriert werden.\\nDiese Nummer entspricht der Position in `Meeting:agendaItem`",
+            "type": "integer"
+        },
+        "name": {
+            "description": "Das Thema des Tagesordnungspunktes.",
+            "type": "string"
+        },
+        "public": {
+            "description": "Kennzeichnet, ob der Tagesordnungspunkt zur Behandlung in öffentlicher Sitzung\\nvorgesehen ist/war. Es wird ein Wahrheitswert (`true` oder `false`) erwartet.",
+            "type": "boolean"
+        },
+        "consultation": {
+            "description": "Beratung, die diesem Tagesordnungspunkt zugewiesen ist.",
+            "references": "Consultation",
+            "backreference": "agendaItem",
+            "cardinality": "1:1",
+            "type": "string",
+            "format": "url"
+        },
+        "result": {
+            "description": "Kategorische Information darüber, welches Ergebnis die Beratung des\\nTagesordnungspunktes erbracht hat, in der Bedeutung etwa \"Unverändert\\nbeschlossen\" oder \"Geändert beschlossen\".",
+            "type": "string"
+        },
+        "resolutionText": {
+            "description": "Falls in diesem Tagesordnungspunkt ein Beschluss gefasst wurde, kann hier ein\\nText angegeben werden. Das ist besonders dann in der Praxis relevant, wenn der\\ngefasste Beschluss (z. B. durch Änderungsantrag) von der Beschlussvorlage abweicht.",
+            "type": "string"
+        },
+        "resolutionFile": {
+            "description": "Falls in diesem Tagesordnungspunkt ein Beschluss gefasst wurde, kann hier eine\\nDatei angegeben werden. Das ist besonders dann in der Praxis relevant, wenn der\\ngefasste Beschluss (z. B. durch Änderungsantrag) von der Beschlussvorlage abweicht.",
+            "$ref": "#/definitions/File"
+        },
+        "auxiliaryFile": {
+            "description": "Weitere Dateianhänge zum Tagesordnungspunkt.",
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/File"
+            }
+        },
+        "start": {
+            "description": "Datum und Uhrzeit des Anfangszeitpunkts des Tagesordnungspunktes. Bei zukünftigen\\nTagesordnungspunkten ist dies der geplante Zeitpunkt, bei einem stattgefundenen **kann**\\nes der tatsächliche Startzeitpunkt sein.",
+            "type": "string",
+            "format": "date-time"
+        },
+        "end": {
+            "description": "Endzeitpunkt des Tagesordnungspunktes als Datum/Uhrzeit. Bei zukünftigen\\nTagesordnungspunkten ist dies der geplante Zeitpunkt, bei einer\\nstattgefundenen **kann** es der tatsächliche Endzeitpunkt sein.",
+            "type": "string",
+            "format": "date-time"
+        },
+        "license": {
+            "type": "string"
+        },
+        "keyword": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+        "created": {
+            "type": "string",
+            "format": "date-time"
+        },
+        "modified": {
+            "type": "string",
+            "format": "date-time"
+        },
+        "web": {
+            "type": "string",
+            "format": "url"
+        },
+        "deleted": {
+            "type": "boolean"
+        }
+    }
+}

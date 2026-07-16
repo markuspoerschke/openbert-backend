@@ -1,0 +1,234 @@
+{
+    "title": "Body",
+    "description": "Der Objekttyp oparl:Body dient dazu, eine Körperschaft zu repräsentieren. Eine Körperschaft ist in den meisten Fällen eine Gemeinde, eine Stadt oder ein Landkreis.\\nIn der Regel sind auf einem OParl-Server Daten von genau einer Körperschaft gespeichert und es wird daher auch nur ein Body-Objekt ausgegeben. Sind auf dem Server jedoch Daten von mehreren Körperschaften gespeichert, **muss** für jede Körperschaft ein eigenes Body-Objekt ausgegeben werden.",
+    "type": "object",
+    "definitions": {
+        "Location": {
+            "title": "Location",
+            "allOf": [
+                { "$ref": "Location.json#/definitions/Location" }
+            ]
+        },
+        "LegislativeTerm": {
+            "title": "LegislativeTerm",
+            "allOf": [
+                { "$ref": "LegislativeTerm.json" }
+            ]
+        }
+    },
+    "required": [
+        "id",
+        "type",
+        "name",
+        "organization",
+        "person",
+        "meeting",
+        "paper",
+        "legislativeTerm"
+    ],
+    "properties": {
+        "id": {
+            "type": "string",
+            "format": "url"
+        },
+        "type": {
+            "type": "string",
+            "pattern": "^https\\:\\/\\/schema\\.oparl\\.org\\/1\\.1\\/Body$"
+        },
+        "system": {
+            "description": "System, zu dem dieses Objekt gehört.",
+            "references": "System",
+            "backreference": "bodies",
+            "cardinality": "n:1",
+            "type": "string",
+            "format": "url"
+        },
+        "shortName": {
+            "description": "Kurzer Name der Körperschaft.",
+            "type": "string"
+        },
+        "name": {
+            "description": "Der offizielle lange Name der Körperschaft.",
+            "type": "string"
+        },
+        "website": {
+            "description": "Allgemeine Website der Körperschaft.",
+            "type": "string",
+            "format": "url"
+        },
+        "license": {
+            "description": "Lizenz, unter der die Daten dieser Körperschaft stehen, sofern nicht am einzelnen Objekt anders angegeben. Siehe [`license`](#eigenschaft_license).",
+            "type": "string",
+            "format": "url"
+        },
+        "licenseValidSince": {
+            "description": "Zeitpunkt, seit dem die unter `license` angegebene Lizenz gilt. _Vorsicht bei Änderungen der Lizenz die zu restriktiveren Bedingungen führen!_",
+            "type": "string",
+            "format": "date-time"
+        },
+        "oparlSince": {
+            "description": "Zeitpunkt, ab dem OParl für dieses Body bereitgestellt wurde. Dies hilft, um die Datenqualität einzuschätzen, denn erst ab der Einrichtung für OParl kann sichergestellt werden, dass sämtliche Werte korrekt in der Original-Quelle vorliegen.",
+            "type": "string",
+            "format": "date-time"
+        },
+        "ags": {
+            "description": "Der achtstellige Amtliche Gemeindeschlüssel^[Amtliche Gemeindeschlüssel können im [Gemeindeverzeichnis (GV-ISys) des Statistischen Bundesamtes](https://www.destatis.de/DE/ZahlenFakten/LaenderRegionen/Regionales/Gemeindeverzeichnis/Gemeindeverzeichnis.html) eingesehen werden].",
+            "type": "string"
+        },
+        "rgs": {
+            "description": "Der zwölfstellige Regionalschlüssel.",
+            "type": "string"
+        },
+        "equivalent": {
+            "description": "Dient der Angabe zusätzlicher URLs, die dieselbe Körperschaft repräsentieren. Hier können beispielsweise der entsprechende Eintrag der gemeinsamen Normdatei der Deutschen Nationalbibliothek^[Gemeinsame Normdatei <http://www.dnb.de/gnd>], der DBPedia^[DBPedia <http://www.dbpedia.org/>] oder der Wikipedia^[Wikipedia <http://de.wikipedia.org/>] angegeben werden. Body- oder System-Objekte mit anderen OParl-Versionen **dürfen nicht** Teil der Liste sein.",
+            "type": "array",
+            "items": {
+                "type": "string",
+                "format": "url"
+            }
+        },
+        "contactEmail": {
+            "description": "Dient der Angabe einer Kontakt-E-Mail-Adresse. Die Adresse soll die Kontaktaufnahme zu einer für die Körperschaft und idealerweise das parlamentarische Informationssystem zuständigen Stelle ermöglichen.",
+            "type": "string"
+        },
+        "contactName": {
+            "description": "Name oder Bezeichnung der mit `contactEmail` erreichbaren Stelle.",
+            "type": "string"
+        },
+        "organization": {
+            "description": "Link zur [Objektliste](#objektlisten) mit allen Gruppierungen der Körperschaft.",
+            "type": "string",
+            "format": "url",
+            "references": "externalList",
+            "items": {
+                "type": "object",
+                "schema": "Organization.json"
+            }
+        },
+        "person": {
+            "description": "Link zur [Objektliste](#objektlisten) mit allen Personen der Körperschaft.",
+            "type": "string",
+            "format": "url",
+            "references": "externalList",
+            "items": {
+                "type": "object",
+                "schema": "Person.json"
+            }
+        },
+        "meeting": {
+            "description": "Link zur [Objektliste](#objektlisten) mit allen Sitzungen der Körperschaft.",
+            "type": "string",
+            "format": "url",
+            "references": "externalList",
+            "items": {
+                "type": "object",
+                "schema": "Meeting.json"
+            }
+        },
+        "paper": {
+            "description": "Link zur [Objektliste](#objektlisten) mit allen Drucksachen der Körperschaft.",
+            "type": "string",
+            "format": "url",
+            "references": "externalList",
+            "items": {
+                "type": "object",
+                "schema": "Paper.json"
+            }
+        },
+        "legislativeTerm": {
+            "description": "[Objektliste](#objektlisten) mit den Wahlperioden der Körperschaft.",
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/LegislativeTerm"
+            }
+        },
+        "agendaItem": {
+            "description": "**ZWINGEND** Link zur [Objektliste](#objektlisten) mit allen Tagesordnungspunkten der Körperschaft. Neu in OParl 1.1.",
+            "type": "string",
+            "format": "url",
+            "references": "externalList",
+            "items": {
+                "type": "object",
+                "schema": "AgendaItem.json"
+            }
+        },
+        "consultation": {
+            "description": "**ZWINGEND** Link zur [Objektliste](#objektlisten) mit allen Beratungen der Körperschaft. Neu in OParl 1.1.",
+            "type": "string",
+            "format": "url",
+            "references": "externalList",
+            "items": {
+                "type": "object",
+                "schema": "Consultation.json"
+            }
+        },
+        "file": {
+            "description": "**ZWINGEND** Link zur [Objektliste](#objektlisten) mit allen Dateien der Körperschaft. Neu in OParl 1.1.",
+            "type": "string",
+            "format": "url",
+            "references": "externalList",
+            "items": {
+                "type": "object",
+                "schema": "File.json"
+            }
+        },
+        "locationList": {
+            "description": "**ZWINGEND** Link zur [Objektliste](#objektlisten) mit allen Ortsangaben der Körperschaft. Neu in OParl 1.1.",
+            "type": "string",
+            "format": "url",
+            "references": "externalList",
+            "items": {
+                "type": "object",
+                "schema": "Location.json"
+            }
+        },
+        "legislativeTermList": {
+            "description": "**ZWINGEND** Link zur [Objektliste](#objektlisten) mit allen Legislaturperioden der Körperschaft. Neu in OParl 1.1. Die externe Objektliste enthält die gleichen Objekte wie `legislativeTerm`",
+            "type": "string",
+            "format": "url",
+            "references": "externalList",
+            "items": {
+                "type": "object",
+                "schema": "LegislativeTerm.json"
+            }
+        },
+        "membership": {
+            "description": "**ZWINGEND** Link zur [Objektliste](#objektlisten) mit allen Mitgliedschaften der Körperschaft. Neu in OParl 1.1.",
+            "type": "string",
+            "format": "url",
+            "references": "externalList",
+            "items": {
+                "type": "object",
+                "schema": "Membership.json"
+            }
+        },
+        "classification": {
+            "description": "Art der Körperschaft.",
+            "type": "string"
+        },
+        "location": {
+            "$ref": "#/definitions/Location"
+        },
+        "keyword": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+        "created": {
+            "type": "string",
+            "format": "date-time"
+        },
+        "modified": {
+            "type": "string",
+            "format": "date-time"
+        },
+        "web": {
+            "type": "string",
+            "format": "url"
+        },
+        "deleted": {
+            "type": "boolean"
+        }
+    }
+}
