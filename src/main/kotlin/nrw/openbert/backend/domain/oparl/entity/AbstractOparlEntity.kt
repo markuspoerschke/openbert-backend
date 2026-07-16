@@ -30,10 +30,6 @@ abstract class AbstractOparlEntity(
     @Column
     val modified: Instant = Clock.System.now()
 
-    @Convert(converter = OparlUrlConverter::class)
-    @Column(unique = true)
-    val url: OparlUrl? = null
-
     @Column
     val deleted: Boolean = false
 }
