@@ -47,9 +47,8 @@ abstract class AbstractSystem(id: OparlEntityId) : AbstractOparlEntity(id) {
     @Column
     private var product: OparlUrl? = null
 
-    @Convert(converter = OparlUrlConverter::class)
     @Column
-    private var web: OparlUrl? = null
+    private var web: String? = null
 
     fun applyValuesFrom(other: AbstractSystem) {
         oparlVersion = other.oparlVersion

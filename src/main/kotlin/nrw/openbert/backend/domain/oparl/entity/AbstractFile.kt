@@ -8,7 +8,7 @@ import nrw.openbert.backend.domain.oparl.valueObject.OparlUrl
 import nrw.openbert.backend.infrastructure.oparl.persitence.converter.OparlUrlConverter
 import org.hibernate.annotations.JdbcTypeCode
 import org.hibernate.type.SqlTypes
-import java.util.Date
+import java.util.*
 
 @MappedSuperclass
 abstract class AbstractFile(id: OparlEntityId) : AbstractOparlEntity(id) {
@@ -63,9 +63,8 @@ abstract class AbstractFile(id: OparlEntityId) : AbstractOparlEntity(id) {
     @Column(columnDefinition = "jsonb")
     private var keyword: Array<String> = emptyArray()
 
-    @Convert(converter = OparlUrlConverter::class)
     @Column
-    private var web: OparlUrl? = null
+    private var web: String? = null
 
     fun applyValuesFrom(other: AbstractFile) {
         name = other.name

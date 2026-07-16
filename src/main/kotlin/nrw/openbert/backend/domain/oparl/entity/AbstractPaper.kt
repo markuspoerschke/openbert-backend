@@ -35,9 +35,8 @@ abstract class AbstractPaper(id: OparlEntityId) : AbstractOparlEntity(id) {
     @Column(columnDefinition = "jsonb")
     private var keyword: Array<String> = emptyArray()
 
-    @Convert(converter = OparlUrlConverter::class)
     @Column
-    private var web: OparlUrl? = null
+    private var web: String? = null
 
     fun applyValuesFrom(other: AbstractPaper) {
         name = other.name
