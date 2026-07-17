@@ -3,13 +3,14 @@ package nrw.openbert.backend.domain.oparl.entity.resolved
 import jakarta.persistence.Entity
 import nrw.openbert.backend.domain.oparl.entity.AbstractLocation
 import nrw.openbert.backend.domain.oparl.entity.raw.RawLocation
-import nrw.openbert.backend.domain.oparl.valueObject.OparlEntityId
+import nrw.openbert.backend.domain.oparl.valueObject.OparlUrl
+import java.util.UUID
 
 @Entity(name = "oparl_resolved_location")
-class ResolvedLocation(id: OparlEntityId) : AbstractLocation(id) {
+class ResolvedLocation(systemId: UUID, url: OparlUrl) : AbstractLocation(systemId, url) {
     companion object {
         fun fromRaw(raw: RawLocation): ResolvedLocation {
-            return ResolvedLocation(raw.id).apply { applyValuesFrom(raw) }
+            return ResolvedLocation(raw.systemId, raw.url).apply { applyValuesFrom(raw) }
         }
     }
 }

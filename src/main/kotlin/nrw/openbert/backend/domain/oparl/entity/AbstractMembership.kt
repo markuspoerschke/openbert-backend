@@ -2,13 +2,13 @@ package nrw.openbert.backend.domain.oparl.entity
 
 import jakarta.persistence.Column
 import jakarta.persistence.MappedSuperclass
-import nrw.openbert.backend.domain.oparl.valueObject.OparlEntityId
+import nrw.openbert.backend.domain.oparl.valueObject.OparlUrl
 import org.hibernate.annotations.JdbcTypeCode
 import org.hibernate.type.SqlTypes
 import java.util.*
 
 @MappedSuperclass
-abstract class AbstractMembership(id: OparlEntityId) : AbstractOparlEntity(id) {
+abstract class AbstractMembership(systemId: UUID, url: OparlUrl) : AbstractOparlEntity(systemId, url) {
     companion object {
         const val TYPE = "https://schema.oparl.org/1.1/Membership"
     }

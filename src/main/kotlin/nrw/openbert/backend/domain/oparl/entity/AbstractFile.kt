@@ -3,7 +3,6 @@ package nrw.openbert.backend.domain.oparl.entity
 import jakarta.persistence.Column
 import jakarta.persistence.Convert
 import jakarta.persistence.MappedSuperclass
-import nrw.openbert.backend.domain.oparl.valueObject.OparlEntityId
 import nrw.openbert.backend.domain.oparl.valueObject.OparlUrl
 import nrw.openbert.backend.infrastructure.oparl.persitence.converter.OparlUrlConverter
 import org.hibernate.annotations.JdbcTypeCode
@@ -11,7 +10,7 @@ import org.hibernate.type.SqlTypes
 import java.util.*
 
 @MappedSuperclass
-abstract class AbstractFile(id: OparlEntityId) : AbstractOparlEntity(id) {
+abstract class AbstractFile(systemId: UUID, url: OparlUrl) : AbstractOparlEntity(systemId, url) {
     companion object {
         const val TYPE = "https://schema.oparl.org/1.1/File"
     }

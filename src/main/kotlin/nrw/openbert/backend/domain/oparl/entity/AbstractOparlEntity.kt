@@ -2,18 +2,26 @@ package nrw.openbert.backend.domain.oparl.entity
 
 import jakarta.persistence.Column
 import jakarta.persistence.Convert
-import jakarta.persistence.EmbeddedId
+import jakarta.persistence.Id
 import jakarta.persistence.MappedSuperclass
-import nrw.openbert.backend.domain.oparl.valueObject.OparlEntityId
 import nrw.openbert.backend.domain.oparl.valueObject.OparlUrl
 import nrw.openbert.backend.infrastructure.oparl.persitence.converter.OparlUrlConverter
+import java.util.*
 import kotlin.time.Clock
 import kotlin.time.Instant
 
 @MappedSuperclass
 abstract class AbstractOparlEntity(
-    @EmbeddedId
-    val id: OparlEntityId
+    @Column(nullable = false, updatable = false)
+    val systemId: UUID,
+
+    @Convert(converter = OparlUrlConverter::class)
+    @Column(nullable = false, updatable = false, length = OparlUrl.MAX_LENGTH)
+    val url: OparlUrl,
+
+    @Id
+    @Column(nullable = false, updatable = false)
+    val id: UUID = UUID.randomUUID()
 ) {
     companion object {
         /**

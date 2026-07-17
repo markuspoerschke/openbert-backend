@@ -3,13 +3,14 @@ package nrw.openbert.backend.domain.oparl.entity.resolved
 import jakarta.persistence.Entity
 import nrw.openbert.backend.domain.oparl.entity.AbstractLegislativeTerm
 import nrw.openbert.backend.domain.oparl.entity.raw.RawLegislativeTerm
-import nrw.openbert.backend.domain.oparl.valueObject.OparlEntityId
+import nrw.openbert.backend.domain.oparl.valueObject.OparlUrl
+import java.util.UUID
 
 @Entity(name = "oparl_resolved_legislativeTerm")
-class ResolvedLegislativeTerm(id: OparlEntityId) : AbstractLegislativeTerm(id) {
+class ResolvedLegislativeTerm(systemId: UUID, url: OparlUrl) : AbstractLegislativeTerm(systemId, url) {
     companion object {
         fun fromRaw(raw: RawLegislativeTerm): ResolvedLegislativeTerm {
-            return ResolvedLegislativeTerm(raw.id).apply { applyValuesFrom(raw) }
+            return ResolvedLegislativeTerm(raw.systemId, raw.url).apply { applyValuesFrom(raw) }
         }
     }
 }
