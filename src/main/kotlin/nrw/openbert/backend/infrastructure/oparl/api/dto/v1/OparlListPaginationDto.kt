@@ -1,4 +1,4 @@
-package nrw.openbert.backend.infrastructure.oparl.api.dto
+package nrw.openbert.backend.infrastructure.oparl.api.dto.v1
 
 data class OparlListPaginationDto(
     val totalElements: Int,

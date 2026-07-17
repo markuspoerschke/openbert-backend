@@ -1,4 +1,4 @@
-package nrw.openbert.backend.infrastructure.oparl.api.dto
+package nrw.openbert.backend.infrastructure.oparl.api.dto.v1
 
 import com.fasterxml.jackson.annotation.JsonInclude
 
