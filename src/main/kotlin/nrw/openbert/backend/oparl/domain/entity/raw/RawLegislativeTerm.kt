@@ -1,0 +1,9 @@
+package nrw.openbert.backend.oparl.domain.entity.raw
+
+import jakarta.persistence.Entity
+import nrw.openbert.backend.oparl.domain.entity.AbstractLegislativeTerm
+import nrw.openbert.backend.oparl.domain.valueObject.OparlUrl
+import java.util.UUID
+
+@Entity(name = "oparl_raw_legislativeTerm")
+class RawLegislativeTerm(systemId: UUID, url: OparlUrl) : AbstractLegislativeTerm(systemId, url)
