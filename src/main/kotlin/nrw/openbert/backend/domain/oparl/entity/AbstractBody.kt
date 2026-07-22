@@ -5,8 +5,6 @@ import jakarta.persistence.Convert
 import jakarta.persistence.MappedSuperclass
 import nrw.openbert.backend.domain.oparl.valueObject.OparlUrl
 import nrw.openbert.backend.infrastructure.oparl.persitence.converter.OparlUrlConverter
-import org.hibernate.annotations.JdbcTypeCode
-import org.hibernate.type.SqlTypes
 import java.util.*
 
 @MappedSuperclass
@@ -16,50 +14,62 @@ abstract class AbstractBody(systemId: UUID, url: OparlUrl) : AbstractOparlEntity
     }
 
     @Column
-    private var shortName: String? = null
+    var shortName: String? = null
+        protected set
 
     @Column
-    private var name: String = UNKNOWN
+    var name: String = UNKNOWN
+        protected set
 
     @Convert(converter = OparlUrlConverter::class)
     @Column
-    private var website: OparlUrl? = null
+    var website: OparlUrl? = null
+        protected set
 
     @Convert(converter = OparlUrlConverter::class)
     @Column
-    private var license: OparlUrl? = null
+    var license: OparlUrl? = null
+        protected set
 
     @Column
-    private var licenseValidSince: Date? = null
+    var licenseValidSince: Date? = null
+        protected set
 
     @Column
-    private var oparlSince: Date? = null
+    var oparlSince: Date? = null
+        protected set
 
     @Column
-    private var ags: String? = null
+    var ags: String? = null
+        protected set
 
     @Column
-    private var rgs: String? = null
+    var rgs: String? = null
+        protected set
 
-    @JdbcTypeCode(SqlTypes.JSON)
-    @Column(columnDefinition = "jsonb")
-    private var equivalent: Array<String> = emptyArray()
-
-    @Column
-    private var contactEmail: String? = null
+    @Column(columnDefinition = "text[]")
+    var equivalent: MutableList<String> = mutableListOf<String>()
+        protected set
 
     @Column
-    private var contactName: String? = null
+    var contactEmail: String? = null
+        protected set
 
     @Column
-    private var classification: String? = null
-
-    @JdbcTypeCode(SqlTypes.JSON)
-    @Column(columnDefinition = "jsonb")
-    private var keyword: Array<String> = emptyArray()
+    var contactName: String? = null
+        protected set
 
     @Column
-    private var web: String? = null
+    var classification: String? = null
+        protected set
+
+    @Column(columnDefinition = "text[]")
+    var keyword: MutableList<String> = mutableListOf()
+        protected set
+
+    @Column
+    var web: String? = null
+        protected set
 
     fun applyValuesFrom(other: AbstractBody) {
         shortName = other.shortName

@@ -5,8 +5,6 @@ import jakarta.persistence.Convert
 import jakarta.persistence.MappedSuperclass
 import nrw.openbert.backend.domain.oparl.valueObject.OparlUrl
 import nrw.openbert.backend.infrastructure.oparl.persitence.converter.OparlUrlConverter
-import org.hibernate.annotations.JdbcTypeCode
-import org.hibernate.type.SqlTypes
 import java.util.UUID
 
 @MappedSuperclass
@@ -18,9 +16,8 @@ abstract class AbstractSystem(systemId: UUID, url: OparlUrl) : AbstractOparlEnti
     @Column
     private var oparlVersion: String = UNKNOWN
 
-    @JdbcTypeCode(SqlTypes.JSON)
-    @Column(columnDefinition = "jsonb")
-    private var otherOparlVersions: Array<String> = emptyArray()
+    @Column(columnDefinition = "text[]")
+    private var otherOparlVersions: MutableList<String> = mutableListOf()
 
     @Convert(converter = OparlUrlConverter::class)
     @Column

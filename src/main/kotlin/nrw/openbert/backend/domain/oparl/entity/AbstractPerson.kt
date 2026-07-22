@@ -3,8 +3,6 @@ package nrw.openbert.backend.domain.oparl.entity
 import jakarta.persistence.Column
 import jakarta.persistence.MappedSuperclass
 import nrw.openbert.backend.domain.oparl.valueObject.OparlUrl
-import org.hibernate.annotations.JdbcTypeCode
-import org.hibernate.type.SqlTypes
 import java.util.UUID
 
 @MappedSuperclass
@@ -28,24 +26,20 @@ abstract class AbstractPerson(systemId: UUID, url: OparlUrl) : AbstractOparlEnti
     @Column
     private var affix: String? = null
 
-    @JdbcTypeCode(SqlTypes.JSON)
-    @Column(columnDefinition = "jsonb")
-    private var title: Array<String> = emptyArray()
+    @Column(columnDefinition = "text[]")
+    private var title: MutableList<String> = mutableListOf()
 
     @Column
     private var gender: String? = null
 
-    @JdbcTypeCode(SqlTypes.JSON)
-    @Column(columnDefinition = "jsonb")
-    private var phone: Array<String> = emptyArray()
+    @Column(columnDefinition = "text[]")
+    private var phone: MutableList<String> = mutableListOf()
 
-    @JdbcTypeCode(SqlTypes.JSON)
-    @Column(columnDefinition = "jsonb")
-    private var email: Array<String> = emptyArray()
+    @Column(columnDefinition = "text[]")
+    private var email: MutableList<String> = mutableListOf()
 
-    @JdbcTypeCode(SqlTypes.JSON)
-    @Column(columnDefinition = "jsonb")
-    private var status: Array<String> = emptyArray()
+    @Column(columnDefinition = "text[]")
+    private var status: MutableList<String> = mutableListOf()
 
     @Column
     private var life: String? = null
@@ -56,9 +50,8 @@ abstract class AbstractPerson(systemId: UUID, url: OparlUrl) : AbstractOparlEnti
     @Column
     private var license: String? = null
 
-    @JdbcTypeCode(SqlTypes.JSON)
-    @Column(columnDefinition = "jsonb")
-    private var keyword: Array<String> = emptyArray()
+    @Column(columnDefinition = "text[]")
+    private var keyword: MutableList<String> = mutableListOf()
 
     @Column
     private var web: String? = null

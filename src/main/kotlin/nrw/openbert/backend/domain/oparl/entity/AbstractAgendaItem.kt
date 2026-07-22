@@ -40,9 +40,8 @@ abstract class AbstractAgendaItem(systemId: UUID, url: OparlUrl) : AbstractOparl
     @Column
     private var license: String? = null
 
-    @JdbcTypeCode(SqlTypes.JSON)
-    @Column(columnDefinition = "jsonb")
-    private var keyword: Array<String> = emptyArray()
+    @Column(columnDefinition = "text[]")
+    private var keyword: MutableList<String> = mutableListOf()
 
     @Column
     private var web: String? = null

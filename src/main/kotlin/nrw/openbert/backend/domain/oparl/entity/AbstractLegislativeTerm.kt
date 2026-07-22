@@ -3,8 +3,6 @@ package nrw.openbert.backend.domain.oparl.entity
 import jakarta.persistence.Column
 import jakarta.persistence.MappedSuperclass
 import nrw.openbert.backend.domain.oparl.valueObject.OparlUrl
-import org.hibernate.annotations.JdbcTypeCode
-import org.hibernate.type.SqlTypes
 import java.util.*
 
 @MappedSuperclass
@@ -25,9 +23,8 @@ abstract class AbstractLegislativeTerm(systemId: UUID, url: OparlUrl) : Abstract
     @Column
     private var license: String? = null
 
-    @JdbcTypeCode(SqlTypes.JSON)
-    @Column(columnDefinition = "jsonb")
-    private var keyword: Array<String> = emptyArray()
+    @Column(columnDefinition = "text[]")
+    private var keyword: MutableList<String> = mutableListOf()
 
     @Column
     private var web: String? = null
