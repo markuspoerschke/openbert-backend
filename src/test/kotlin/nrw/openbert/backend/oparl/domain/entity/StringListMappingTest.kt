@@ -1,4 +1,4 @@
-package nrw.openbert.backend.domain.oparl.entity
+package nrw.openbert.backend.oparl.domain.entity
 
 import jakarta.persistence.Column
 import org.junit.jupiter.api.Test

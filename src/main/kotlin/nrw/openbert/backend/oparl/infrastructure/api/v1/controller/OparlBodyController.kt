@@ -2,10 +2,10 @@ package nrw.openbert.backend.oparl.infrastructure.api.v1.controller
 
 import nrw.openbert.backend.oparl.domain.entity.AbstractBody
 import nrw.openbert.backend.oparl.domain.entity.resolved.ResolvedBody
-import nrw.openbert.backend.infrastructure.oparl.api.OparlUrlGenerator
-import nrw.openbert.backend.infrastructure.oparl.api.dto.v1.OparlBodyDto
-import nrw.openbert.backend.infrastructure.oparl.api.dto.v1.OparlListDto
-import nrw.openbert.backend.infrastructure.oparl.persitence.repository.ResolvedBodyRepository
+import nrw.openbert.backend.oparl.infrastructure.api.v1.dto.OparlBodyDto
+import nrw.openbert.backend.oparl.infrastructure.api.v1.dto.OparlListDto
+import nrw.openbert.backend.oparl.infrastructure.api.v1.urlGenerator.OparlUrlGenerator
+import nrw.openbert.backend.oparl.infrastructure.persitence.repository.ResolvedBodyRepository
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable

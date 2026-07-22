@@ -1,4 +1,4 @@
-package nrw.openbert.backend.infrastructure.oparl.api.controller.v1
+package nrw.openbert.backend.oparl.infrastructure.api.v1.controller
 
 import nrw.openbert.backend.TestcontainersConfiguration
 import org.junit.jupiter.api.Test

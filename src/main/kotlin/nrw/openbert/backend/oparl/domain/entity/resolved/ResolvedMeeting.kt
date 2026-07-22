@@ -1,8 +1,8 @@
 package nrw.openbert.backend.oparl.domain.entity.resolved
 
 import jakarta.persistence.Entity
-import nrw.openbert.backend.domain.oparl.entity.AbstractMeeting
-import nrw.openbert.backend.domain.oparl.entity.raw.RawMeeting
+import nrw.openbert.backend.oparl.domain.entity.AbstractMeeting
+import nrw.openbert.backend.oparl.domain.entity.raw.RawMeeting
 import nrw.openbert.backend.oparl.domain.valueObject.OparlUrl
 import java.util.UUID
 

@@ -21,12 +21,12 @@ abstract class AbstractBody(systemId: UUID, url: OparlUrl) : AbstractOparlEntity
     var name: String = UNKNOWN
         protected set
 
-    @Convert(converter = _root_ide_package_.nrw.openbert.backend.oparl.infrastructure.persitence.converter.OparlUrlConverter::class)
+    @Convert(converter = OparlUrlConverter::class)
     @Column
     var website: OparlUrl? = null
         protected set
 
-    @Convert(converter = _root_ide_package_.nrw.openbert.backend.oparl.infrastructure.persitence.converter.OparlUrlConverter::class)
+    @Convert(converter = OparlUrlConverter::class)
     @Column
     var license: OparlUrl? = null
         protected set

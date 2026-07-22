@@ -1,8 +1,8 @@
 package nrw.openbert.backend.oparl.domain.entity.resolved
 
 import jakarta.persistence.Entity
-import nrw.openbert.backend.domain.oparl.entity.AbstractAgendaItem
-import nrw.openbert.backend.domain.oparl.entity.raw.RawAgendaItem
+import nrw.openbert.backend.oparl.domain.entity.AbstractAgendaItem
+import nrw.openbert.backend.oparl.domain.entity.raw.RawAgendaItem
 import nrw.openbert.backend.oparl.domain.valueObject.OparlUrl
 import java.util.UUID
 
