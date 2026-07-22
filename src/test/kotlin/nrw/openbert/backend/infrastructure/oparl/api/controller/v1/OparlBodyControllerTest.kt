@@ -17,14 +17,14 @@ class OparlBodyControllerTest(
 ) {
     @Test
     fun `lists only resolved bodies`() {
-        mockMvc.get("https://example.org:8443/oparl/1.1/bodies")
+        mockMvc.get("https://example.org:8443/oparl/v1.1/body")
             .andExpect {
                 status { isOk() }
-                jsonPath("$.id") { value("https://example.org:8443/oparl/1.1/bodies") }
+                jsonPath("$.id") { value("https://example.org:8443/oparl/v1.1/body") }
                 jsonPath("$.type") { value("https://schema.oparl.org/1.1/List") }
                 jsonPath("$.data.length()") { value(1) }
                 jsonPath("$.data[0].id") {
-                    value("https://example.org:8443/oparl/1.1/bodies/903c26aa-dc8f-4d34-afd6-afdc5040dbd3")
+                    value("https://example.org:8443/oparl/v1.1/body/903c26aa-dc8f-4d34-afd6-afdc5040dbd3")
                 }
                 jsonPath("$.data[0].type") { value("https://schema.oparl.org/1.1/Body") }
                 jsonPath("$.data[0].name") { value("Neu Offenstadt – Stadtparlament") }

@@ -2,7 +2,7 @@ package nrw.openbert.backend.domain.oparl.entity
 
 import nrw.openbert.backend.domain.oparl.entity.raw.RawBody
 import nrw.openbert.backend.domain.oparl.entity.resolved.ResolvedBody
-import nrw.openbert.backend.domain.oparl.valueObject.OparlUrl
+import nrw.openbert.backend.oparl.domain.valueObject.OparlUrl
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
