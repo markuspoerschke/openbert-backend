@@ -6,9 +6,8 @@ import jakarta.persistence.Id
 import jakarta.persistence.MappedSuperclass
 import nrw.openbert.backend.domain.oparl.valueObject.OparlUrl
 import nrw.openbert.backend.infrastructure.oparl.persitence.converter.OparlUrlConverter
+import java.time.Instant
 import java.util.*
-import kotlin.time.Clock
-import kotlin.time.Instant
 
 @MappedSuperclass
 abstract class AbstractOparlEntity(
@@ -33,10 +32,10 @@ abstract class AbstractOparlEntity(
     }
 
     @Column
-    val created: Instant = Clock.System.now()
+    val created: Instant = Instant.now()
 
     @Column
-    val modified: Instant = Clock.System.now()
+    val modified: Instant = Instant.now()
 
     @Column
     val deleted: Boolean = false
