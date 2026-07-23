@@ -17,6 +17,6 @@ data class OparlResource(
     val system: OparlSystem,
 
     @Convert(converter = OparlUrlConverter::class)
-    @Column
+    @Column(length = OparlUrl.MAX_LENGTH, nullable = false, updatable = false)
     val url: OparlUrl,
 )

@@ -2,7 +2,7 @@ CREATE SEQUENCE IF NOT EXISTS revinfo_seq START WITH 1 INCREMENT BY 50;
 
 CREATE TABLE oparl_raw_agenda_item
 (
-    id              UUID    NOT NULL,
+    id              UUID          NOT NULL,
     number          VARCHAR(255),
     "order"         INTEGER,
     name            VARCHAR(255),
@@ -16,17 +16,17 @@ CREATE TABLE oparl_raw_agenda_item
     web             VARCHAR(255),
     created         TIMESTAMP WITHOUT TIME ZONE NOT NULL,
     modified        TIMESTAMP WITHOUT TIME ZONE NOT NULL,
-    deleted         BOOLEAN NOT NULL,
-    system_id       UUID    NOT NULL,
-    url             VARCHAR(255),
+    deleted         BOOLEAN       NOT NULL,
+    system_id       UUID          NOT NULL,
+    url             VARCHAR(1024) NOT NULL,
     CONSTRAINT pk_oparl_raw_agendaitem PRIMARY KEY (id)
 );
 
 CREATE TABLE oparl_raw_body
 (
-    id                  UUID         NOT NULL,
+    id                  UUID          NOT NULL,
     short_name          VARCHAR(255),
-    name                VARCHAR(255) NOT NULL,
+    name                VARCHAR(255)  NOT NULL,
     website             VARCHAR(255),
     license             VARCHAR(255),
     license_valid_since TIMESTAMP WITHOUT TIME ZONE,
@@ -41,15 +41,15 @@ CREATE TABLE oparl_raw_body
     web                 VARCHAR(255),
     created             TIMESTAMP WITHOUT TIME ZONE NOT NULL,
     modified            TIMESTAMP WITHOUT TIME ZONE NOT NULL,
-    deleted             BOOLEAN      NOT NULL,
-    system_id           UUID         NOT NULL,
-    url                 VARCHAR(255),
+    deleted             BOOLEAN       NOT NULL,
+    system_id           UUID          NOT NULL,
+    url                 VARCHAR(1024) NOT NULL,
     CONSTRAINT pk_oparl_raw_body PRIMARY KEY (id)
 );
 
 CREATE TABLE oparl_raw_consultation
 (
-    id            UUID    NOT NULL,
+    id            UUID          NOT NULL,
     authoritative BOOLEAN,
     role          VARCHAR(255),
     license       VARCHAR(255),
@@ -57,15 +57,15 @@ CREATE TABLE oparl_raw_consultation
     web           VARCHAR(255),
     created       TIMESTAMP WITHOUT TIME ZONE NOT NULL,
     modified      TIMESTAMP WITHOUT TIME ZONE NOT NULL,
-    deleted       BOOLEAN NOT NULL,
-    system_id     UUID    NOT NULL,
-    url           VARCHAR(255),
+    deleted       BOOLEAN       NOT NULL,
+    system_id     UUID          NOT NULL,
+    url           VARCHAR(1024) NOT NULL,
     CONSTRAINT pk_oparl_raw_consultation PRIMARY KEY (id)
 );
 
 CREATE TABLE oparl_raw_file
 (
-    id                   UUID    NOT NULL,
+    id                   UUID          NOT NULL,
     name                 VARCHAR(255),
     file_name            VARCHAR(255),
     mime_type            VARCHAR(255),
@@ -83,15 +83,15 @@ CREATE TABLE oparl_raw_file
     web                  VARCHAR(255),
     created              TIMESTAMP WITHOUT TIME ZONE NOT NULL,
     modified             TIMESTAMP WITHOUT TIME ZONE NOT NULL,
-    deleted              BOOLEAN NOT NULL,
-    system_id            UUID    NOT NULL,
-    url                  VARCHAR(255),
+    deleted              BOOLEAN       NOT NULL,
+    system_id            UUID          NOT NULL,
+    url                  VARCHAR(1024) NOT NULL,
     CONSTRAINT pk_oparl_raw_file PRIMARY KEY (id)
 );
 
 CREATE TABLE oparl_raw_legislative_term
 (
-    id         UUID    NOT NULL,
+    id         UUID          NOT NULL,
     name       VARCHAR(255),
     start_date TIMESTAMP WITHOUT TIME ZONE,
     end_date   TIMESTAMP WITHOUT TIME ZONE,
@@ -100,15 +100,15 @@ CREATE TABLE oparl_raw_legislative_term
     web        VARCHAR(255),
     created    TIMESTAMP WITHOUT TIME ZONE NOT NULL,
     modified   TIMESTAMP WITHOUT TIME ZONE NOT NULL,
-    deleted    BOOLEAN NOT NULL,
-    system_id  UUID    NOT NULL,
-    url        VARCHAR(255),
+    deleted    BOOLEAN       NOT NULL,
+    system_id  UUID          NOT NULL,
+    url        VARCHAR(1024) NOT NULL,
     CONSTRAINT pk_oparl_raw_legislativeterm PRIMARY KEY (id)
 );
 
 CREATE TABLE oparl_raw_location
 (
-    id             UUID    NOT NULL,
+    id             UUID          NOT NULL,
     description    VARCHAR(255),
     street_address VARCHAR(255),
     postal_code    VARCHAR(255),
@@ -118,15 +118,15 @@ CREATE TABLE oparl_raw_location
     keyword        TEXT[]                      NOT NULL,
     created        TIMESTAMP WITHOUT TIME ZONE NOT NULL,
     modified       TIMESTAMP WITHOUT TIME ZONE NOT NULL,
-    deleted        BOOLEAN NOT NULL,
-    system_id      UUID    NOT NULL,
-    url            VARCHAR(255),
+    deleted        BOOLEAN       NOT NULL,
+    system_id      UUID          NOT NULL,
+    url            VARCHAR(1024) NOT NULL,
     CONSTRAINT pk_oparl_raw_location PRIMARY KEY (id)
 );
 
 CREATE TABLE oparl_raw_meeting
 (
-    id            UUID    NOT NULL,
+    id            UUID          NOT NULL,
     name          VARCHAR(255),
     meeting_state VARCHAR(255),
     cancelled     BOOLEAN,
@@ -137,15 +137,15 @@ CREATE TABLE oparl_raw_meeting
     web           VARCHAR(255),
     created       TIMESTAMP WITHOUT TIME ZONE NOT NULL,
     modified      TIMESTAMP WITHOUT TIME ZONE NOT NULL,
-    deleted       BOOLEAN NOT NULL,
-    system_id     UUID    NOT NULL,
-    url           VARCHAR(255),
+    deleted       BOOLEAN       NOT NULL,
+    system_id     UUID          NOT NULL,
+    url           VARCHAR(1024) NOT NULL,
     CONSTRAINT pk_oparl_raw_meeting PRIMARY KEY (id)
 );
 
 CREATE TABLE oparl_raw_membership
 (
-    id           UUID    NOT NULL,
+    id           UUID          NOT NULL,
     role         VARCHAR(255),
     voting_right BOOLEAN,
     start_date   TIMESTAMP WITHOUT TIME ZONE,
@@ -155,15 +155,15 @@ CREATE TABLE oparl_raw_membership
     web          VARCHAR(255),
     created      TIMESTAMP WITHOUT TIME ZONE NOT NULL,
     modified     TIMESTAMP WITHOUT TIME ZONE NOT NULL,
-    deleted      BOOLEAN NOT NULL,
-    system_id    UUID    NOT NULL,
-    url          VARCHAR(255),
+    deleted      BOOLEAN       NOT NULL,
+    system_id    UUID          NOT NULL,
+    url          VARCHAR(1024) NOT NULL,
     CONSTRAINT pk_oparl_raw_membership PRIMARY KEY (id)
 );
 
 CREATE TABLE oparl_raw_organization
 (
-    id                UUID    NOT NULL,
+    id                UUID          NOT NULL,
     name              VARCHAR(255),
     short_name        VARCHAR(255),
     post              TEXT[]                      NOT NULL,
@@ -177,15 +177,15 @@ CREATE TABLE oparl_raw_organization
     web               VARCHAR(255),
     created           TIMESTAMP WITHOUT TIME ZONE NOT NULL,
     modified          TIMESTAMP WITHOUT TIME ZONE NOT NULL,
-    deleted           BOOLEAN NOT NULL,
-    system_id         UUID    NOT NULL,
-    url               VARCHAR(255),
+    deleted           BOOLEAN       NOT NULL,
+    system_id         UUID          NOT NULL,
+    url               VARCHAR(1024) NOT NULL,
     CONSTRAINT pk_oparl_raw_organization PRIMARY KEY (id)
 );
 
 CREATE TABLE oparl_raw_paper
 (
-    id         UUID    NOT NULL,
+    id         UUID          NOT NULL,
     name       VARCHAR(255),
     reference  VARCHAR(255),
     date       TIMESTAMP WITHOUT TIME ZONE,
@@ -195,15 +195,15 @@ CREATE TABLE oparl_raw_paper
     web        VARCHAR(255),
     created    TIMESTAMP WITHOUT TIME ZONE NOT NULL,
     modified   TIMESTAMP WITHOUT TIME ZONE NOT NULL,
-    deleted    BOOLEAN NOT NULL,
-    system_id  UUID    NOT NULL,
-    url        VARCHAR(255),
+    deleted    BOOLEAN       NOT NULL,
+    system_id  UUID          NOT NULL,
+    url        VARCHAR(1024) NOT NULL,
     CONSTRAINT pk_oparl_raw_paper PRIMARY KEY (id)
 );
 
 CREATE TABLE oparl_raw_person
 (
-    id              UUID    NOT NULL,
+    id              UUID          NOT NULL,
     name            VARCHAR(255),
     family_name     VARCHAR(255),
     given_name      VARCHAR(255),
@@ -221,19 +221,19 @@ CREATE TABLE oparl_raw_person
     web             VARCHAR(255),
     created         TIMESTAMP WITHOUT TIME ZONE NOT NULL,
     modified        TIMESTAMP WITHOUT TIME ZONE NOT NULL,
-    deleted         BOOLEAN NOT NULL,
-    system_id       UUID    NOT NULL,
-    url             VARCHAR(255),
+    deleted         BOOLEAN       NOT NULL,
+    system_id       UUID          NOT NULL,
+    url             VARCHAR(1024) NOT NULL,
     CONSTRAINT pk_oparl_raw_person PRIMARY KEY (id)
 );
 
 CREATE TABLE oparl_raw_system
 (
-    id                   UUID         NOT NULL,
-    oparl_version        VARCHAR(255) NOT NULL,
+    id                   UUID          NOT NULL,
+    oparl_version        VARCHAR(255)  NOT NULL,
     other_oparl_versions TEXT[]                      NOT NULL,
     license              VARCHAR(255),
-    name                 VARCHAR(255) NOT NULL,
+    name                 VARCHAR(255)  NOT NULL,
     contact_email        VARCHAR(255),
     contact_name         VARCHAR(255),
     website              VARCHAR(255),
@@ -242,15 +242,15 @@ CREATE TABLE oparl_raw_system
     web                  VARCHAR(255),
     created              TIMESTAMP WITHOUT TIME ZONE NOT NULL,
     modified             TIMESTAMP WITHOUT TIME ZONE NOT NULL,
-    deleted              BOOLEAN      NOT NULL,
-    system_id            UUID         NOT NULL,
-    url                  VARCHAR(255),
+    deleted              BOOLEAN       NOT NULL,
+    system_id            UUID          NOT NULL,
+    url                  VARCHAR(1024) NOT NULL,
     CONSTRAINT pk_oparl_raw_system PRIMARY KEY (id)
 );
 
 CREATE TABLE oparl_resolved_agenda_item
 (
-    id              UUID    NOT NULL,
+    id              UUID          NOT NULL,
     number          VARCHAR(255),
     "order"         INTEGER,
     name            VARCHAR(255),
@@ -264,17 +264,17 @@ CREATE TABLE oparl_resolved_agenda_item
     web             VARCHAR(255),
     created         TIMESTAMP WITHOUT TIME ZONE NOT NULL,
     modified        TIMESTAMP WITHOUT TIME ZONE NOT NULL,
-    deleted         BOOLEAN NOT NULL,
-    system_id       UUID    NOT NULL,
-    url             VARCHAR(255),
+    deleted         BOOLEAN       NOT NULL,
+    system_id       UUID          NOT NULL,
+    url             VARCHAR(1024) NOT NULL,
     CONSTRAINT pk_oparl_resolved_agendaitem PRIMARY KEY (id)
 );
 
 CREATE TABLE oparl_resolved_body
 (
-    id                  UUID         NOT NULL,
+    id                  UUID          NOT NULL,
     short_name          VARCHAR(255),
-    name                VARCHAR(255) NOT NULL,
+    name                VARCHAR(255)  NOT NULL,
     website             VARCHAR(255),
     license             VARCHAR(255),
     license_valid_since TIMESTAMP WITHOUT TIME ZONE,
@@ -289,15 +289,15 @@ CREATE TABLE oparl_resolved_body
     web                 VARCHAR(255),
     created             TIMESTAMP WITHOUT TIME ZONE NOT NULL,
     modified            TIMESTAMP WITHOUT TIME ZONE NOT NULL,
-    deleted             BOOLEAN      NOT NULL,
-    system_id           UUID         NOT NULL,
-    url                 VARCHAR(255),
+    deleted             BOOLEAN       NOT NULL,
+    system_id           UUID          NOT NULL,
+    url                 VARCHAR(1024) NOT NULL,
     CONSTRAINT pk_oparl_resolved_body PRIMARY KEY (id)
 );
 
 CREATE TABLE oparl_resolved_consultation
 (
-    id            UUID    NOT NULL,
+    id            UUID          NOT NULL,
     authoritative BOOLEAN,
     role          VARCHAR(255),
     license       VARCHAR(255),
@@ -305,15 +305,15 @@ CREATE TABLE oparl_resolved_consultation
     web           VARCHAR(255),
     created       TIMESTAMP WITHOUT TIME ZONE NOT NULL,
     modified      TIMESTAMP WITHOUT TIME ZONE NOT NULL,
-    deleted       BOOLEAN NOT NULL,
-    system_id     UUID    NOT NULL,
-    url           VARCHAR(255),
+    deleted       BOOLEAN       NOT NULL,
+    system_id     UUID          NOT NULL,
+    url           VARCHAR(1024) NOT NULL,
     CONSTRAINT pk_oparl_resolved_consultation PRIMARY KEY (id)
 );
 
 CREATE TABLE oparl_resolved_file
 (
-    id                   UUID    NOT NULL,
+    id                   UUID          NOT NULL,
     name                 VARCHAR(255),
     file_name            VARCHAR(255),
     mime_type            VARCHAR(255),
@@ -331,15 +331,15 @@ CREATE TABLE oparl_resolved_file
     web                  VARCHAR(255),
     created              TIMESTAMP WITHOUT TIME ZONE NOT NULL,
     modified             TIMESTAMP WITHOUT TIME ZONE NOT NULL,
-    deleted              BOOLEAN NOT NULL,
-    system_id            UUID    NOT NULL,
-    url                  VARCHAR(255),
+    deleted              BOOLEAN       NOT NULL,
+    system_id            UUID          NOT NULL,
+    url                  VARCHAR(1024) NOT NULL,
     CONSTRAINT pk_oparl_resolved_file PRIMARY KEY (id)
 );
 
 CREATE TABLE oparl_resolved_legislative_term
 (
-    id         UUID    NOT NULL,
+    id         UUID          NOT NULL,
     name       VARCHAR(255),
     start_date TIMESTAMP WITHOUT TIME ZONE,
     end_date   TIMESTAMP WITHOUT TIME ZONE,
@@ -348,15 +348,15 @@ CREATE TABLE oparl_resolved_legislative_term
     web        VARCHAR(255),
     created    TIMESTAMP WITHOUT TIME ZONE NOT NULL,
     modified   TIMESTAMP WITHOUT TIME ZONE NOT NULL,
-    deleted    BOOLEAN NOT NULL,
-    system_id  UUID    NOT NULL,
-    url        VARCHAR(255),
+    deleted    BOOLEAN       NOT NULL,
+    system_id  UUID          NOT NULL,
+    url        VARCHAR(1024) NOT NULL,
     CONSTRAINT pk_oparl_resolved_legislativeterm PRIMARY KEY (id)
 );
 
 CREATE TABLE oparl_resolved_location
 (
-    id             UUID    NOT NULL,
+    id             UUID          NOT NULL,
     description    VARCHAR(255),
     street_address VARCHAR(255),
     postal_code    VARCHAR(255),
@@ -366,15 +366,15 @@ CREATE TABLE oparl_resolved_location
     keyword        TEXT[]                      NOT NULL,
     created        TIMESTAMP WITHOUT TIME ZONE NOT NULL,
     modified       TIMESTAMP WITHOUT TIME ZONE NOT NULL,
-    deleted        BOOLEAN NOT NULL,
-    system_id      UUID    NOT NULL,
-    url            VARCHAR(255),
+    deleted        BOOLEAN       NOT NULL,
+    system_id      UUID          NOT NULL,
+    url            VARCHAR(1024) NOT NULL,
     CONSTRAINT pk_oparl_resolved_location PRIMARY KEY (id)
 );
 
 CREATE TABLE oparl_resolved_meeting
 (
-    id            UUID    NOT NULL,
+    id            UUID          NOT NULL,
     name          VARCHAR(255),
     meeting_state VARCHAR(255),
     cancelled     BOOLEAN,
@@ -385,15 +385,15 @@ CREATE TABLE oparl_resolved_meeting
     web           VARCHAR(255),
     created       TIMESTAMP WITHOUT TIME ZONE NOT NULL,
     modified      TIMESTAMP WITHOUT TIME ZONE NOT NULL,
-    deleted       BOOLEAN NOT NULL,
-    system_id     UUID    NOT NULL,
-    url           VARCHAR(255),
+    deleted       BOOLEAN       NOT NULL,
+    system_id     UUID          NOT NULL,
+    url           VARCHAR(1024) NOT NULL,
     CONSTRAINT pk_oparl_resolved_meeting PRIMARY KEY (id)
 );
 
 CREATE TABLE oparl_resolved_membership
 (
-    id           UUID    NOT NULL,
+    id           UUID          NOT NULL,
     role         VARCHAR(255),
     voting_right BOOLEAN,
     start_date   TIMESTAMP WITHOUT TIME ZONE,
@@ -403,15 +403,15 @@ CREATE TABLE oparl_resolved_membership
     web          VARCHAR(255),
     created      TIMESTAMP WITHOUT TIME ZONE NOT NULL,
     modified     TIMESTAMP WITHOUT TIME ZONE NOT NULL,
-    deleted      BOOLEAN NOT NULL,
-    system_id    UUID    NOT NULL,
-    url          VARCHAR(255),
+    deleted      BOOLEAN       NOT NULL,
+    system_id    UUID          NOT NULL,
+    url          VARCHAR(1024) NOT NULL,
     CONSTRAINT pk_oparl_resolved_membership PRIMARY KEY (id)
 );
 
 CREATE TABLE oparl_resolved_organization
 (
-    id                UUID    NOT NULL,
+    id                UUID          NOT NULL,
     name              VARCHAR(255),
     short_name        VARCHAR(255),
     post              TEXT[]                      NOT NULL,
@@ -425,15 +425,15 @@ CREATE TABLE oparl_resolved_organization
     web               VARCHAR(255),
     created           TIMESTAMP WITHOUT TIME ZONE NOT NULL,
     modified          TIMESTAMP WITHOUT TIME ZONE NOT NULL,
-    deleted           BOOLEAN NOT NULL,
-    system_id         UUID    NOT NULL,
-    url               VARCHAR(255),
+    deleted           BOOLEAN       NOT NULL,
+    system_id         UUID          NOT NULL,
+    url               VARCHAR(1024) NOT NULL,
     CONSTRAINT pk_oparl_resolved_organization PRIMARY KEY (id)
 );
 
 CREATE TABLE oparl_resolved_paper
 (
-    id         UUID    NOT NULL,
+    id         UUID          NOT NULL,
     name       VARCHAR(255),
     reference  VARCHAR(255),
     date       TIMESTAMP WITHOUT TIME ZONE,
@@ -443,15 +443,15 @@ CREATE TABLE oparl_resolved_paper
     web        VARCHAR(255),
     created    TIMESTAMP WITHOUT TIME ZONE NOT NULL,
     modified   TIMESTAMP WITHOUT TIME ZONE NOT NULL,
-    deleted    BOOLEAN NOT NULL,
-    system_id  UUID    NOT NULL,
-    url        VARCHAR(255),
+    deleted    BOOLEAN       NOT NULL,
+    system_id  UUID          NOT NULL,
+    url        VARCHAR(1024) NOT NULL,
     CONSTRAINT pk_oparl_resolved_paper PRIMARY KEY (id)
 );
 
 CREATE TABLE oparl_resolved_person
 (
-    id              UUID    NOT NULL,
+    id              UUID          NOT NULL,
     name            VARCHAR(255),
     family_name     VARCHAR(255),
     given_name      VARCHAR(255),
@@ -469,19 +469,19 @@ CREATE TABLE oparl_resolved_person
     web             VARCHAR(255),
     created         TIMESTAMP WITHOUT TIME ZONE NOT NULL,
     modified        TIMESTAMP WITHOUT TIME ZONE NOT NULL,
-    deleted         BOOLEAN NOT NULL,
-    system_id       UUID    NOT NULL,
-    url             VARCHAR(255),
+    deleted         BOOLEAN       NOT NULL,
+    system_id       UUID          NOT NULL,
+    url             VARCHAR(1024) NOT NULL,
     CONSTRAINT pk_oparl_resolved_person PRIMARY KEY (id)
 );
 
 CREATE TABLE oparl_resolved_system
 (
-    id                   UUID         NOT NULL,
-    oparl_version        VARCHAR(255) NOT NULL,
+    id                   UUID          NOT NULL,
+    oparl_version        VARCHAR(255)  NOT NULL,
     other_oparl_versions TEXT[]                      NOT NULL,
     license              VARCHAR(255),
-    name                 VARCHAR(255) NOT NULL,
+    name                 VARCHAR(255)  NOT NULL,
     contact_email        VARCHAR(255),
     contact_name         VARCHAR(255),
     website              VARCHAR(255),
@@ -490,9 +490,9 @@ CREATE TABLE oparl_resolved_system
     web                  VARCHAR(255),
     created              TIMESTAMP WITHOUT TIME ZONE NOT NULL,
     modified             TIMESTAMP WITHOUT TIME ZONE NOT NULL,
-    deleted              BOOLEAN      NOT NULL,
-    system_id            UUID         NOT NULL,
-    url                  VARCHAR(255),
+    deleted              BOOLEAN       NOT NULL,
+    system_id            UUID          NOT NULL,
+    url                  VARCHAR(1024) NOT NULL,
     CONSTRAINT pk_oparl_resolved_system PRIMARY KEY (id)
 );
 
