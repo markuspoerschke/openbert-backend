@@ -1,22 +1,17 @@
 package nrw.openbert.backend.oparl.domain.entity
 
 import jakarta.persistence.Column
-import jakarta.persistence.Convert
+import jakarta.persistence.Embedded
 import jakarta.persistence.Id
 import jakarta.persistence.MappedSuperclass
-import nrw.openbert.backend.oparl.domain.valueObject.OparlUrl
-import nrw.openbert.backend.oparl.infrastructure.persitence.converter.OparlUrlConverter
+import nrw.openbert.backend.oparl.domain.entity.embeddable.OparlResource
 import java.time.Instant
 import java.util.*
 
 @MappedSuperclass
 abstract class AbstractOparlEntity(
-    @Column(nullable = false, updatable = false)
-    val systemId: UUID,
-
-    @Convert(converter = OparlUrlConverter::class)
-    @Column(nullable = false, updatable = false, length = OparlUrl.MAX_LENGTH)
-    val url: OparlUrl,
+    @Embedded
+    val resource: OparlResource,
 
     @Id
     @Column(nullable = false, updatable = false)
