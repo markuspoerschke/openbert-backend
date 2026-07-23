@@ -37,19 +37,19 @@ abstract class AbstractFile(systemId: UUID, url: OparlUrl) : AbstractOparlEntity
     @Column
     private var text: String? = null
 
-    @Convert(converter = _root_ide_package_.nrw.openbert.backend.oparl.infrastructure.persitence.converter.OparlUrlConverter::class)
+    @Convert(converter = OparlUrlConverter::class)
     @Column
     private var accessUrl: OparlUrl? = null
 
-    @Convert(converter = _root_ide_package_.nrw.openbert.backend.oparl.infrastructure.persitence.converter.OparlUrlConverter::class)
+    @Convert(converter = OparlUrlConverter::class)
     @Column
     private var downloadUrl: OparlUrl? = null
 
-    @Convert(converter = _root_ide_package_.nrw.openbert.backend.oparl.infrastructure.persitence.converter.OparlUrlConverter::class)
+    @Convert(converter = OparlUrlConverter::class)
     @Column
     private var externalServiceUrl: OparlUrl? = null
 
-    @Convert(converter = _root_ide_package_.nrw.openbert.backend.oparl.infrastructure.persitence.converter.OparlUrlConverter::class)
+    @Convert(converter = OparlUrlConverter::class)
     @Column
     private var fileLicense: OparlUrl? = null
 

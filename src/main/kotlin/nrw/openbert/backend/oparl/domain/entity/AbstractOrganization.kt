@@ -34,7 +34,7 @@ abstract class AbstractOrganization(systemId: UUID, url: OparlUrl) : AbstractOpa
     @Column
     private var endDate: Date? = null
 
-    @Convert(converter = _root_ide_package_.nrw.openbert.backend.oparl.infrastructure.persitence.converter.OparlUrlConverter::class)
+    @Convert(converter = OparlUrlConverter::class)
     @Column
     private var website: OparlUrl? = null
 
