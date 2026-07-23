@@ -2,11 +2,11 @@ package nrw.openbert.backend.oparl.domain.entity
 
 import jakarta.persistence.Column
 import jakarta.persistence.MappedSuperclass
-import nrw.openbert.backend.oparl.domain.valueObject.OparlUrl
+import nrw.openbert.backend.oparl.domain.entity.embeddable.OparlResource
 import java.util.*
 
 @MappedSuperclass
-abstract class AbstractAgendaItem(systemId: UUID, url: OparlUrl) : AbstractOparlEntity(systemId, url) {
+abstract class AbstractAgendaItem(resource: OparlResource) : AbstractOparlEntity(resource) {
     companion object {
         const val TYPE = "https://schema.oparl.org/1.1/AgendaItem"
     }

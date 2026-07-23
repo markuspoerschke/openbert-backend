@@ -41,8 +41,6 @@ class OparlBodyController(
     }
 
     private fun ResolvedBody.toDto(): OparlBodyDto {
-        val bodyUrl = url.value.trimEnd('/')
-
         return OparlBodyDto(
             id = urlGenerator.body(id),
             type = AbstractBody.TYPE,

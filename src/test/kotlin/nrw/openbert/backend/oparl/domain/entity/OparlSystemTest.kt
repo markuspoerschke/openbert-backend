@@ -18,8 +18,8 @@ class OparlSystemTest {
         val firstBody = RawBody(firstSystem.id, bodyUrl)
         val secondBody = RawBody(secondSystem.id, bodyUrl)
 
-        assertEquals(firstSystem.id, firstBody.systemId)
-        assertEquals(secondSystem.id, secondBody.systemId)
+        assertEquals(firstSystem.id, firstBody.system)
+        assertEquals(secondSystem.id, secondBody.system)
         assertEquals(bodyUrl, firstBody.url)
         assertEquals(bodyUrl, secondBody.url)
         assertNotEquals(firstBody.id, secondBody.id)
@@ -32,7 +32,7 @@ class OparlSystemTest {
 
         val resolved = ResolvedBody.fromRaw(raw)
 
-        assertEquals(raw.systemId, resolved.systemId)
+        assertEquals(raw.system, resolved.system)
         assertEquals(raw.url, resolved.url)
         assertNotEquals(raw.id, resolved.id)
     }
