@@ -357,6 +357,7 @@ CREATE TABLE oparl_resolved_legislative_term
 CREATE TABLE oparl_resolved_location
 (
     id             UUID          NOT NULL,
+    body_id        UUID          NOT NULL,
     description    VARCHAR(255),
     street_address VARCHAR(255),
     postal_code    VARCHAR(255),
@@ -643,6 +644,9 @@ ALTER TABLE oparl_resolved_legislative_term
 
 ALTER TABLE oparl_resolved_location
     ADD CONSTRAINT FK_OPARL_RESOLVED_LOCATION_ON_SYSTEM FOREIGN KEY (system_id) REFERENCES oparl_system (id);
+
+ALTER TABLE oparl_resolved_location
+    ADD CONSTRAINT FK_OPARL_RESOLVED_LOCATION_ON_BODY FOREIGN KEY (body_id) REFERENCES oparl_resolved_body (id);
 
 ALTER TABLE oparl_resolved_meeting
     ADD CONSTRAINT FK_OPARL_RESOLVED_MEETING_ON_SYSTEM FOREIGN KEY (system_id) REFERENCES oparl_system (id);

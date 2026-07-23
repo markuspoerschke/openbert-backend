@@ -35,3 +35,12 @@ VALUES ('5e4cb965-6c76-4b31-a6ce-e8b26e68fb8b', '903c26aa-dc8f-4d34-afd6-afdc504
         '9352fa21-68c6-4f4e-8832-08a0454ff179',
         'https://oparl-demo.example.org/oparl/v1.1/person/29',
         '2026-07-22 14:30:55.000000', '2026-07-22 14:30:55.000000', false);
+
+-- OParl location
+INSERT INTO public.oparl_resolved_location (id, body_id, description, street_address, postal_code, locality,
+                                            sub_locality, room, keyword, system_id, url, created, modified, deleted)
+VALUES ('87e750e2-6e30-4f6a-9a74-e0a2c34a5961', '903c26aa-dc8f-4d34-afd6-afdc5040dbd3',
+        'Rathaus Neu Offenstadt', 'Rathausplatz 1', '12345', 'Neu Offenstadt', 'Mitte', 'Sitzungssaal',
+        '{"rathaus","sitzungssaal"}', '9352fa21-68c6-4f4e-8832-08a0454ff179',
+        'https://oparl-demo.example.org/oparl/v1.1/location/42',
+        '2026-07-22 14:30:55.000000', '2026-07-22 14:30:55.000000', false);

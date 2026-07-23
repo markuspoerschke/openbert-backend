@@ -13,25 +13,32 @@ abstract class AbstractLocation(resource: OparlResource) : AbstractOparlEntity(r
     }
 
     @Column
-    private var description: String? = null
+    var description: String? = null
+        protected set
 
     @Column
-    private var streetAddress: String? = null
+    var streetAddress: String? = null
+        protected set
 
     @Column
-    private var postalCode: String? = null
+    var postalCode: String? = null
+        protected set
 
     @Column
-    private var locality: String? = null
+    var locality: String? = null
+        protected set
 
     @Column
-    private var subLocality: String? = null
+    var subLocality: String? = null
+        protected set
 
     @Column
-    private var room: String? = null
+    var room: String? = null
+        protected set
 
     @Column(columnDefinition = "text[]")
-    private var keyword: MutableList<String> = mutableListOf()
+    var keyword: MutableList<String> = mutableListOf()
+        protected set
 
     fun applyValuesFrom(other: AbstractLocation) {
         description = other.description
