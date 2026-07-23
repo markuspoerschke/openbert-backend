@@ -10,7 +10,7 @@ import java.util.UUID
 
 @Entity(name = "oparl_system")
 class OparlSystem(
-    @Convert(converter = _root_ide_package_.nrw.openbert.backend.oparl.infrastructure.persitence.converter.OparlUrlConverter::class)
+    @Convert(converter = OparlUrlConverter::class)
     @Column(nullable = false, updatable = false, length = OparlUrl.MAX_LENGTH)
     val url: OparlUrl,
 

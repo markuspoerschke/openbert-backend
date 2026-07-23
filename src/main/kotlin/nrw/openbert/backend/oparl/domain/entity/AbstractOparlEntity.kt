@@ -14,7 +14,7 @@ abstract class AbstractOparlEntity(
     @Column(nullable = false, updatable = false)
     val systemId: UUID,
 
-    @Convert(converter = _root_ide_package_.nrw.openbert.backend.oparl.infrastructure.persitence.converter.OparlUrlConverter::class)
+    @Convert(converter = OparlUrlConverter::class)
     @Column(nullable = false, updatable = false, length = OparlUrl.MAX_LENGTH)
     val url: OparlUrl,
 

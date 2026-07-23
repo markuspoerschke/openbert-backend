@@ -19,7 +19,7 @@ abstract class AbstractSystem(systemId: UUID, url: OparlUrl) : AbstractOparlEnti
     @Column(columnDefinition = "text[]")
     private var otherOparlVersions: MutableList<String> = mutableListOf()
 
-    @Convert(converter = _root_ide_package_.nrw.openbert.backend.oparl.infrastructure.persitence.converter.OparlUrlConverter::class)
+    @Convert(converter = OparlUrlConverter::class)
     @Column
     private var license: OparlUrl? = null
 
@@ -32,15 +32,15 @@ abstract class AbstractSystem(systemId: UUID, url: OparlUrl) : AbstractOparlEnti
     @Column
     private var contactName: String? = null
 
-    @Convert(converter = _root_ide_package_.nrw.openbert.backend.oparl.infrastructure.persitence.converter.OparlUrlConverter::class)
+    @Convert(converter = OparlUrlConverter::class)
     @Column
     private var website: OparlUrl? = null
 
-    @Convert(converter = _root_ide_package_.nrw.openbert.backend.oparl.infrastructure.persitence.converter.OparlUrlConverter::class)
+    @Convert(converter = OparlUrlConverter::class)
     @Column
     private var vendor: OparlUrl? = null
 
-    @Convert(converter = _root_ide_package_.nrw.openbert.backend.oparl.infrastructure.persitence.converter.OparlUrlConverter::class)
+    @Convert(converter = OparlUrlConverter::class)
     @Column
     private var product: OparlUrl? = null
 
