@@ -375,6 +375,7 @@ CREATE TABLE oparl_resolved_location
 CREATE TABLE oparl_resolved_meeting
 (
     id            UUID          NOT NULL,
+    body_id       UUID          NOT NULL,
     name          VARCHAR(255),
     meeting_state VARCHAR(255),
     cancelled     BOOLEAN,
@@ -646,6 +647,9 @@ ALTER TABLE oparl_resolved_location
 
 ALTER TABLE oparl_resolved_meeting
     ADD CONSTRAINT FK_OPARL_RESOLVED_MEETING_ON_SYSTEM FOREIGN KEY (system_id) REFERENCES oparl_system (id);
+
+ALTER TABLE oparl_resolved_meeting
+    ADD CONSTRAINT FK_OPARL_RESOLVED_MEETING_ON_BODY FOREIGN KEY (body_id) REFERENCES oparl_resolved_body (id);
 
 ALTER TABLE oparl_resolved_membership
     ADD CONSTRAINT FK_OPARL_RESOLVED_MEMBERSHIP_ON_SYSTEM FOREIGN KEY (system_id) REFERENCES oparl_system (id);

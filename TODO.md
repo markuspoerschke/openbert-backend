@@ -9,7 +9,7 @@ endpoint, following the existing Organization endpoint pattern.
 - [x] **Person**
   - Implement the external list referenced by `Body.person` (`personList`).
   - Implement the single Person GET endpoint.
-- [ ] **Meeting**
+- [x] **Meeting**
   - Implement the external list referenced by `Body.meeting` (`meetingList`).
   - Implement the single Meeting GET endpoint.
 - [ ] **Paper**
