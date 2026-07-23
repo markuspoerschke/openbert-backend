@@ -3,6 +3,7 @@ package nrw.openbert.backend.oparl.domain.entity
 import jakarta.persistence.Column
 import jakarta.persistence.MappedSuperclass
 import nrw.openbert.backend.oparl.domain.entity.embeddable.OparlResource
+import nrw.openbert.backend.oparl.domain.valueObject.OparlUrl
 import java.util.*
 
 @MappedSuperclass
@@ -12,36 +13,28 @@ abstract class AbstractMeeting(resource: OparlResource) : AbstractOparlEntity(re
     }
 
     @Column
-    var name: String? = null
-        protected set
+    private var name: String? = null
 
     @Column
-    var meetingState: String? = null
-        protected set
+    private var meetingState: String? = null
 
     @Column
-    var cancelled: Boolean? = null
-        protected set
+    private var cancelled: Boolean? = null
 
     @Column
-    var start: Date? = null
-        protected set
+    private var start: Date? = null
 
     @Column
-    var end: Date? = null
-        protected set
+    private var end: Date? = null
 
     @Column
-    var license: String? = null
-        protected set
+    private var license: String? = null
 
     @Column(columnDefinition = "text[]")
-    var keyword: MutableList<String> = mutableListOf()
-        protected set
+    private var keyword: MutableList<String> = mutableListOf()
 
     @Column
-    var web: String? = null
-        protected set
+    private var web: String? = null
 
     fun applyValuesFrom(other: AbstractMeeting) {
         name = other.name

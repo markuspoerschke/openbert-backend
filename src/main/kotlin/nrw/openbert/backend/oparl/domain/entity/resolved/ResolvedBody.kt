@@ -17,9 +17,6 @@ class ResolvedBody(resource: OparlResource) : AbstractBody(resource) {
     @OneToMany(mappedBy = "body")
     val persons: MutableList<ResolvedPerson> = mutableListOf()
 
-    @OneToMany(mappedBy = "body")
-    val meetings: MutableList<ResolvedMeeting> = mutableListOf()
-
     companion object {
         fun fromRaw(raw: RawBody): ResolvedBody {
             return ResolvedBody(raw.resource).apply { applyValuesFrom(raw) }
