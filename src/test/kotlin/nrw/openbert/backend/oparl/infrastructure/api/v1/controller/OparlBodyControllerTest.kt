@@ -28,7 +28,12 @@ class OparlBodyControllerTest(
                 }
                 jsonPath("$.data[0].type") { value("https://schema.oparl.org/1.1/Body") }
                 jsonPath("$.data[0].name") { value("Neu Offenstadt – Stadtparlament") }
-                jsonPath("$.data[0].organization") { value("TODO") }
+                jsonPath("$.data[0].organization") {
+                    value(
+                        "https://example.org:8443/oparl/v1.1/body/" +
+                            "903c26aa-dc8f-4d34-afd6-afdc5040dbd3/organization"
+                    )
+                }
                 jsonPath("$.data[0].person") { value("TODO") }
                 jsonPath("$.data[0].meeting") { value("TODO") }
                 jsonPath("$.data[0].paper") { value("TODO") }

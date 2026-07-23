@@ -1,6 +1,7 @@
 package nrw.openbert.backend.oparl.infrastructure.api.v1.urlGenerator
 
 import nrw.openbert.backend.oparl.infrastructure.api.v1.controller.OparlBodyController
+import nrw.openbert.backend.oparl.infrastructure.api.v1.controller.OparlOrganizationController
 import org.springframework.stereotype.Component
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder
 import java.util.UUID
@@ -22,7 +23,17 @@ class OparlUrlGenerator {
     }
 
     fun organizationList(bodyId: UUID): String {
-        return "TODO"
+        return MvcUriComponentsBuilder
+            .fromMethodName(OparlOrganizationController::class.java, "list", bodyId)
+            .build()
+            .toString()
+    }
+
+    fun organization(organizationId: UUID): String {
+        return MvcUriComponentsBuilder
+            .fromMethodName(OparlOrganizationController::class.java, "get", organizationId)
+            .build()
+            .toString()
     }
 
     fun personList(bodyId: UUID): String {
