@@ -15,53 +15,68 @@ abstract class AbstractFile(resource: OparlResource) : AbstractOparlEntity(resou
     }
 
     @Column
-    private var name: String? = null
+    var name: String? = null
+        protected set
 
     @Column
-    private var fileName: String? = null
+    var fileName: String? = null
+        protected set
 
     @Column
-    private var mimeType: String? = null
+    var mimeType: String? = null
+        protected set
 
     @Column
-    private var date: Date? = null
+    var date: Date? = null
+        protected set
 
     @Column
-    private var size: Int? = null
+    var size: Int? = null
+        protected set
 
     @Column
-    private var sha1Checksum: String? = null
+    var sha1Checksum: String? = null
+        protected set
 
     @Column
-    private var sha512Checksum: String? = null
+    var sha512Checksum: String? = null
+        protected set
 
     @Column
-    private var text: String? = null
-
-    @Convert(converter = OparlUrlConverter::class)
-    @Column
-    private var accessUrl: OparlUrl? = null
-
-    @Convert(converter = OparlUrlConverter::class)
-    @Column
-    private var downloadUrl: OparlUrl? = null
-
-    @Convert(converter = OparlUrlConverter::class)
-    @Column
-    private var externalServiceUrl: OparlUrl? = null
+    var text: String? = null
+        protected set
 
     @Convert(converter = OparlUrlConverter::class)
     @Column
-    private var fileLicense: OparlUrl? = null
+    var accessUrl: OparlUrl? = null
+        protected set
+
+    @Convert(converter = OparlUrlConverter::class)
+    @Column
+    var downloadUrl: OparlUrl? = null
+        protected set
+
+    @Convert(converter = OparlUrlConverter::class)
+    @Column
+    var externalServiceUrl: OparlUrl? = null
+        protected set
+
+    @Convert(converter = OparlUrlConverter::class)
+    @Column
+    var fileLicense: OparlUrl? = null
+        protected set
 
     @Column
-    private var license: String? = null
+    var license: String? = null
+        protected set
 
     @Column(columnDefinition = "text[]")
-    private var keyword: MutableList<String> = mutableListOf()
+    var keyword: MutableList<String> = mutableListOf()
+        protected set
 
     @Column
-    private var web: String? = null
+    var web: String? = null
+        protected set
 
     fun applyValuesFrom(other: AbstractFile) {
         name = other.name

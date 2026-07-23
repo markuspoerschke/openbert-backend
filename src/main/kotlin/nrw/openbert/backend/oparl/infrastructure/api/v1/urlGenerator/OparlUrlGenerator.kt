@@ -1,6 +1,7 @@
 package nrw.openbert.backend.oparl.infrastructure.api.v1.urlGenerator
 
 import nrw.openbert.backend.oparl.infrastructure.api.v1.controller.OparlBodyController
+import nrw.openbert.backend.oparl.infrastructure.api.v1.controller.OparlFileController
 import nrw.openbert.backend.oparl.infrastructure.api.v1.controller.OparlOrganizationController
 import nrw.openbert.backend.oparl.infrastructure.api.v1.controller.OparlPersonController
 import org.springframework.stereotype.Component
@@ -68,7 +69,17 @@ class OparlUrlGenerator {
     }
 
     fun fileList(bodyId: UUID): String {
-        return "TODO"
+        return MvcUriComponentsBuilder
+            .fromMethodName(OparlFileController::class.java, "list", bodyId)
+            .build()
+            .toString()
+    }
+
+    fun file(fileId: UUID): String {
+        return MvcUriComponentsBuilder
+            .fromMethodName(OparlFileController::class.java, "get", fileId)
+            .build()
+            .toString()
     }
 
     fun legislativeTermList(bodyId: UUID): String {
