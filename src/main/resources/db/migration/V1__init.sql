@@ -412,6 +412,7 @@ CREATE TABLE oparl_resolved_membership
 CREATE TABLE oparl_resolved_organization
 (
     id                UUID          NOT NULL,
+    body_id           UUID          NOT NULL,
     name              VARCHAR(255),
     short_name        VARCHAR(255),
     post              TEXT[]                      NOT NULL,
@@ -650,6 +651,9 @@ ALTER TABLE oparl_resolved_membership
 
 ALTER TABLE oparl_resolved_organization
     ADD CONSTRAINT FK_OPARL_RESOLVED_ORGANIZATION_ON_SYSTEM FOREIGN KEY (system_id) REFERENCES oparl_system (id);
+
+ALTER TABLE oparl_resolved_organization
+    ADD CONSTRAINT FK_OPARL_RESOLVED_ORGANIZATION_ON_BODY FOREIGN KEY (body_id) REFERENCES oparl_resolved_body (id);
 
 ALTER TABLE oparl_resolved_paper
     ADD CONSTRAINT FK_OPARL_RESOLVED_PAPER_ON_SYSTEM FOREIGN KEY (system_id) REFERENCES oparl_system (id);

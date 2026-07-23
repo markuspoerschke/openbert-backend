@@ -15,38 +15,49 @@ abstract class AbstractOrganization(resource: OparlResource) : AbstractOparlEnti
     }
 
     @Column
-    private var name: String? = null
+    var name: String? = null
+        protected set
 
     @Column
-    private var shortName: String? = null
+    var shortName: String? = null
+        protected set
 
     @Column(columnDefinition = "text[]")
-    private var post: MutableList<String> = mutableListOf()
+    var post: MutableList<String> = mutableListOf()
+        protected set
 
     @Column
-    private var organizationType: String? = null
+    var organizationType: String? = null
+        protected set
 
     @Column
-    private var classification: String? = null
+    var classification: String? = null
+        protected set
 
     @Column
-    private var startDate: Date? = null
+    var startDate: Date? = null
+        protected set
 
     @Column
-    private var endDate: Date? = null
+    var endDate: Date? = null
+        protected set
 
     @Convert(converter = OparlUrlConverter::class)
     @Column
-    private var website: OparlUrl? = null
+    var website: OparlUrl? = null
+        protected set
 
     @Column
-    private var license: String? = null
+    var license: String? = null
+        protected set
 
     @Column(columnDefinition = "text[]")
-    private var keyword: MutableList<String> = mutableListOf()
+    var keyword: MutableList<String> = mutableListOf()
+        protected set
 
     @Column
-    private var web: String? = null
+    var web: String? = null
+        protected set
 
     fun applyValuesFrom(other: AbstractOrganization) {
         name = other.name
