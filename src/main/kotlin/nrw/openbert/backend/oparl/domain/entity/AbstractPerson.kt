@@ -3,8 +3,6 @@ package nrw.openbert.backend.oparl.domain.entity
 import jakarta.persistence.Column
 import jakarta.persistence.MappedSuperclass
 import nrw.openbert.backend.oparl.domain.entity.embeddable.OparlResource
-import nrw.openbert.backend.oparl.domain.valueObject.OparlUrl
-import java.util.UUID
 
 @MappedSuperclass
 abstract class AbstractPerson(resource: OparlResource) : AbstractOparlEntity(resource) {
@@ -13,49 +11,64 @@ abstract class AbstractPerson(resource: OparlResource) : AbstractOparlEntity(res
     }
 
     @Column
-    private var name: String? = null
+    var name: String? = null
+        protected set
 
     @Column
-    private var familyName: String? = null
+    var familyName: String? = null
+        protected set
 
     @Column
-    private var givenName: String? = null
+    var givenName: String? = null
+        protected set
 
     @Column
-    private var formOfAddress: String? = null
+    var formOfAddress: String? = null
+        protected set
 
     @Column
-    private var affix: String? = null
+    var affix: String? = null
+        protected set
 
     @Column(columnDefinition = "text[]")
-    private var title: MutableList<String> = mutableListOf()
+    var title: MutableList<String> = mutableListOf()
+        protected set
 
     @Column
-    private var gender: String? = null
+    var gender: String? = null
+        protected set
 
     @Column(columnDefinition = "text[]")
-    private var phone: MutableList<String> = mutableListOf()
+    var phone: MutableList<String> = mutableListOf()
+        protected set
 
     @Column(columnDefinition = "text[]")
-    private var email: MutableList<String> = mutableListOf()
+    var email: MutableList<String> = mutableListOf()
+        protected set
 
     @Column(columnDefinition = "text[]")
-    private var status: MutableList<String> = mutableListOf()
+    var status: MutableList<String> = mutableListOf()
+        protected set
 
     @Column
-    private var life: String? = null
+    var life: String? = null
+        protected set
 
     @Column
-    private var lifeSource: String? = null
+    var lifeSource: String? = null
+        protected set
 
     @Column
-    private var license: String? = null
+    var license: String? = null
+        protected set
 
     @Column(columnDefinition = "text[]")
-    private var keyword: MutableList<String> = mutableListOf()
+    var keyword: MutableList<String> = mutableListOf()
+        protected set
 
     @Column
-    private var web: String? = null
+    var web: String? = null
+        protected set
 
     fun applyValuesFrom(other: AbstractPerson) {
         name = other.name

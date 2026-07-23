@@ -6,7 +6,7 @@ The following URL generators used by the Body endpoint still return `"TODO"`.
 Each resource needs a body-scoped external list endpoint and a single-resource
 endpoint, following the existing Organization endpoint pattern.
 
-- [ ] **Person**
+- [x] **Person**
   - Implement the external list referenced by `Body.person` (`personList`).
   - Implement the single Person GET endpoint.
 - [ ] **Meeting**
