@@ -2,6 +2,7 @@ package nrw.openbert.backend.oparl.infrastructure.api.v1.urlGenerator
 
 import nrw.openbert.backend.oparl.infrastructure.api.v1.controller.OparlBodyController
 import nrw.openbert.backend.oparl.infrastructure.api.v1.controller.OparlOrganizationController
+import nrw.openbert.backend.oparl.infrastructure.api.v1.controller.OparlPersonController
 import org.springframework.stereotype.Component
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder
 import java.util.UUID
@@ -37,7 +38,17 @@ class OparlUrlGenerator {
     }
 
     fun personList(bodyId: UUID): String {
-        return "TODO"
+        return MvcUriComponentsBuilder
+            .fromMethodName(OparlPersonController::class.java, "list", bodyId)
+            .build()
+            .toString()
+    }
+
+    fun person(personId: UUID): String {
+        return MvcUriComponentsBuilder
+            .fromMethodName(OparlPersonController::class.java, "get", personId)
+            .build()
+            .toString()
     }
 
     fun meetingList(bodyId: UUID): String {

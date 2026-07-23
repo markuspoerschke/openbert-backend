@@ -453,6 +453,7 @@ CREATE TABLE oparl_resolved_paper
 CREATE TABLE oparl_resolved_person
 (
     id              UUID          NOT NULL,
+    body_id         UUID          NOT NULL,
     name            VARCHAR(255),
     family_name     VARCHAR(255),
     given_name      VARCHAR(255),
@@ -660,6 +661,9 @@ ALTER TABLE oparl_resolved_paper
 
 ALTER TABLE oparl_resolved_person
     ADD CONSTRAINT FK_OPARL_RESOLVED_PERSON_ON_SYSTEM FOREIGN KEY (system_id) REFERENCES oparl_system (id);
+
+ALTER TABLE oparl_resolved_person
+    ADD CONSTRAINT FK_OPARL_RESOLVED_PERSON_ON_BODY FOREIGN KEY (body_id) REFERENCES oparl_resolved_body (id);
 
 ALTER TABLE oparl_resolved_system
     ADD CONSTRAINT FK_OPARL_RESOLVED_SYSTEM_ON_SYSTEM FOREIGN KEY (system_id) REFERENCES oparl_system (id);
