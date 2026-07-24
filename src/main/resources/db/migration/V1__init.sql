@@ -110,12 +110,15 @@ CREATE TABLE oparl_raw_location
 (
     id             UUID          NOT NULL,
     description    VARCHAR(255),
+    geojson        JSONB,
     street_address VARCHAR(255),
     postal_code    VARCHAR(255),
     locality       VARCHAR(255),
     sub_locality   VARCHAR(255),
     room           VARCHAR(255),
+    license        VARCHAR(255),
     keyword        TEXT[]                      NOT NULL,
+    web            VARCHAR(255),
     created        TIMESTAMP WITHOUT TIME ZONE NOT NULL,
     modified       TIMESTAMP WITHOUT TIME ZONE NOT NULL,
     deleted        BOOLEAN       NOT NULL,
@@ -358,13 +361,17 @@ CREATE TABLE oparl_resolved_legislative_term
 CREATE TABLE oparl_resolved_location
 (
     id             UUID          NOT NULL,
+    body_id        UUID          NOT NULL,
     description    VARCHAR(255),
+    geojson        JSONB,
     street_address VARCHAR(255),
     postal_code    VARCHAR(255),
     locality       VARCHAR(255),
     sub_locality   VARCHAR(255),
     room           VARCHAR(255),
+    license        VARCHAR(255),
     keyword        TEXT[]                      NOT NULL,
+    web            VARCHAR(255),
     created        TIMESTAMP WITHOUT TIME ZONE NOT NULL,
     modified       TIMESTAMP WITHOUT TIME ZONE NOT NULL,
     deleted        BOOLEAN       NOT NULL,
@@ -647,6 +654,9 @@ ALTER TABLE oparl_resolved_legislative_term
 
 ALTER TABLE oparl_resolved_location
     ADD CONSTRAINT FK_OPARL_RESOLVED_LOCATION_ON_SYSTEM FOREIGN KEY (system_id) REFERENCES oparl_system (id);
+
+ALTER TABLE oparl_resolved_location
+    ADD CONSTRAINT FK_OPARL_RESOLVED_LOCATION_ON_BODY FOREIGN KEY (body_id) REFERENCES oparl_resolved_body (id);
 
 ALTER TABLE oparl_resolved_meeting
     ADD CONSTRAINT FK_OPARL_RESOLVED_MEETING_ON_SYSTEM FOREIGN KEY (system_id) REFERENCES oparl_system (id);

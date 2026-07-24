@@ -32,8 +32,8 @@ Depends only on Body and already has a DTO.
 The DTO already exists. Other resources can reuse Location once this endpoint is
 available.
 
-- [ ] Add the Body-scoped list endpoint: `/body/{body}/location`.
-- [ ] Add the single-resource endpoint:
+- [x] Add the Body-scoped list endpoint: `/body/{body}/location`.
+- [x] Add the single-resource endpoint:
   `/body/{body}/location/{location}`.
 
 ### 4. File
