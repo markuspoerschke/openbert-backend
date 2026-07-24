@@ -7,13 +7,13 @@ larger, relationship-heavy changes. Paths are relative to `/oparl/v1.1`.
 
 ### 1. Align the existing Organization and Person endpoints
 
-- [ ] Move the single Organization endpoint from `/organization/{organization}`
+- [x] Move the single Organization endpoint from `/organization/{organization}`
   to `/body/{body}/organization/{organization}`.
-- [ ] Move the single Person endpoint from `/person/{person}` to
+- [x] Move the single Person endpoint from `/person/{person}` to
   `/body/{body}/person/{person}`.
-- [ ] Update `OparlUrlGenerator` and the controller tests to use the body-scoped
+- [x] Update `OparlUrlGenerator` and the controller tests to use the body-scoped
   URLs.
-- [ ] Look up each resource by both Body ID and resource ID so a resource cannot
+- [x] Look up each resource by both Body ID and resource ID so a resource cannot
   be retrieved through another Body.
 
 ### 2. LegislativeTerm

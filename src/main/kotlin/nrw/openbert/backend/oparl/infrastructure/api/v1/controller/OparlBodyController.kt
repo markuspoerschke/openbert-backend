@@ -19,7 +19,7 @@ class OparlBodyController(
 ) {
     @GetMapping("oparl/v1.1/body")
     fun list(): ResponseEntity<OparlListDto<OparlBodyDto>> {
-        val bodies = resolvedBodyRepository.findAll().map { it.toDto() }
+        val bodies = resolvedBodyRepository.findAllByOrderById().map { it.toDto() }
 
         return ResponseEntity.ok(
             OparlListDto(

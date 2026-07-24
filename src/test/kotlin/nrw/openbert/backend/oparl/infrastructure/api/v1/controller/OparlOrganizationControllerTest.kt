@@ -96,10 +96,22 @@ class OparlOrganizationControllerTest(
     }
 
     @Test
-    fun `returns not found when organization belongs to another body`() {
+    fun `returns not found for an organization requested through an unknown body`() {
         mockMvc.get(
             "https://example.org:8443/oparl/v1.1/body/" +
                 "00000000-0000-0000-0000-000000000000/organization/" +
+                "9f7d37f9-cd93-4b11-a868-19a6c1e39318"
+        )
+            .andExpect {
+                status { isNotFound() }
+            }
+    }
+
+    @Test
+    fun `returns not found for an organization belonging to another body`() {
+        mockMvc.get(
+            "https://example.org:8443/oparl/v1.1/body/" +
+                "ffffffff-ffff-4fff-afff-ffffffffffff/organization/" +
                 "9f7d37f9-cd93-4b11-a868-19a6c1e39318"
         )
             .andExpect {

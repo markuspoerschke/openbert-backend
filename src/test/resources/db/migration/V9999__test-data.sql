@@ -11,6 +11,15 @@ VALUES ('903c26aa-dc8f-4d34-afd6-afdc5040dbd3', 'Neu Offenstadt', 'Neu Offenstad
         null, '{}', null, '9352fa21-68c6-4f4e-8832-08a0454ff179', 'https://oparl-demo.example.org/oparl/v1.1/body/123',
         '2026-07-22 14:30:55.000000', '2026-07-22 14:30:55.000000', false);
 
+-- A second OParl body verifies that body-scoped resources cannot be retrieved through another body
+INSERT INTO public.oparl_resolved_body (id, short_name, name, website, license, license_valid_since, oparl_since, ags,
+                                        rgs, equivalent, contact_email, contact_name, classification, keyword, web,
+                                        system_id, url, created, modified, deleted)
+VALUES ('ffffffff-ffff-4fff-afff-ffffffffffff', 'Anderstadt', 'Anderstadt – Stadtparlament',
+        'https://anderstadt.example.com', null, null, '1999-07-22 14:25:03.000000', null, null, '{}', null, null,
+        null, '{}', null, '9352fa21-68c6-4f4e-8832-08a0454ff179', 'https://oparl-demo.example.org/oparl/v1.1/body/456',
+        '2026-07-22 14:30:55.000000', '2026-07-22 14:30:55.000000', false);
+
 -- OParl organization
 INSERT INTO public.oparl_resolved_organization (id, body_id, name, short_name, post, organization_type, classification,
                                                 start_date, end_date, website, license, keyword, web, system_id, url,

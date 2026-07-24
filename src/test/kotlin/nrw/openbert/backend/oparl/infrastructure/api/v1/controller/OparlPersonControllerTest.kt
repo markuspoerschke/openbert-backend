@@ -97,10 +97,22 @@ class OparlPersonControllerTest(
     }
 
     @Test
-    fun `returns not found when person belongs to another body`() {
+    fun `returns not found for a person requested through an unknown body`() {
         mockMvc.get(
             "https://example.org:8443/oparl/v1.1/body/" +
                 "00000000-0000-0000-0000-000000000000/person/" +
+                "5e4cb965-6c76-4b31-a6ce-e8b26e68fb8b"
+        )
+            .andExpect {
+                status { isNotFound() }
+            }
+    }
+
+    @Test
+    fun `returns not found for a person belonging to another body`() {
+        mockMvc.get(
+            "https://example.org:8443/oparl/v1.1/body/" +
+                "ffffffff-ffff-4fff-afff-ffffffffffff/person/" +
                 "5e4cb965-6c76-4b31-a6ce-e8b26e68fb8b"
         )
             .andExpect {
