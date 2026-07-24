@@ -5,7 +5,7 @@ import jakarta.persistence.Convert
 import jakarta.persistence.MappedSuperclass
 import nrw.openbert.backend.oparl.domain.entity.embeddable.OparlResource
 import nrw.openbert.backend.oparl.domain.valueObject.OparlUrl
-import nrw.openbert.backend.oparl.infrastructure.persitence.converter.OparlUrlConverter
+import nrw.openbert.backend.oparl.infrastructure.persistence.converter.OparlUrlConverter
 import java.util.*
 
 @MappedSuperclass

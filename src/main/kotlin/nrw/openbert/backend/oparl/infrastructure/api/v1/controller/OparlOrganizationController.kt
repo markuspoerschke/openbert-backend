@@ -5,8 +5,8 @@ import nrw.openbert.backend.oparl.domain.entity.resolved.ResolvedOrganization
 import nrw.openbert.backend.oparl.infrastructure.api.v1.dto.OparlListDto
 import nrw.openbert.backend.oparl.infrastructure.api.v1.dto.OparlOrganizationDto
 import nrw.openbert.backend.oparl.infrastructure.api.v1.urlGenerator.OparlUrlGenerator
-import nrw.openbert.backend.oparl.infrastructure.persitence.repository.ResolvedBodyRepository
-import nrw.openbert.backend.oparl.infrastructure.persitence.repository.ResolvedOrganizationRepository
+import nrw.openbert.backend.oparl.infrastructure.persistence.repository.ResolvedBodyRepository
+import nrw.openbert.backend.oparl.infrastructure.persistence.repository.ResolvedOrganizationRepository
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
