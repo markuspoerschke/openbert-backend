@@ -5,7 +5,7 @@ import jakarta.persistence.Convert
 import jakarta.persistence.Entity
 import jakarta.persistence.Id
 import nrw.openbert.backend.oparl.domain.valueObject.OparlUrl
-import nrw.openbert.backend.oparl.infrastructure.persitence.converter.OparlUrlConverter
+import nrw.openbert.backend.oparl.infrastructure.persistence.converter.OparlUrlConverter
 import java.util.UUID
 
 @Entity(name = "oparl_system")

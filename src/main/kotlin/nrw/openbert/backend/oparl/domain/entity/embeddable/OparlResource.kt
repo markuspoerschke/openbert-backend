@@ -8,7 +8,7 @@ import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import nrw.openbert.backend.oparl.domain.entity.OparlSystem
 import nrw.openbert.backend.oparl.domain.valueObject.OparlUrl
-import nrw.openbert.backend.oparl.infrastructure.persitence.converter.OparlUrlConverter
+import nrw.openbert.backend.oparl.infrastructure.persistence.converter.OparlUrlConverter
 
 @Embeddable
 data class OparlResource(

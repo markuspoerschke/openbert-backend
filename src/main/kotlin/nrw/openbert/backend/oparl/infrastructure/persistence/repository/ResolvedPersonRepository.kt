@@ -1,4 +1,4 @@
-package nrw.openbert.backend.oparl.infrastructure.persitence.repository
+package nrw.openbert.backend.oparl.infrastructure.persistence.repository
 
 import nrw.openbert.backend.oparl.domain.entity.resolved.ResolvedPerson
 import org.springframework.data.jpa.repository.JpaRepository

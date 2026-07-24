@@ -1,4 +1,4 @@
-package nrw.openbert.backend.oparl.infrastructure.persitence.converter
+package nrw.openbert.backend.oparl.infrastructure.persistence.converter
 
 import jakarta.persistence.AttributeConverter
 import jakarta.persistence.Converter
