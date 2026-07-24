@@ -38,6 +38,9 @@ data class OparlPersonDto(
     val status: List<String>? = null,
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
+    val membership: List<OparlMembershipDto>? = null,
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     val life: String? = null,
 
     @JsonInclude(JsonInclude.Include.NON_NULL)

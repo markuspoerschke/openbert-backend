@@ -11,6 +11,9 @@ data class OparlOrganizationDto(
     val name: String? = null,
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
+    val membership: List<String>? = null,
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     val shortName: String? = null,
 
     @JsonInclude(JsonInclude.Include.NON_NULL)

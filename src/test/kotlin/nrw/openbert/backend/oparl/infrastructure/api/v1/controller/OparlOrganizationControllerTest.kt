@@ -30,7 +30,7 @@ class OparlOrganizationControllerTest(
                     )
                 }
                 jsonPath("$.type") { value("https://schema.oparl.org/1.1/List") }
-                jsonPath("$.data.length()") { value(1) }
+                jsonPath("$.data.length()") { value(2) }
                 jsonPath("$.data[0].id") {
                     value(
                         "https://example.org:8443/oparl/v1.1/body/" +
@@ -53,6 +53,14 @@ class OparlOrganizationControllerTest(
                 jsonPath("$.data[0].startDate") { value("2012-07-17") }
                 jsonPath("$.data[0].website") { value("https://finanzen.neuoffenstadt.example.com") }
                 jsonPath("$.data[0].keyword.length()") { value(2) }
+                jsonPath("$.data[0].membership.length()") { value(1) }
+                jsonPath("$.data[0].membership[0]") {
+                    value(
+                        "https://example.org:8443/oparl/v1.1/body/" +
+                            "903c26aa-dc8f-4d34-afd6-afdc5040dbd3/membership/" +
+                            "47fdc541-cf5b-4e45-9bd4-46c8dcca9f34"
+                    )
+                }
             }
     }
 
@@ -80,6 +88,7 @@ class OparlOrganizationControllerTest(
                     )
                 }
                 jsonPath("$.name") { value("Ausschuss für Haushalt und Finanzen") }
+                jsonPath("$.membership.length()") { value(1) }
             }
     }
 
