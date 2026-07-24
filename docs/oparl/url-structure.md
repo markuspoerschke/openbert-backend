@@ -17,7 +17,8 @@ Bezeichner.
     └── /body/{body}
         ├── /organization
         │   └── /organization/{organization}
-        │       └── /organization/{organization}/meeting
+        │       ├── /organization/{organization}/meeting
+        │       └── /organization/{organization}/consultation
         ├── /person
         │   └── /person/{person}
         ├── /meeting
@@ -69,6 +70,7 @@ Body-Prefix direkt adressierbar.
 | Body | `/body` | `/body/{body}` |
 | Organization | `/body/{body}/organization` | `/body/{body}/organization/{organization}` |
 | Organization-Meetings | `/body/{body}/organization/{organization}/meeting` | – |
+| Organization-Consultations | `/body/{body}/organization/{organization}/consultation` | – |
 | Person | `/body/{body}/person` | `/body/{body}/person/{person}` |
 | Meeting | `/body/{body}/meeting` | `/body/{body}/meeting/{meeting}` |
 | Paper | `/body/{body}/paper` | `/body/{body}/paper/{paper}` |
