@@ -1,6 +1,7 @@
 package nrw.openbert.backend.oparl.infrastructure.api.v1.urlGenerator
 
 import nrw.openbert.backend.oparl.infrastructure.api.v1.controller.OparlBodyController
+import nrw.openbert.backend.oparl.infrastructure.api.v1.controller.OparlFileController
 import nrw.openbert.backend.oparl.infrastructure.api.v1.controller.OparlLegislativeTermController
 import nrw.openbert.backend.oparl.infrastructure.api.v1.controller.OparlLocationController
 import nrw.openbert.backend.oparl.infrastructure.api.v1.controller.OparlOrganizationController
@@ -70,7 +71,31 @@ class OparlUrlGenerator {
     }
 
     fun fileList(bodyId: UUID): String {
-        return "TODO"
+        return MvcUriComponentsBuilder
+            .fromMethodName(OparlFileController::class.java, "list", bodyId)
+            .build()
+            .toString()
+    }
+
+    fun file(bodyId: UUID, fileId: UUID): String {
+        return MvcUriComponentsBuilder
+            .fromMethodName(OparlFileController::class.java, "get", bodyId, fileId)
+            .build()
+            .toString()
+    }
+
+    fun fileAccess(bodyId: UUID, fileId: UUID): String {
+        return MvcUriComponentsBuilder
+            .fromMethodName(OparlFileController::class.java, "access", bodyId, fileId)
+            .build()
+            .toString()
+    }
+
+    fun fileDownload(bodyId: UUID, fileId: UUID): String {
+        return MvcUriComponentsBuilder
+            .fromMethodName(OparlFileController::class.java, "download", bodyId, fileId)
+            .build()
+            .toString()
     }
 
     fun legislativeTermList(bodyId: UUID): String {

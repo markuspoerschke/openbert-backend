@@ -41,9 +41,9 @@ available.
 File is reused by Paper, AgendaItem, and Meeting. Its `accessUrl` is mandatory in
 OParl 1.1.
 
-- [ ] Add the Body-scoped list endpoint: `/body/{body}/file`.
-- [ ] Add the single-resource endpoint: `/body/{body}/file/{file}`.
-- [ ] Ensure `accessUrl` serves the file without forcing an attachment download.
+- [x] Add the Body-scoped list endpoint: `/body/{body}/file`.
+- [x] Add the single-resource endpoint: `/body/{body}/file/{file}`.
+- [x] Ensure `accessUrl` serves the file without forcing an attachment download.
 
 ### 5. Membership
 
