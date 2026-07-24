@@ -1,6 +1,7 @@
 package nrw.openbert.backend.oparl.infrastructure.api.v1.urlGenerator
 
 import nrw.openbert.backend.oparl.infrastructure.api.v1.controller.OparlBodyController
+import nrw.openbert.backend.oparl.infrastructure.api.v1.controller.OparlLegislativeTermController
 import nrw.openbert.backend.oparl.infrastructure.api.v1.controller.OparlOrganizationController
 import nrw.openbert.backend.oparl.infrastructure.api.v1.controller.OparlPersonController
 import org.springframework.stereotype.Component
@@ -72,7 +73,22 @@ class OparlUrlGenerator {
     }
 
     fun legislativeTermList(bodyId: UUID): String {
-        return "TODO"
+        return MvcUriComponentsBuilder
+            .fromMethodName(OparlLegislativeTermController::class.java, "list", bodyId)
+            .build()
+            .toString()
+    }
+
+    fun legislativeTerm(bodyId: UUID, legislativeTermId: UUID): String {
+        return MvcUriComponentsBuilder
+            .fromMethodName(
+                OparlLegislativeTermController::class.java,
+                "get",
+                bodyId,
+                legislativeTermId,
+            )
+            .build()
+            .toString()
     }
 
     fun membershipList(bodyId: UUID): String {

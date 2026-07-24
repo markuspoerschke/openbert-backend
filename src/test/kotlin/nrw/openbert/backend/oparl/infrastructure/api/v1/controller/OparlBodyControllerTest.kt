@@ -42,12 +42,30 @@ class OparlBodyControllerTest(
                 }
                 jsonPath("$.data[0].meeting") { value("TODO") }
                 jsonPath("$.data[0].paper") { value("TODO") }
-                jsonPath("$.data[0].legislativeTerm.length()") { value(0) }
+                jsonPath("$.data[0].legislativeTerm.length()") { value(1) }
+                jsonPath("$.data[0].legislativeTerm[0].id") {
+                    value(
+                        "https://example.org:8443/oparl/v1.1/body/" +
+                            "903c26aa-dc8f-4d34-afd6-afdc5040dbd3/legislativeterm/" +
+                            "20ae1f2f-991a-4ea1-a546-27869c8c542a"
+                    )
+                }
+                jsonPath("$.data[0].legislativeTerm[0].type") {
+                    value("https://schema.oparl.org/1.1/LegislativeTerm")
+                }
+                jsonPath("$.data[0].legislativeTerm[0].name") { value("21. Wahlperiode") }
+                jsonPath("$.data[0].legislativeTerm[0].startDate") { value("2025-11-01") }
+                jsonPath("$.data[0].legislativeTerm[0].endDate") { value("2030-10-31") }
                 jsonPath("$.data[0].agendaItem") { value("TODO") }
                 jsonPath("$.data[0].consultation") { value("TODO") }
                 jsonPath("$.data[0].file") { value("TODO") }
                 jsonPath("$.data[0].locationList") { value("TODO") }
-                jsonPath("$.data[0].legislativeTermList") { value("TODO") }
+                jsonPath("$.data[0].legislativeTermList") {
+                    value(
+                        "https://example.org:8443/oparl/v1.1/body/" +
+                            "903c26aa-dc8f-4d34-afd6-afdc5040dbd3/legislativeterm"
+                    )
+                }
                 jsonPath("$.data[0].membership") { value("TODO") }
             }
     }

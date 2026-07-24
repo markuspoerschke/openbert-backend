@@ -340,6 +340,7 @@ CREATE TABLE oparl_resolved_file
 CREATE TABLE oparl_resolved_legislative_term
 (
     id         UUID          NOT NULL,
+    body_id    UUID          NOT NULL,
     name       VARCHAR(255),
     start_date TIMESTAMP WITHOUT TIME ZONE,
     end_date   TIMESTAMP WITHOUT TIME ZONE,
@@ -640,6 +641,9 @@ ALTER TABLE oparl_resolved_file
 
 ALTER TABLE oparl_resolved_legislative_term
     ADD CONSTRAINT FK_OPARL_RESOLVED_LEGISLATIVETERM_ON_SYSTEM FOREIGN KEY (system_id) REFERENCES oparl_system (id);
+
+ALTER TABLE oparl_resolved_legislative_term
+    ADD CONSTRAINT FK_OPARL_RESOLVED_LEGISLATIVETERM_ON_BODY FOREIGN KEY (body_id) REFERENCES oparl_resolved_body (id);
 
 ALTER TABLE oparl_resolved_location
     ADD CONSTRAINT FK_OPARL_RESOLVED_LOCATION_ON_SYSTEM FOREIGN KEY (system_id) REFERENCES oparl_system (id);

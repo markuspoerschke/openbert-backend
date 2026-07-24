@@ -4,6 +4,7 @@ import nrw.openbert.backend.oparl.domain.entity.AbstractBody
 import nrw.openbert.backend.oparl.domain.entity.resolved.ResolvedBody
 import nrw.openbert.backend.oparl.infrastructure.api.v1.dto.OparlBodyDto
 import nrw.openbert.backend.oparl.infrastructure.api.v1.dto.OparlListDto
+import nrw.openbert.backend.oparl.infrastructure.api.v1.mapper.OparlLegislativeTermMapper
 import nrw.openbert.backend.oparl.infrastructure.api.v1.urlGenerator.OparlUrlGenerator
 import nrw.openbert.backend.oparl.infrastructure.persistence.repository.ResolvedBodyRepository
 import org.springframework.http.ResponseEntity
@@ -15,6 +16,7 @@ import java.util.UUID
 @RestController
 class OparlBodyController(
     private val urlGenerator: OparlUrlGenerator,
+    private val legislativeTermMapper: OparlLegislativeTermMapper,
     private val resolvedBodyRepository: ResolvedBodyRepository,
 ) {
     @GetMapping("oparl/v1.1/body")
@@ -49,7 +51,7 @@ class OparlBodyController(
             person = urlGenerator.personList(id),
             meeting = urlGenerator.meetingList(id),
             paper = urlGenerator.paperList(id),
-            legislativeTerm = emptyList(),
+            legislativeTerm = legislativeTerms.map(legislativeTermMapper::toDto),
             shortName = shortName,
             website = website?.value,
             license = license?.value,

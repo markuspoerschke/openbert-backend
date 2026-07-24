@@ -20,11 +20,11 @@ larger, relationship-heavy changes. Paths are relative to `/oparl/v1.1`.
 
 Depends only on Body and already has a DTO.
 
-- [ ] Add the Body-scoped list endpoint:
+- [x] Add the Body-scoped list endpoint:
   `/body/{body}/legislativeterm`.
-- [ ] Add the single-resource endpoint:
+- [x] Add the single-resource endpoint:
   `/body/{body}/legislativeterm/{legislative-term}`.
-- [ ] Populate the embedded `Body.legislativeTerm` list from the same resolved
+- [x] Populate the embedded `Body.legislativeTerm` list from the same resolved
   data exposed by `Body.legislativeTermList`.
 
 ### 3. Location
