@@ -76,7 +76,12 @@ class OparlBodyControllerTest(
                             "903c26aa-dc8f-4d34-afd6-afdc5040dbd3/legislativeterm"
                     )
                 }
-                jsonPath("$.data[0].membership") { value("TODO") }
+                jsonPath("$.data[0].membership") {
+                    value(
+                        "https://example.org:8443/oparl/v1.1/body/" +
+                            "903c26aa-dc8f-4d34-afd6-afdc5040dbd3/membership"
+                    )
+                }
             }
     }
 }

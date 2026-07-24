@@ -4,6 +4,7 @@ import nrw.openbert.backend.oparl.infrastructure.api.v1.controller.OparlBodyCont
 import nrw.openbert.backend.oparl.infrastructure.api.v1.controller.OparlFileController
 import nrw.openbert.backend.oparl.infrastructure.api.v1.controller.OparlLegislativeTermController
 import nrw.openbert.backend.oparl.infrastructure.api.v1.controller.OparlLocationController
+import nrw.openbert.backend.oparl.infrastructure.api.v1.controller.OparlMembershipController
 import nrw.openbert.backend.oparl.infrastructure.api.v1.controller.OparlOrganizationController
 import nrw.openbert.backend.oparl.infrastructure.api.v1.controller.OparlPersonController
 import org.springframework.stereotype.Component
@@ -118,7 +119,17 @@ class OparlUrlGenerator {
     }
 
     fun membershipList(bodyId: UUID): String {
-        return "TODO"
+        return MvcUriComponentsBuilder
+            .fromMethodName(OparlMembershipController::class.java, "list", bodyId)
+            .build()
+            .toString()
+    }
+
+    fun membership(bodyId: UUID, membershipId: UUID): String {
+        return MvcUriComponentsBuilder
+            .fromMethodName(OparlMembershipController::class.java, "get", bodyId, membershipId)
+            .build()
+            .toString()
     }
 
     fun locationList(bodyId: UUID): String {

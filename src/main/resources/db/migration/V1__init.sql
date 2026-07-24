@@ -402,19 +402,23 @@ CREATE TABLE oparl_resolved_meeting
 
 CREATE TABLE oparl_resolved_membership
 (
-    id           UUID          NOT NULL,
-    role         VARCHAR(255),
-    voting_right BOOLEAN,
-    start_date   TIMESTAMP WITHOUT TIME ZONE,
-    end_date     TIMESTAMP WITHOUT TIME ZONE,
-    license      VARCHAR(255),
-    keyword      TEXT[]                      NOT NULL,
-    web          VARCHAR(255),
-    created      TIMESTAMP WITHOUT TIME ZONE NOT NULL,
-    modified     TIMESTAMP WITHOUT TIME ZONE NOT NULL,
-    deleted      BOOLEAN       NOT NULL,
-    system_id    UUID          NOT NULL,
-    url          VARCHAR(1024) NOT NULL,
+    id               UUID          NOT NULL,
+    body_id          UUID          NOT NULL,
+    person_id        UUID          NOT NULL,
+    organization_id  UUID          NOT NULL,
+    on_behalf_of_id  UUID,
+    role             VARCHAR(255),
+    voting_right     BOOLEAN,
+    start_date       TIMESTAMP WITHOUT TIME ZONE,
+    end_date         TIMESTAMP WITHOUT TIME ZONE,
+    license          VARCHAR(255),
+    keyword          TEXT[]                      NOT NULL,
+    web              VARCHAR(255),
+    created          TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+    modified         TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+    deleted          BOOLEAN       NOT NULL,
+    system_id        UUID          NOT NULL,
+    url              VARCHAR(1024) NOT NULL,
     CONSTRAINT pk_oparl_resolved_membership PRIMARY KEY (id)
 );
 
@@ -667,6 +671,20 @@ ALTER TABLE oparl_resolved_meeting
 
 ALTER TABLE oparl_resolved_membership
     ADD CONSTRAINT FK_OPARL_RESOLVED_MEMBERSHIP_ON_SYSTEM FOREIGN KEY (system_id) REFERENCES oparl_system (id);
+
+ALTER TABLE oparl_resolved_membership
+    ADD CONSTRAINT FK_OPARL_RESOLVED_MEMBERSHIP_ON_BODY FOREIGN KEY (body_id) REFERENCES oparl_resolved_body (id);
+
+ALTER TABLE oparl_resolved_membership
+    ADD CONSTRAINT FK_OPARL_RESOLVED_MEMBERSHIP_ON_PERSON FOREIGN KEY (person_id) REFERENCES oparl_resolved_person (id);
+
+ALTER TABLE oparl_resolved_membership
+    ADD CONSTRAINT FK_OPARL_RESOLVED_MEMBERSHIP_ON_ORGANIZATION
+        FOREIGN KEY (organization_id) REFERENCES oparl_resolved_organization (id);
+
+ALTER TABLE oparl_resolved_membership
+    ADD CONSTRAINT FK_OPARL_RESOLVED_MEMBERSHIP_ON_BEHALF_OF
+        FOREIGN KEY (on_behalf_of_id) REFERENCES oparl_resolved_organization (id);
 
 ALTER TABLE oparl_resolved_organization
     ADD CONSTRAINT FK_OPARL_RESOLVED_ORGANIZATION_ON_SYSTEM FOREIGN KEY (system_id) REFERENCES oparl_system (id);

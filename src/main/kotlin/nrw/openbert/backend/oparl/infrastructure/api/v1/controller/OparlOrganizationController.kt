@@ -6,6 +6,7 @@ import nrw.openbert.backend.oparl.infrastructure.api.v1.dto.OparlListDto
 import nrw.openbert.backend.oparl.infrastructure.api.v1.dto.OparlOrganizationDto
 import nrw.openbert.backend.oparl.infrastructure.api.v1.urlGenerator.OparlUrlGenerator
 import nrw.openbert.backend.oparl.infrastructure.persistence.repository.ResolvedBodyRepository
+import nrw.openbert.backend.oparl.infrastructure.persistence.repository.ResolvedMembershipRepository
 import nrw.openbert.backend.oparl.infrastructure.persistence.repository.ResolvedOrganizationRepository
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
@@ -19,6 +20,7 @@ import java.util.UUID
 class OparlOrganizationController(
     private val urlGenerator: OparlUrlGenerator,
     private val resolvedBodyRepository: ResolvedBodyRepository,
+    private val resolvedMembershipRepository: ResolvedMembershipRepository,
     private val resolvedOrganizationRepository: ResolvedOrganizationRepository,
 ) {
     @GetMapping("oparl/v1.1/body/{bodyId}/organization")
@@ -58,6 +60,10 @@ class OparlOrganizationController(
             id = urlGenerator.organization(body.id, id),
             type = AbstractOrganization.TYPE,
             body = urlGenerator.body(body.id),
+            membership = resolvedMembershipRepository
+                .findAllByOrganization_IdAndBody_IdOrderById(id, body.id)
+                .map { urlGenerator.membership(body.id, it.id) }
+                .takeIf { it.isNotEmpty() },
             name = name,
             shortName = shortName,
             post = post.toList().takeIf { it.isNotEmpty() },

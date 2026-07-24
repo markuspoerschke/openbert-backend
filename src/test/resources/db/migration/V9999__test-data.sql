@@ -69,6 +69,16 @@ VALUES ('9f7d37f9-cd93-4b11-a868-19a6c1e39318', '903c26aa-dc8f-4d34-afd6-afdc504
         'https://oparl-demo.example.org/oparl/v1.1/organization/34',
         '2026-07-22 14:30:55.000000', '2026-07-22 14:30:55.000000', false);
 
+INSERT INTO public.oparl_resolved_organization (id, body_id, name, short_name, post, organization_type, classification,
+                                                start_date, end_date, website, license, keyword, web, system_id, url,
+                                                created, modified, deleted)
+VALUES ('b6b1f18d-3147-4a2b-af0e-34f6204dc1d9', '903c26aa-dc8f-4d34-afd6-afdc5040dbd3',
+        'Offenstädter Bürgerfraktion', 'OBF', '{}', 'Fraktion', 'Fraktion',
+        '2025-11-01 00:00:00.000000', null, null, 'CC0-1.0', '{"fraktion"}', null,
+        '9352fa21-68c6-4f4e-8832-08a0454ff179',
+        'https://oparl-demo.example.org/oparl/v1.1/organization/41',
+        '2026-07-22 14:30:55.000000', '2026-07-22 14:30:55.000000', false);
+
 -- OParl person
 INSERT INTO public.oparl_resolved_person (id, body_id, name, family_name, given_name, form_of_address, affix, title,
                                           gender, phone, email, status, life, life_source, license, keyword, web,
@@ -80,4 +90,17 @@ VALUES ('5e4cb965-6c76-4b31-a6ce-e8b26e68fb8b', '903c26aa-dc8f-4d34-afd6-afdc504
         'CC0-1.0', '{"stadtrat","finanzen"}', 'https://neuoffenstadt.example.com/person/max-mustermann',
         '9352fa21-68c6-4f4e-8832-08a0454ff179',
         'https://oparl-demo.example.org/oparl/v1.1/person/29',
+        '2026-07-22 14:30:55.000000', '2026-07-22 14:30:55.000000', false);
+
+-- OParl membership
+INSERT INTO public.oparl_resolved_membership (id, body_id, person_id, organization_id, on_behalf_of_id, role,
+                                              voting_right, start_date, end_date, license, keyword, web, system_id,
+                                              url, created, modified, deleted)
+VALUES ('47fdc541-cf5b-4e45-9bd4-46c8dcca9f34', '903c26aa-dc8f-4d34-afd6-afdc5040dbd3',
+        '5e4cb965-6c76-4b31-a6ce-e8b26e68fb8b', '9f7d37f9-cd93-4b11-a868-19a6c1e39318',
+        'b6b1f18d-3147-4a2b-af0e-34f6204dc1d9',
+        'Vorsitz', true, '2025-11-01 00:00:00.000000', '2030-10-31 00:00:00.000000', 'CC0-1.0',
+        '{"finanzausschuss","vorsitz"}', 'https://neuoffenstadt.example.com/mitgliedschaften/29-34',
+        '9352fa21-68c6-4f4e-8832-08a0454ff179',
+        'https://oparl-demo.example.org/oparl/v1.1/membership/29-34',
         '2026-07-22 14:30:55.000000', '2026-07-22 14:30:55.000000', false);

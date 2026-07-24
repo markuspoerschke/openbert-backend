@@ -50,11 +50,11 @@ OParl 1.1.
 Depends on the existing Person and Organization endpoints and on
 LegislativeTerm.
 
-- [ ] Add the Body-scoped list endpoint: `/body/{body}/membership`.
-- [ ] Add the single-resource endpoint:
+- [x] Add the Body-scoped list endpoint: `/body/{body}/membership`.
+- [x] Add the single-resource endpoint:
   `/body/{body}/membership/{membership}`.
-- [ ] Populate the embedded `Person.membership` list.
-- [ ] Populate `Organization.membership` with Membership URLs.
+- [x] Populate the embedded `Person.membership` list.
+- [x] Populate `Organization.membership` with Membership URLs.
 
 ### 6. Paper
 

@@ -4,8 +4,10 @@ import nrw.openbert.backend.oparl.domain.entity.AbstractPerson
 import nrw.openbert.backend.oparl.domain.entity.resolved.ResolvedPerson
 import nrw.openbert.backend.oparl.infrastructure.api.v1.dto.OparlListDto
 import nrw.openbert.backend.oparl.infrastructure.api.v1.dto.OparlPersonDto
+import nrw.openbert.backend.oparl.infrastructure.api.v1.mapper.OparlMembershipMapper
 import nrw.openbert.backend.oparl.infrastructure.api.v1.urlGenerator.OparlUrlGenerator
 import nrw.openbert.backend.oparl.infrastructure.persistence.repository.ResolvedBodyRepository
+import nrw.openbert.backend.oparl.infrastructure.persistence.repository.ResolvedMembershipRepository
 import nrw.openbert.backend.oparl.infrastructure.persistence.repository.ResolvedPersonRepository
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
@@ -16,7 +18,9 @@ import java.util.UUID
 @RestController
 class OparlPersonController(
     private val urlGenerator: OparlUrlGenerator,
+    private val membershipMapper: OparlMembershipMapper,
     private val resolvedBodyRepository: ResolvedBodyRepository,
+    private val resolvedMembershipRepository: ResolvedMembershipRepository,
     private val resolvedPersonRepository: ResolvedPersonRepository,
 ) {
     @GetMapping("oparl/v1.1/body/{bodyId}/person")
@@ -56,6 +60,10 @@ class OparlPersonController(
             id = urlGenerator.person(body.id, id),
             type = AbstractPerson.TYPE,
             body = urlGenerator.body(body.id),
+            membership = resolvedMembershipRepository
+                .findAllByPerson_IdAndBody_IdOrderById(id, body.id)
+                .map { membershipMapper.toDto(it, includePerson = false) }
+                .takeIf { it.isNotEmpty() },
             name = name,
             familyName = familyName,
             givenName = givenName,
