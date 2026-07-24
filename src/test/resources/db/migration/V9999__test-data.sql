@@ -30,6 +30,19 @@ VALUES ('20ae1f2f-991a-4ea1-a546-27869c8c542a', '903c26aa-dc8f-4d34-afd6-afdc504
         'https://oparl-demo.example.org/oparl/v1.1/legislativeterm/21',
         '2026-07-22 14:30:55.000000', '2026-07-22 14:30:55.000000', false);
 
+-- OParl location
+INSERT INTO public.oparl_resolved_location (id, body_id, description, geojson, street_address, postal_code, locality,
+                                            sub_locality, room, license, keyword, web, system_id, url, created, modified,
+                                            deleted)
+VALUES ('a70c1459-c98f-4e9c-a02f-4bb21b837c04', '903c26aa-dc8f-4d34-afd6-afdc5040dbd3',
+        'Rathaus Neu Offenstadt, Rathausplatz 1, 12345 Neu Offenstadt',
+        '{"type":"Feature","geometry":{"type":"Point","coordinates":[50.1234,10.4321]},"properties":{"name":"Rathausplatz"}}',
+        'Rathausplatz 1', '12345', 'Neu Offenstadt', 'Innenstadt', 'Ratssaal', 'CC0-1.0',
+        '{"rathaus","sitzungsort"}', 'https://neuoffenstadt.example.com/rathaus',
+        '9352fa21-68c6-4f4e-8832-08a0454ff179',
+        'https://oparl-demo.example.org/oparl/v1.1/location/1',
+        '2026-07-22 14:30:55.000000', '2026-07-22 14:30:55.000000', false);
+
 -- OParl organization
 INSERT INTO public.oparl_resolved_organization (id, body_id, name, short_name, post, organization_type, classification,
                                                 start_date, end_date, website, license, keyword, web, system_id, url,

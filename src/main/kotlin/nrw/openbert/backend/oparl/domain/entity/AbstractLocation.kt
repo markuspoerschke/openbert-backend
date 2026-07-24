@@ -3,8 +3,8 @@ package nrw.openbert.backend.oparl.domain.entity
 import jakarta.persistence.Column
 import jakarta.persistence.MappedSuperclass
 import nrw.openbert.backend.oparl.domain.entity.embeddable.OparlResource
-import nrw.openbert.backend.oparl.domain.valueObject.OparlUrl
-import java.util.UUID
+import org.hibernate.annotations.JdbcTypeCode
+import org.hibernate.type.SqlTypes
 
 @MappedSuperclass
 abstract class AbstractLocation(resource: OparlResource) : AbstractOparlEntity(resource) {
@@ -13,33 +13,56 @@ abstract class AbstractLocation(resource: OparlResource) : AbstractOparlEntity(r
     }
 
     @Column
-    private var description: String? = null
+    var description: String? = null
+        protected set
+
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(columnDefinition = "jsonb")
+    var geojson: Map<String, Any?>? = null
+        protected set
 
     @Column
-    private var streetAddress: String? = null
+    var streetAddress: String? = null
+        protected set
 
     @Column
-    private var postalCode: String? = null
+    var postalCode: String? = null
+        protected set
 
     @Column
-    private var locality: String? = null
+    var locality: String? = null
+        protected set
 
     @Column
-    private var subLocality: String? = null
+    var subLocality: String? = null
+        protected set
 
     @Column
-    private var room: String? = null
+    var room: String? = null
+        protected set
+
+    @Column
+    var license: String? = null
+        protected set
 
     @Column(columnDefinition = "text[]")
-    private var keyword: MutableList<String> = mutableListOf()
+    var keyword: MutableList<String> = mutableListOf()
+        protected set
+
+    @Column
+    var web: String? = null
+        protected set
 
     fun applyValuesFrom(other: AbstractLocation) {
         description = other.description
+        geojson = other.geojson
         streetAddress = other.streetAddress
         postalCode = other.postalCode
         locality = other.locality
         subLocality = other.subLocality
         room = other.room
+        license = other.license
         keyword = other.keyword
+        web = other.web
     }
 }
