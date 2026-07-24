@@ -33,7 +33,8 @@ class OparlOrganizationControllerTest(
                 jsonPath("$.data.length()") { value(1) }
                 jsonPath("$.data[0].id") {
                     value(
-                        "https://example.org:8443/oparl/v1.1/organization/" +
+                        "https://example.org:8443/oparl/v1.1/body/" +
+                            "903c26aa-dc8f-4d34-afd6-afdc5040dbd3/organization/" +
                             "9f7d37f9-cd93-4b11-a868-19a6c1e39318"
                     )
                 }
@@ -58,14 +59,16 @@ class OparlOrganizationControllerTest(
     @Test
     fun `returns a single resolved organization`() {
         mockMvc.get(
-            "https://example.org:8443/oparl/v1.1/organization/" +
+            "https://example.org:8443/oparl/v1.1/body/" +
+                "903c26aa-dc8f-4d34-afd6-afdc5040dbd3/organization/" +
                 "9f7d37f9-cd93-4b11-a868-19a6c1e39318"
         )
             .andExpect {
                 status { isOk() }
                 jsonPath("$.id") {
                     value(
-                        "https://example.org:8443/oparl/v1.1/organization/" +
+                        "https://example.org:8443/oparl/v1.1/body/" +
+                            "903c26aa-dc8f-4d34-afd6-afdc5040dbd3/organization/" +
                             "9f7d37f9-cd93-4b11-a868-19a6c1e39318"
                     )
                 }
@@ -83,8 +86,21 @@ class OparlOrganizationControllerTest(
     @Test
     fun `returns not found for unknown organization`() {
         mockMvc.get(
-            "https://example.org:8443/oparl/v1.1/organization/" +
+            "https://example.org:8443/oparl/v1.1/body/" +
+                "903c26aa-dc8f-4d34-afd6-afdc5040dbd3/organization/" +
                 "00000000-0000-0000-0000-000000000000"
+        )
+            .andExpect {
+                status { isNotFound() }
+            }
+    }
+
+    @Test
+    fun `returns not found when organization belongs to another body`() {
+        mockMvc.get(
+            "https://example.org:8443/oparl/v1.1/body/" +
+                "00000000-0000-0000-0000-000000000000/organization/" +
+                "9f7d37f9-cd93-4b11-a868-19a6c1e39318"
         )
             .andExpect {
                 status { isNotFound() }

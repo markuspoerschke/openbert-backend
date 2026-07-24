@@ -39,9 +39,12 @@ class OparlOrganizationController(
         )
     }
 
-    @GetMapping("oparl/v1.1/organization/{id}")
-    fun get(@PathVariable id: UUID): ResponseEntity<OparlOrganizationDto> {
-        val organization = resolvedOrganizationRepository.findById(id)
+    @GetMapping("oparl/v1.1/body/{bodyId}/organization/{organizationId}")
+    fun get(
+        @PathVariable bodyId: UUID,
+        @PathVariable organizationId: UUID,
+    ): ResponseEntity<OparlOrganizationDto> {
+        val organization = resolvedOrganizationRepository.findByIdAndBody_Id(organizationId, bodyId)
 
         if (!organization.isPresent) {
             return ResponseEntity.notFound().build()
@@ -52,7 +55,7 @@ class OparlOrganizationController(
 
     private fun ResolvedOrganization.toDto(): OparlOrganizationDto {
         return OparlOrganizationDto(
-            id = urlGenerator.organization(id),
+            id = urlGenerator.organization(body.id, id),
             type = AbstractOrganization.TYPE,
             body = urlGenerator.body(body.id),
             name = name,

@@ -33,7 +33,8 @@ class OparlPersonControllerTest(
                 jsonPath("$.data.length()") { value(1) }
                 jsonPath("$.data[0].id") {
                     value(
-                        "https://example.org:8443/oparl/v1.1/person/" +
+                        "https://example.org:8443/oparl/v1.1/body/" +
+                            "903c26aa-dc8f-4d34-afd6-afdc5040dbd3/person/" +
                             "5e4cb965-6c76-4b31-a6ce-e8b26e68fb8b"
                     )
                 }
@@ -59,14 +60,16 @@ class OparlPersonControllerTest(
     @Test
     fun `returns a single resolved person`() {
         mockMvc.get(
-            "https://example.org:8443/oparl/v1.1/person/" +
+            "https://example.org:8443/oparl/v1.1/body/" +
+                "903c26aa-dc8f-4d34-afd6-afdc5040dbd3/person/" +
                 "5e4cb965-6c76-4b31-a6ce-e8b26e68fb8b"
         )
             .andExpect {
                 status { isOk() }
                 jsonPath("$.id") {
                     value(
-                        "https://example.org:8443/oparl/v1.1/person/" +
+                        "https://example.org:8443/oparl/v1.1/body/" +
+                            "903c26aa-dc8f-4d34-afd6-afdc5040dbd3/person/" +
                             "5e4cb965-6c76-4b31-a6ce-e8b26e68fb8b"
                     )
                 }
@@ -84,8 +87,21 @@ class OparlPersonControllerTest(
     @Test
     fun `returns not found for unknown person`() {
         mockMvc.get(
-            "https://example.org:8443/oparl/v1.1/person/" +
+            "https://example.org:8443/oparl/v1.1/body/" +
+                "903c26aa-dc8f-4d34-afd6-afdc5040dbd3/person/" +
                 "00000000-0000-0000-0000-000000000000"
+        )
+            .andExpect {
+                status { isNotFound() }
+            }
+    }
+
+    @Test
+    fun `returns not found when person belongs to another body`() {
+        mockMvc.get(
+            "https://example.org:8443/oparl/v1.1/body/" +
+                "00000000-0000-0000-0000-000000000000/person/" +
+                "5e4cb965-6c76-4b31-a6ce-e8b26e68fb8b"
         )
             .andExpect {
                 status { isNotFound() }
