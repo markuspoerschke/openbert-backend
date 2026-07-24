@@ -71,8 +71,8 @@ CREATE TABLE oparl_raw_file
     mime_type            VARCHAR(255),
     date                 TIMESTAMP WITHOUT TIME ZONE,
     size                 INTEGER,
-    sha1checksum         VARCHAR(255),
-    sha512checksum       VARCHAR(255),
+    sha1_checksum        VARCHAR(255),
+    sha512_checksum      VARCHAR(255),
     text                 VARCHAR(255),
     access_url           VARCHAR(255),
     download_url         VARCHAR(255),
@@ -317,13 +317,14 @@ CREATE TABLE oparl_resolved_consultation
 CREATE TABLE oparl_resolved_file
 (
     id                   UUID          NOT NULL,
+    body_id              UUID          NOT NULL,
     name                 VARCHAR(255),
     file_name            VARCHAR(255),
     mime_type            VARCHAR(255),
     date                 TIMESTAMP WITHOUT TIME ZONE,
     size                 INTEGER,
-    sha1checksum         VARCHAR(255),
-    sha512checksum       VARCHAR(255),
+    sha1_checksum        VARCHAR(255),
+    sha512_checksum      VARCHAR(255),
     text                 VARCHAR(255),
     access_url           VARCHAR(255),
     download_url         VARCHAR(255),
@@ -645,6 +646,9 @@ ALTER TABLE oparl_resolved_consultation
 
 ALTER TABLE oparl_resolved_file
     ADD CONSTRAINT FK_OPARL_RESOLVED_FILE_ON_SYSTEM FOREIGN KEY (system_id) REFERENCES oparl_system (id);
+
+ALTER TABLE oparl_resolved_file
+    ADD CONSTRAINT FK_OPARL_RESOLVED_FILE_ON_BODY FOREIGN KEY (body_id) REFERENCES oparl_resolved_body (id);
 
 ALTER TABLE oparl_resolved_legislative_term
     ADD CONSTRAINT FK_OPARL_RESOLVED_LEGISLATIVETERM_ON_SYSTEM FOREIGN KEY (system_id) REFERENCES oparl_system (id);

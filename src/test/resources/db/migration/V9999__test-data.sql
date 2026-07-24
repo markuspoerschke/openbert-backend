@@ -43,6 +43,20 @@ VALUES ('a70c1459-c98f-4e9c-a02f-4bb21b837c04', '903c26aa-dc8f-4d34-afd6-afdc504
         'https://oparl-demo.example.org/oparl/v1.1/location/1',
         '2026-07-22 14:30:55.000000', '2026-07-22 14:30:55.000000', false);
 
+-- OParl file
+INSERT INTO public.oparl_resolved_file (id, body_id, name, file_name, mime_type, date, size, sha1_checksum,
+                                        sha512_checksum, text, access_url, download_url, external_service_url,
+                                        file_license, license, keyword, web, system_id, url, created, modified, deleted)
+VALUES ('3d663f77-05ca-4a14-b788-68ad340ea271', '903c26aa-dc8f-4d34-afd6-afdc5040dbd3',
+        'Mock council document', 'mock-council-document.txt', 'text/plain', '2026-07-20 00:00:00.000000', 87, null,
+        '3ba3e94660704f7a18c3933a0a50bc401a78ccf39654ce093c7947d2ad252b9a675ad7a8ce9dcd7a2b61631fda9d8605bb4853a3509886ce348517f103f4f099',
+        'Placeholder for a council document.', 'https://oparl-demo.example.org/files/1',
+        'https://oparl-demo.example.org/files/download/1', null, 'https://creativecommons.org/publicdomain/zero/1.0/',
+        'CC0-1.0', '{"mock","council document"}', 'https://neuoffenstadt.example.com/documents/1',
+        '9352fa21-68c6-4f4e-8832-08a0454ff179',
+        'https://oparl-demo.example.org/oparl/v1.1/file/1',
+        '2026-07-22 14:30:55.000000', '2026-07-22 14:30:55.000000', false);
+
 -- OParl organization
 INSERT INTO public.oparl_resolved_organization (id, body_id, name, short_name, post, organization_type, classification,
                                                 start_date, end_date, website, license, keyword, web, system_id, url,
