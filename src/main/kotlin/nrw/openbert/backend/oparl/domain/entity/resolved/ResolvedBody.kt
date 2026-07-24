@@ -2,6 +2,7 @@ package nrw.openbert.backend.oparl.domain.entity.resolved
 
 import jakarta.persistence.Entity
 import jakarta.persistence.OneToMany
+import jakarta.persistence.OrderBy
 import jakarta.persistence.Table
 import jakarta.persistence.UniqueConstraint
 import nrw.openbert.backend.oparl.domain.entity.AbstractBody
@@ -16,6 +17,10 @@ class ResolvedBody(resource: OparlResource) : AbstractBody(resource) {
 
     @OneToMany(mappedBy = "body")
     val persons: MutableList<ResolvedPerson> = mutableListOf()
+
+    @OneToMany(mappedBy = "body")
+    @OrderBy("id ASC")
+    val legislativeTerms: MutableList<ResolvedLegislativeTerm> = mutableListOf()
 
     companion object {
         fun fromRaw(raw: RawBody): ResolvedBody {

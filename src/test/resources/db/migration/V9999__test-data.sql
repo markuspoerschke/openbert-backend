@@ -20,6 +20,16 @@ VALUES ('ffffffff-ffff-4fff-afff-ffffffffffff', 'Anderstadt', 'Anderstadt – St
         null, '{}', null, '9352fa21-68c6-4f4e-8832-08a0454ff179', 'https://oparl-demo.example.org/oparl/v1.1/body/456',
         '2026-07-22 14:30:55.000000', '2026-07-22 14:30:55.000000', false);
 
+-- OParl legislative term
+INSERT INTO public.oparl_resolved_legislative_term (id, body_id, name, start_date, end_date, license, keyword, web,
+                                                    system_id, url, created, modified, deleted)
+VALUES ('20ae1f2f-991a-4ea1-a546-27869c8c542a', '903c26aa-dc8f-4d34-afd6-afdc5040dbd3',
+        '21. Wahlperiode', '2025-11-01 00:00:00.000000', '2030-10-31 00:00:00.000000', 'CC0-1.0',
+        '{"wahlperiode","stadtrat"}', 'https://neuoffenstadt.example.com/rat/wahlperioden/21',
+        '9352fa21-68c6-4f4e-8832-08a0454ff179',
+        'https://oparl-demo.example.org/oparl/v1.1/legislativeterm/21',
+        '2026-07-22 14:30:55.000000', '2026-07-22 14:30:55.000000', false);
+
 -- OParl organization
 INSERT INTO public.oparl_resolved_organization (id, body_id, name, short_name, post, organization_type, classification,
                                                 start_date, end_date, website, license, keyword, web, system_id, url,
