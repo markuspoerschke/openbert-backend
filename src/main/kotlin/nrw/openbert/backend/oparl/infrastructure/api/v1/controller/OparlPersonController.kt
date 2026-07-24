@@ -37,9 +37,12 @@ class OparlPersonController(
         )
     }
 
-    @GetMapping("oparl/v1.1/person/{id}")
-    fun get(@PathVariable id: UUID): ResponseEntity<OparlPersonDto> {
-        val person = resolvedPersonRepository.findById(id)
+    @GetMapping("oparl/v1.1/body/{bodyId}/person/{personId}")
+    fun get(
+        @PathVariable bodyId: UUID,
+        @PathVariable personId: UUID,
+    ): ResponseEntity<OparlPersonDto> {
+        val person = resolvedPersonRepository.findByIdAndBody_Id(personId, bodyId)
 
         if (!person.isPresent) {
             return ResponseEntity.notFound().build()
@@ -50,7 +53,7 @@ class OparlPersonController(
 
     private fun ResolvedPerson.toDto(): OparlPersonDto {
         return OparlPersonDto(
-            id = urlGenerator.person(id),
+            id = urlGenerator.person(body.id, id),
             type = AbstractPerson.TYPE,
             body = urlGenerator.body(body.id),
             name = name,

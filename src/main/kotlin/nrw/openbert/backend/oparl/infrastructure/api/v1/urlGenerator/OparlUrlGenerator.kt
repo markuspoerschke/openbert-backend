@@ -30,9 +30,9 @@ class OparlUrlGenerator {
             .toString()
     }
 
-    fun organization(organizationId: UUID): String {
+    fun organization(bodyId: UUID, organizationId: UUID): String {
         return MvcUriComponentsBuilder
-            .fromMethodName(OparlOrganizationController::class.java, "get", organizationId)
+            .fromMethodName(OparlOrganizationController::class.java, "get", bodyId, organizationId)
             .build()
             .toString()
     }
@@ -44,9 +44,9 @@ class OparlUrlGenerator {
             .toString()
     }
 
-    fun person(personId: UUID): String {
+    fun person(bodyId: UUID, personId: UUID): String {
         return MvcUriComponentsBuilder
-            .fromMethodName(OparlPersonController::class.java, "get", personId)
+            .fromMethodName(OparlPersonController::class.java, "get", bodyId, personId)
             .build()
             .toString()
     }
