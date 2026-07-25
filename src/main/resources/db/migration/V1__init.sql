@@ -254,8 +254,11 @@ CREATE TABLE oparl_raw_system
 CREATE TABLE oparl_resolved_agenda_item
 (
     id              UUID          NOT NULL,
+    body_id         UUID          NOT NULL,
+    meeting_id      UUID          NOT NULL,
+    resolution_file_id UUID,
     number          VARCHAR(255),
-    "order"         INTEGER,
+    "order"         INTEGER       NOT NULL,
     name            VARCHAR(255),
     public          BOOLEAN,
     result          VARCHAR(255),
@@ -513,6 +516,13 @@ CREATE TABLE oparl_resolved_system
     CONSTRAINT pk_oparl_resolved_system PRIMARY KEY (id)
 );
 
+CREATE TABLE oparl_resolved_agenda_item_auxiliary_file
+(
+    agenda_item_id UUID NOT NULL,
+    file_id        UUID NOT NULL,
+    CONSTRAINT pk_oparl_resolved_agenda_item_auxiliary_file PRIMARY KEY (agenda_item_id, file_id)
+);
+
 CREATE TABLE oparl_system
 (
     id  UUID          NOT NULL,
@@ -643,6 +653,26 @@ ALTER TABLE oparl_raw_system
 
 ALTER TABLE oparl_resolved_agenda_item
     ADD CONSTRAINT FK_OPARL_RESOLVED_AGENDAITEM_ON_SYSTEM FOREIGN KEY (system_id) REFERENCES oparl_system (id);
+
+ALTER TABLE oparl_resolved_agenda_item
+    ADD CONSTRAINT FK_OPARL_RESOLVED_AGENDAITEM_ON_BODY
+        FOREIGN KEY (body_id) REFERENCES oparl_resolved_body (id);
+
+ALTER TABLE oparl_resolved_agenda_item
+    ADD CONSTRAINT FK_OPARL_RESOLVED_AGENDAITEM_ON_MEETING
+        FOREIGN KEY (meeting_id) REFERENCES oparl_resolved_meeting (id);
+
+ALTER TABLE oparl_resolved_agenda_item
+    ADD CONSTRAINT FK_OPARL_RESOLVED_AGENDAITEM_ON_RESOLUTION_FILE
+        FOREIGN KEY (resolution_file_id) REFERENCES oparl_resolved_file (id);
+
+ALTER TABLE oparl_resolved_agenda_item_auxiliary_file
+    ADD CONSTRAINT FK_OPARL_RESOLVED_AGENDAITEM_AUXILIARY_FILE_ON_AGENDAITEM
+        FOREIGN KEY (agenda_item_id) REFERENCES oparl_resolved_agenda_item (id);
+
+ALTER TABLE oparl_resolved_agenda_item_auxiliary_file
+    ADD CONSTRAINT FK_OPARL_RESOLVED_AGENDAITEM_AUXILIARY_FILE_ON_FILE
+        FOREIGN KEY (file_id) REFERENCES oparl_resolved_file (id);
 
 ALTER TABLE oparl_resolved_body
     ADD CONSTRAINT FK_OPARL_RESOLVED_BODY_ON_SYSTEM FOREIGN KEY (system_id) REFERENCES oparl_system (id);
