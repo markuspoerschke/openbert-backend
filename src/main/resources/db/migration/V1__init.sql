@@ -448,6 +448,7 @@ CREATE TABLE oparl_resolved_organization
 CREATE TABLE oparl_resolved_paper
 (
     id         UUID          NOT NULL,
+    body_id    UUID          NOT NULL,
     name       VARCHAR(255),
     reference  VARCHAR(255),
     date       TIMESTAMP WITHOUT TIME ZONE,
@@ -694,6 +695,9 @@ ALTER TABLE oparl_resolved_organization
 
 ALTER TABLE oparl_resolved_paper
     ADD CONSTRAINT FK_OPARL_RESOLVED_PAPER_ON_SYSTEM FOREIGN KEY (system_id) REFERENCES oparl_system (id);
+
+ALTER TABLE oparl_resolved_paper
+    ADD CONSTRAINT FK_OPARL_RESOLVED_PAPER_ON_BODY FOREIGN KEY (body_id) REFERENCES oparl_resolved_body (id);
 
 ALTER TABLE oparl_resolved_person
     ADD CONSTRAINT FK_OPARL_RESOLVED_PERSON_ON_SYSTEM FOREIGN KEY (system_id) REFERENCES oparl_system (id);

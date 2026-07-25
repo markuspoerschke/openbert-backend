@@ -57,6 +57,16 @@ VALUES ('3d663f77-05ca-4a14-b788-68ad340ea271', '903c26aa-dc8f-4d34-afd6-afdc504
         'https://oparl-demo.example.org/oparl/v1.1/file/1',
         '2026-07-22 14:30:55.000000', '2026-07-22 14:30:55.000000', false);
 
+-- OParl paper
+INSERT INTO public.oparl_resolved_paper (id, body_id, name, reference, date, paper_type, license, keyword, web,
+                                         system_id, url, created, modified, deleted)
+VALUES ('f6d47f4c-e5db-4dab-91f8-3bafc825d30c', '903c26aa-dc8f-4d34-afd6-afdc5040dbd3',
+        'Haushaltssatzung für das Jahr 2027', 'V-2026-42', '2026-07-21 00:00:00.000000', 'Beschlussvorlage',
+        'CC0-1.0', '{"haushalt","finanzen"}', 'https://neuoffenstadt.example.com/drucksachen/V-2026-42',
+        '9352fa21-68c6-4f4e-8832-08a0454ff179',
+        'https://oparl-demo.example.org/oparl/v1.1/paper/42',
+        '2026-07-22 14:30:55.000000', '2026-07-22 14:30:55.000000', false);
+
 -- OParl organization
 INSERT INTO public.oparl_resolved_organization (id, body_id, name, short_name, post, organization_type, classification,
                                                 start_date, end_date, website, license, keyword, web, system_id, url,

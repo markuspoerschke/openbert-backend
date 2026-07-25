@@ -41,7 +41,12 @@ class OparlBodyControllerTest(
                     )
                 }
                 jsonPath("$.data[0].meeting") { value("TODO") }
-                jsonPath("$.data[0].paper") { value("TODO") }
+                jsonPath("$.data[0].paper") {
+                    value(
+                        "https://example.org:8443/oparl/v1.1/body/" +
+                            "903c26aa-dc8f-4d34-afd6-afdc5040dbd3/paper"
+                    )
+                }
                 jsonPath("$.data[0].legislativeTerm.length()") { value(1) }
                 jsonPath("$.data[0].legislativeTerm[0].id") {
                     value(

@@ -61,8 +61,8 @@ LegislativeTerm.
 Depends on Body, Person, Organization, Location, and File. Consultation can be
 added to its embedded list when the Consultation endpoint is implemented.
 
-- [ ] Add the Body-scoped list endpoint: `/body/{body}/paper`.
-- [ ] Add the single-resource endpoint: `/body/{body}/paper/{paper}`.
+- [x] Add the Body-scoped list endpoint: `/body/{body}/paper`.
+- [x] Add the single-resource endpoint: `/body/{body}/paper/{paper}`.
 
 ### 7. Meeting
 

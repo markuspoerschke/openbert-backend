@@ -6,6 +6,7 @@ import nrw.openbert.backend.oparl.infrastructure.api.v1.controller.OparlLegislat
 import nrw.openbert.backend.oparl.infrastructure.api.v1.controller.OparlLocationController
 import nrw.openbert.backend.oparl.infrastructure.api.v1.controller.OparlMembershipController
 import nrw.openbert.backend.oparl.infrastructure.api.v1.controller.OparlOrganizationController
+import nrw.openbert.backend.oparl.infrastructure.api.v1.controller.OparlPaperController
 import nrw.openbert.backend.oparl.infrastructure.api.v1.controller.OparlPersonController
 import org.springframework.stereotype.Component
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder
@@ -60,7 +61,17 @@ class OparlUrlGenerator {
     }
 
     fun paperList(bodyId: UUID): String {
-        return "TODO"
+        return MvcUriComponentsBuilder
+            .fromMethodName(OparlPaperController::class.java, "list", bodyId)
+            .build()
+            .toString()
+    }
+
+    fun paper(bodyId: UUID, paperId: UUID): String {
+        return MvcUriComponentsBuilder
+            .fromMethodName(OparlPaperController::class.java, "get", bodyId, paperId)
+            .build()
+            .toString()
     }
 
     fun agendaItemList(bodyId: UUID): String {

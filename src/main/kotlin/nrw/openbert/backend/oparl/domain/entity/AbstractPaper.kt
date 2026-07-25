@@ -3,9 +3,7 @@ package nrw.openbert.backend.oparl.domain.entity
 import jakarta.persistence.Column
 import jakarta.persistence.MappedSuperclass
 import nrw.openbert.backend.oparl.domain.entity.embeddable.OparlResource
-import nrw.openbert.backend.oparl.domain.valueObject.OparlUrl
 import java.util.Date
-import java.util.UUID
 
 @MappedSuperclass
 abstract class AbstractPaper(resource: OparlResource) : AbstractOparlEntity(resource) {
@@ -14,25 +12,32 @@ abstract class AbstractPaper(resource: OparlResource) : AbstractOparlEntity(reso
     }
 
     @Column
-    private var name: String? = null
+    var name: String? = null
+        protected set
 
     @Column
-    private var reference: String? = null
+    var reference: String? = null
+        protected set
 
     @Column
-    private var date: Date? = null
+    var date: Date? = null
+        protected set
 
     @Column
-    private var paperType: String? = null
+    var paperType: String? = null
+        protected set
 
     @Column
-    private var license: String? = null
+    var license: String? = null
+        protected set
 
     @Column(columnDefinition = "text[]")
-    private var keyword: MutableList<String> = mutableListOf()
+    var keyword: MutableList<String> = mutableListOf()
+        protected set
 
     @Column
-    private var web: String? = null
+    var web: String? = null
+        protected set
 
     fun applyValuesFrom(other: AbstractPaper) {
         name = other.name
