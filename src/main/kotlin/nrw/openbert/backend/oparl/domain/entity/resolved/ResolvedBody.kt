@@ -20,6 +20,10 @@ class ResolvedBody(resource: OparlResource) : AbstractBody(resource) {
 
     @OneToMany(mappedBy = "body")
     @OrderBy("id ASC")
+    val meetings: MutableList<ResolvedMeeting> = mutableListOf()
+
+    @OneToMany(mappedBy = "body")
+    @OrderBy("id ASC")
     val legislativeTerms: MutableList<ResolvedLegislativeTerm> = mutableListOf()
 
     @OneToMany(mappedBy = "body")

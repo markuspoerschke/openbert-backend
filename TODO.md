@@ -70,8 +70,8 @@ Meeting has the largest embedded object graph: Organization, Person, Location,
 File, and AgendaItem. Implement its core fields and available relationships
 first so AgendaItem can link to an existing Meeting endpoint.
 
-- [ ] Add the Body-scoped list endpoint: `/body/{body}/meeting`.
-- [ ] Add the single-resource endpoint: `/body/{body}/meeting/{meeting}`.
+- [x] Add the Body-scoped list endpoint: `/body/{body}/meeting`.
+- [x] Add the single-resource endpoint: `/body/{body}/meeting/{meeting}`.
 
 ### 8. AgendaItem
 
