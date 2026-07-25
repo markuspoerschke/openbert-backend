@@ -18,6 +18,10 @@ class OparlMeetingControllerTest(
     private val bodyUrl =
         "https://example.org:8443/oparl/v1.1/body/903c26aa-dc8f-4d34-afd6-afdc5040dbd3"
     private val meetingUrl = "$bodyUrl/meeting/1dd8b01e-a39c-4b40-9f24-46f7a42a3795"
+    private val firstAgendaItemUrl =
+        "$bodyUrl/agendaitem/7b728a96-ae9a-40d1-b010-cc909ab2dd87"
+    private val secondAgendaItemUrl =
+        "$bodyUrl/agendaitem/11111111-1111-4111-a111-111111111111"
 
     @Test
     fun `lists resolved meetings belonging to a body`() {
@@ -38,6 +42,11 @@ class OparlMeetingControllerTest(
                 jsonPath("$.data[0].cancelled") { value(false) }
                 jsonPath("$.data[0].start") { isString() }
                 jsonPath("$.data[0].end") { isString() }
+                jsonPath("$.data[0].agendaItem.length()") { value(2) }
+                jsonPath("$.data[0].agendaItem[0].id") { value(firstAgendaItemUrl) }
+                jsonPath("$.data[0].agendaItem[0].order") { value(0) }
+                jsonPath("$.data[0].agendaItem[1].id") { value(secondAgendaItemUrl) }
+                jsonPath("$.data[0].agendaItem[1].order") { value(1) }
                 jsonPath("$.data[0].license") { value("CC0-1.0") }
                 jsonPath("$.data[0].keyword.length()") { value(2) }
                 jsonPath("$.data[0].web") {
@@ -57,6 +66,9 @@ class OparlMeetingControllerTest(
                 }
                 jsonPath("$.name") { value("4. Sitzung des Finanzausschusses") }
                 jsonPath("$.meetingState") { value("durchgeführt") }
+                jsonPath("$.agendaItem.length()") { value(2) }
+                jsonPath("$.agendaItem[0].id") { value(firstAgendaItemUrl) }
+                jsonPath("$.agendaItem[1].id") { value(secondAgendaItemUrl) }
             }
     }
 

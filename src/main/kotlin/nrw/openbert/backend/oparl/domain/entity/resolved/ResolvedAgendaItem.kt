@@ -6,6 +6,7 @@ import jakarta.persistence.JoinColumn
 import jakarta.persistence.JoinTable
 import jakarta.persistence.ManyToMany
 import jakarta.persistence.ManyToOne
+import jakarta.persistence.OneToOne
 import jakarta.persistence.OrderBy
 import jakarta.persistence.Table
 import jakarta.persistence.UniqueConstraint
@@ -26,6 +27,10 @@ class ResolvedAgendaItem(
     @JoinColumn(name = "meeting_id", nullable = false, updatable = false)
     val meeting: ResolvedMeeting,
 ) : AbstractAgendaItem(resource) {
+    @OneToOne(mappedBy = "agendaItem")
+    var consultation: ResolvedConsultation? = null
+        protected set
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "resolution_file_id")
     var resolutionFile: ResolvedFile? = null

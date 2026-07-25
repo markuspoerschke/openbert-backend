@@ -303,17 +303,21 @@ CREATE TABLE oparl_resolved_body
 
 CREATE TABLE oparl_resolved_consultation
 (
-    id            UUID          NOT NULL,
-    authoritative BOOLEAN,
-    role          VARCHAR(255),
-    license       VARCHAR(255),
-    keyword       TEXT[]                      NOT NULL,
-    web           VARCHAR(255),
-    created       TIMESTAMP WITHOUT TIME ZONE NOT NULL,
-    modified      TIMESTAMP WITHOUT TIME ZONE NOT NULL,
-    deleted       BOOLEAN       NOT NULL,
-    system_id     UUID          NOT NULL,
-    url           VARCHAR(1024) NOT NULL,
+    id             UUID          NOT NULL,
+    body_id        UUID          NOT NULL,
+    paper_id       UUID          NOT NULL,
+    agenda_item_id UUID          NOT NULL,
+    meeting_id     UUID          NOT NULL,
+    authoritative  BOOLEAN,
+    role           VARCHAR(255),
+    license        VARCHAR(255),
+    keyword        TEXT[]                      NOT NULL,
+    web            VARCHAR(255),
+    created        TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+    modified       TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+    deleted        BOOLEAN       NOT NULL,
+    system_id      UUID          NOT NULL,
+    url            VARCHAR(1024) NOT NULL,
     CONSTRAINT pk_oparl_resolved_consultation PRIMARY KEY (id)
 );
 
@@ -523,6 +527,15 @@ CREATE TABLE oparl_resolved_agenda_item_auxiliary_file
     CONSTRAINT pk_oparl_resolved_agenda_item_auxiliary_file PRIMARY KEY (agenda_item_id, file_id)
 );
 
+CREATE TABLE oparl_resolved_consultation_organization
+(
+    consultation_id   UUID    NOT NULL,
+    organization_id   UUID    NOT NULL,
+    organization_order INTEGER NOT NULL,
+    CONSTRAINT pk_oparl_resolved_consultation_organization
+        PRIMARY KEY (consultation_id, organization_id)
+);
+
 CREATE TABLE oparl_system
 (
     id  UUID          NOT NULL,
@@ -679,6 +692,33 @@ ALTER TABLE oparl_resolved_body
 
 ALTER TABLE oparl_resolved_consultation
     ADD CONSTRAINT FK_OPARL_RESOLVED_CONSULTATION_ON_SYSTEM FOREIGN KEY (system_id) REFERENCES oparl_system (id);
+
+ALTER TABLE oparl_resolved_consultation
+    ADD CONSTRAINT FK_OPARL_RESOLVED_CONSULTATION_ON_BODY
+        FOREIGN KEY (body_id) REFERENCES oparl_resolved_body (id);
+
+ALTER TABLE oparl_resolved_consultation
+    ADD CONSTRAINT FK_OPARL_RESOLVED_CONSULTATION_ON_PAPER
+        FOREIGN KEY (paper_id) REFERENCES oparl_resolved_paper (id);
+
+ALTER TABLE oparl_resolved_consultation
+    ADD CONSTRAINT FK_OPARL_RESOLVED_CONSULTATION_ON_AGENDAITEM
+        FOREIGN KEY (agenda_item_id) REFERENCES oparl_resolved_agenda_item (id);
+
+ALTER TABLE oparl_resolved_consultation
+    ADD CONSTRAINT FK_OPARL_RESOLVED_CONSULTATION_ON_MEETING
+        FOREIGN KEY (meeting_id) REFERENCES oparl_resolved_meeting (id);
+
+ALTER TABLE oparl_resolved_consultation
+    ADD CONSTRAINT UC_OPARL_RESOLVED_CONSULTATION_ON_AGENDAITEM UNIQUE (agenda_item_id);
+
+ALTER TABLE oparl_resolved_consultation_organization
+    ADD CONSTRAINT FK_OPARL_RESOLVED_CONSULTATION_ORGANIZATION_ON_CONSULTATION
+        FOREIGN KEY (consultation_id) REFERENCES oparl_resolved_consultation (id);
+
+ALTER TABLE oparl_resolved_consultation_organization
+    ADD CONSTRAINT FK_OPARL_RESOLVED_CONSULTATION_ORGANIZATION_ON_ORGANIZATION
+        FOREIGN KEY (organization_id) REFERENCES oparl_resolved_organization (id);
 
 ALTER TABLE oparl_resolved_file
     ADD CONSTRAINT FK_OPARL_RESOLVED_FILE_ON_SYSTEM FOREIGN KEY (system_id) REFERENCES oparl_system (id);

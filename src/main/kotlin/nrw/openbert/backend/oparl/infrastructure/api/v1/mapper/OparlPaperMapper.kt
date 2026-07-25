@@ -11,6 +11,7 @@ import java.util.Date
 @Component
 class OparlPaperMapper(
     private val urlGenerator: OparlUrlGenerator,
+    private val consultationMapper: OparlConsultationMapper,
 ) {
     fun toDto(paper: ResolvedPaper): OparlPaperDto {
         return OparlPaperDto(
@@ -21,6 +22,9 @@ class OparlPaperMapper(
             reference = paper.reference,
             date = paper.date?.toOparlDate(),
             paperType = paper.paperType,
+            consultation = paper.consultations
+                .map { consultationMapper.toDto(it, includePaper = false) }
+                .takeIf { it.isNotEmpty() },
             license = paper.license,
             keyword = paper.keyword.toList().takeIf { it.isNotEmpty() },
             created = paper.created.toString(),

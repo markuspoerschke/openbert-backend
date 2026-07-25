@@ -22,6 +22,8 @@ class OparlAgendaItemMapper(
             },
             name = agendaItem.name,
             public = agendaItem.public,
+            consultation = agendaItem.consultation
+                ?.let { urlGenerator.consultation(it.body.id, it.id) },
             result = agendaItem.result,
             resolutionText = agendaItem.resolutionText,
             resolutionFile = agendaItem.resolutionFile?.let(fileMapper::toDto),

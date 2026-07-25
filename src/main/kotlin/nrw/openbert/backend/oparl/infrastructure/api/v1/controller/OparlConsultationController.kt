@@ -1,0 +1,56 @@
+package nrw.openbert.backend.oparl.infrastructure.api.v1.controller
+
+import nrw.openbert.backend.oparl.infrastructure.api.v1.dto.OparlConsultationDto
+import nrw.openbert.backend.oparl.infrastructure.api.v1.dto.OparlListDto
+import nrw.openbert.backend.oparl.infrastructure.api.v1.mapper.OparlConsultationMapper
+import nrw.openbert.backend.oparl.infrastructure.api.v1.urlGenerator.OparlUrlGenerator
+import nrw.openbert.backend.oparl.infrastructure.persistence.repository.ResolvedBodyRepository
+import nrw.openbert.backend.oparl.infrastructure.persistence.repository.ResolvedConsultationRepository
+import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.RestController
+import java.util.UUID
+
+@RestController
+class OparlConsultationController(
+    private val urlGenerator: OparlUrlGenerator,
+    private val consultationMapper: OparlConsultationMapper,
+    private val resolvedBodyRepository: ResolvedBodyRepository,
+    private val resolvedConsultationRepository: ResolvedConsultationRepository,
+) {
+    @GetMapping("oparl/v1.1/body/{bodyId}/consultation")
+    fun list(@PathVariable bodyId: UUID): ResponseEntity<OparlListDto<OparlConsultationDto>> {
+        if (!resolvedBodyRepository.existsById(bodyId)) {
+            return ResponseEntity.notFound().build()
+        }
+
+        val consultations = resolvedConsultationRepository
+            .findAllByBody_IdOrderById(bodyId)
+            .map(consultationMapper::toDto)
+
+        return ResponseEntity.ok(
+            OparlListDto(
+                id = urlGenerator.consultationList(bodyId),
+                data = consultations,
+            )
+        )
+    }
+
+    @GetMapping("oparl/v1.1/body/{bodyId}/consultation/{consultationId}")
+    fun get(
+        @PathVariable bodyId: UUID,
+        @PathVariable consultationId: UUID,
+    ): ResponseEntity<OparlConsultationDto> {
+        val consultation = resolvedConsultationRepository.findByIdAndBody_Id(
+            consultationId,
+            bodyId,
+        )
+
+        if (!consultation.isPresent) {
+            return ResponseEntity.notFound().build()
+        }
+
+        return ResponseEntity.ok(consultationMapper.toDto(consultation.get()))
+    }
+}

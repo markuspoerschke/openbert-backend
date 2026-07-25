@@ -2,6 +2,7 @@ package nrw.openbert.backend.oparl.infrastructure.api.v1.urlGenerator
 
 import nrw.openbert.backend.oparl.infrastructure.api.v1.controller.OparlAgendaItemController
 import nrw.openbert.backend.oparl.infrastructure.api.v1.controller.OparlBodyController
+import nrw.openbert.backend.oparl.infrastructure.api.v1.controller.OparlConsultationController
 import nrw.openbert.backend.oparl.infrastructure.api.v1.controller.OparlFileController
 import nrw.openbert.backend.oparl.infrastructure.api.v1.controller.OparlLegislativeTermController
 import nrw.openbert.backend.oparl.infrastructure.api.v1.controller.OparlLocationController
@@ -101,7 +102,22 @@ class OparlUrlGenerator {
     }
 
     fun consultationList(bodyId: UUID): String {
-        return "TODO"
+        return MvcUriComponentsBuilder
+            .fromMethodName(OparlConsultationController::class.java, "list", bodyId)
+            .build()
+            .toString()
+    }
+
+    fun consultation(bodyId: UUID, consultationId: UUID): String {
+        return MvcUriComponentsBuilder
+            .fromMethodName(
+                OparlConsultationController::class.java,
+                "get",
+                bodyId,
+                consultationId,
+            )
+            .build()
+            .toString()
     }
 
     fun fileList(bodyId: UUID): String {

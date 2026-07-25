@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component
 @Component
 class OparlMeetingMapper(
     private val urlGenerator: OparlUrlGenerator,
+    private val agendaItemMapper: OparlAgendaItemMapper,
 ) {
     fun toDto(meeting: ResolvedMeeting): OparlMeetingDto {
         return OparlMeetingDto(
@@ -19,6 +20,9 @@ class OparlMeetingMapper(
             cancelled = meeting.cancelled,
             start = meeting.start?.toInstant()?.toString(),
             end = meeting.end?.toInstant()?.toString(),
+            agendaItem = meeting.agendaItems
+                .map(agendaItemMapper::toDto)
+                .takeIf { it.isNotEmpty() },
             license = meeting.license,
             keyword = meeting.keyword.toList().takeIf { it.isNotEmpty() },
             created = meeting.created.toString(),
