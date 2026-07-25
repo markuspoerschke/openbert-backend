@@ -78,10 +78,10 @@ first so AgendaItem can link to an existing Meeting endpoint.
 Depends on Meeting and File. Its Consultation reference is completed in the next
 step.
 
-- [ ] Add the Body-scoped list endpoint: `/body/{body}/agendaitem`.
-- [ ] Add the single-resource endpoint:
+- [x] Add the Body-scoped list endpoint: `/body/{body}/agendaitem`.
+- [x] Add the single-resource endpoint:
   `/body/{body}/agendaitem/{agenda-item}`.
-- [ ] Ensure the mandatory `order` field is returned.
+- [x] Ensure the mandatory `order` field is returned.
 
 ### 9. Consultation and meeting-graph integration
 

@@ -1,5 +1,6 @@
 package nrw.openbert.backend.oparl.infrastructure.api.v1.urlGenerator
 
+import nrw.openbert.backend.oparl.infrastructure.api.v1.controller.OparlAgendaItemController
 import nrw.openbert.backend.oparl.infrastructure.api.v1.controller.OparlBodyController
 import nrw.openbert.backend.oparl.infrastructure.api.v1.controller.OparlFileController
 import nrw.openbert.backend.oparl.infrastructure.api.v1.controller.OparlLegislativeTermController
@@ -86,7 +87,17 @@ class OparlUrlGenerator {
     }
 
     fun agendaItemList(bodyId: UUID): String {
-        return "TODO"
+        return MvcUriComponentsBuilder
+            .fromMethodName(OparlAgendaItemController::class.java, "list", bodyId)
+            .build()
+            .toString()
+    }
+
+    fun agendaItem(bodyId: UUID, agendaItemId: UUID): String {
+        return MvcUriComponentsBuilder
+            .fromMethodName(OparlAgendaItemController::class.java, "get", bodyId, agendaItemId)
+            .build()
+            .toString()
     }
 
     fun consultationList(bodyId: UUID): String {

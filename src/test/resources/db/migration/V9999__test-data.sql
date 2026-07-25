@@ -78,6 +78,31 @@ VALUES ('1dd8b01e-a39c-4b40-9f24-46f7a42a3795', '903c26aa-dc8f-4d34-afd6-afdc504
         'https://oparl-demo.example.org/oparl/v1.1/meeting/281',
         '2026-07-22 14:30:55.000000', '2026-07-24 13:05:27.000000', false);
 
+-- OParl agenda item
+INSERT INTO public.oparl_resolved_agenda_item (id, body_id, meeting_id, resolution_file_id, number, "order", name,
+                                               public, result, resolution_text, start, "end", license, keyword, web,
+                                               system_id, url, created, modified, deleted)
+VALUES ('7b728a96-ae9a-40d1-b010-cc909ab2dd87', '903c26aa-dc8f-4d34-afd6-afdc5040dbd3',
+        '1dd8b01e-a39c-4b40-9f24-46f7a42a3795', '3d663f77-05ca-4a14-b788-68ad340ea271', '10.1', 0,
+        'Haushaltssatzung für das Jahr 2027', true, 'Geändert beschlossen',
+        'Der Haushaltsansatz wurde entsprechend der Beratung angepasst.',
+        '2026-07-24 09:15:00.000000', '2026-07-24 10:00:00.000000', 'CC0-1.0',
+        '{"haushalt","beschluss"}', 'https://neuoffenstadt.example.com/sitzungen/finanzausschuss-4/top-10-1',
+        '9352fa21-68c6-4f4e-8832-08a0454ff179',
+        'https://oparl-demo.example.org/oparl/v1.1/agendaitem/3271',
+        '2026-07-22 14:30:55.000000', '2026-07-24 13:05:27.000000', false);
+
+INSERT INTO public.oparl_resolved_agenda_item_auxiliary_file (agenda_item_id, file_id)
+VALUES ('7b728a96-ae9a-40d1-b010-cc909ab2dd87', '3d663f77-05ca-4a14-b788-68ad340ea271');
+
+-- An unresolved agenda item must not be exposed by the public API
+INSERT INTO public.oparl_raw_agenda_item (id, number, "order", name, public, result, resolution_text, start, "end",
+                                          license, keyword, web, system_id, url, created, modified, deleted)
+VALUES ('0b30e64f-a824-4856-903f-63a81448fb70', '11', 1, 'Noch nicht aufgelöster Tagesordnungspunkt', true,
+        null, null, null, null, null, '{}', null, '9352fa21-68c6-4f4e-8832-08a0454ff179',
+        'https://oparl-demo.example.org/oparl/v1.1/agendaitem/999',
+        '2026-07-22 14:30:55.000000', '2026-07-22 14:30:55.000000', false);
+
 -- An unresolved meeting must not be exposed by the public API
 INSERT INTO public.oparl_raw_meeting (id, name, meeting_state, cancelled, start, "end", license, keyword, web,
                                       system_id, url, created, modified, deleted)

@@ -66,7 +66,12 @@ class OparlBodyControllerTest(
                 jsonPath("$.data[0].legislativeTerm[0].name") { value("21. Wahlperiode") }
                 jsonPath("$.data[0].legislativeTerm[0].startDate") { value("2025-11-01") }
                 jsonPath("$.data[0].legislativeTerm[0].endDate") { value("2030-10-31") }
-                jsonPath("$.data[0].agendaItem") { value("TODO") }
+                jsonPath("$.data[0].agendaItem") {
+                    value(
+                        "https://example.org:8443/oparl/v1.1/body/" +
+                            "903c26aa-dc8f-4d34-afd6-afdc5040dbd3/agendaitem"
+                    )
+                }
                 jsonPath("$.data[0].consultation") { value("TODO") }
                 jsonPath("$.data[0].file") {
                     value(

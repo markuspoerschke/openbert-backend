@@ -12,37 +12,48 @@ abstract class AbstractAgendaItem(resource: OparlResource) : AbstractOparlEntity
     }
 
     @Column
-    private var number: String? = null
+    var number: String? = null
+        protected set
 
     @Column
-    private var order: Int? = null
+    var order: Int? = null
+        protected set
 
     @Column
-    private var name: String? = null
+    var name: String? = null
+        protected set
 
     @Column
-    private var public: Boolean? = null
+    var public: Boolean? = null
+        protected set
 
     @Column
-    private var result: String? = null
+    var result: String? = null
+        protected set
 
     @Column
-    private var resolutionText: String? = null
+    var resolutionText: String? = null
+        protected set
 
     @Column
-    private var start: Date? = null
+    var start: Date? = null
+        protected set
 
     @Column
-    private var end: Date? = null
+    var end: Date? = null
+        protected set
 
     @Column
-    private var license: String? = null
+    var license: String? = null
+        protected set
 
     @Column(columnDefinition = "text[]")
-    private var keyword: MutableList<String> = mutableListOf()
+    var keyword: MutableList<String> = mutableListOf()
+        protected set
 
     @Column
-    private var web: String? = null
+    var web: String? = null
+        protected set
 
     fun applyValuesFrom(other: AbstractAgendaItem) {
         number = other.number
