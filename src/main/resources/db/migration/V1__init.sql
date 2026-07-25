@@ -536,6 +536,15 @@ CREATE TABLE oparl_resolved_consultation_organization
         PRIMARY KEY (consultation_id, organization_id)
 );
 
+CREATE TABLE oparl_resolved_meeting_organization
+(
+    meeting_id        UUID    NOT NULL,
+    organization_id   UUID    NOT NULL,
+    organization_order INTEGER NOT NULL,
+    CONSTRAINT pk_oparl_resolved_meeting_organization
+        PRIMARY KEY (meeting_id, organization_id)
+);
+
 CREATE TABLE oparl_system
 (
     id  UUID          NOT NULL,
@@ -743,6 +752,14 @@ ALTER TABLE oparl_resolved_meeting
 
 ALTER TABLE oparl_resolved_meeting
     ADD CONSTRAINT FK_OPARL_RESOLVED_MEETING_ON_BODY FOREIGN KEY (body_id) REFERENCES oparl_resolved_body (id);
+
+ALTER TABLE oparl_resolved_meeting_organization
+    ADD CONSTRAINT FK_OPARL_RESOLVED_MEETING_ORGANIZATION_ON_MEETING
+        FOREIGN KEY (meeting_id) REFERENCES oparl_resolved_meeting (id);
+
+ALTER TABLE oparl_resolved_meeting_organization
+    ADD CONSTRAINT FK_OPARL_RESOLVED_MEETING_ORGANIZATION_ON_ORGANIZATION
+        FOREIGN KEY (organization_id) REFERENCES oparl_resolved_organization (id);
 
 ALTER TABLE oparl_resolved_membership
     ADD CONSTRAINT FK_OPARL_RESOLVED_MEMBERSHIP_ON_SYSTEM FOREIGN KEY (system_id) REFERENCES oparl_system (id);

@@ -8,5 +8,10 @@ import java.util.UUID
 interface ResolvedMeetingRepository : JpaRepository<ResolvedMeeting, UUID> {
     fun findAllByBody_IdOrderById(bodyId: UUID): List<ResolvedMeeting>
 
+    fun findAllDistinctByOrganizations_IdAndBody_IdOrderById(
+        organizationId: UUID,
+        bodyId: UUID,
+    ): List<ResolvedMeeting>
+
     fun findByIdAndBody_Id(id: UUID, bodyId: UUID): Optional<ResolvedMeeting>
 }
