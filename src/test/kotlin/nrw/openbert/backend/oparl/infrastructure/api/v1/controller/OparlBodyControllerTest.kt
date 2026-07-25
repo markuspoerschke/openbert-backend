@@ -72,7 +72,12 @@ class OparlBodyControllerTest(
                             "903c26aa-dc8f-4d34-afd6-afdc5040dbd3/agendaitem"
                     )
                 }
-                jsonPath("$.data[0].consultation") { value("TODO") }
+                jsonPath("$.data[0].consultation") {
+                    value(
+                        "https://example.org:8443/oparl/v1.1/body/" +
+                            "903c26aa-dc8f-4d34-afd6-afdc5040dbd3/consultation"
+                    )
+                }
                 jsonPath("$.data[0].file") {
                     value(
                         "https://example.org:8443/oparl/v1.1/body/" +

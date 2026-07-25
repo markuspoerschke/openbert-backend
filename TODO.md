@@ -88,12 +88,12 @@ step.
 Consultation is the junction between Paper, AgendaItem, Meeting, and
 Organization, so it is implemented after all four resource endpoints exist.
 
-- [ ] Add the Body-scoped list endpoint: `/body/{body}/consultation`.
-- [ ] Add the single-resource endpoint:
+- [x] Add the Body-scoped list endpoint: `/body/{body}/consultation`.
+- [x] Add the single-resource endpoint:
   `/body/{body}/consultation/{consultation}`.
-- [ ] Populate the embedded `Paper.consultation` list.
-- [ ] Link AgendaItem to Consultation.
-- [ ] Populate the embedded `Meeting.agendaItem` list in its stable agenda order.
+- [x] Populate the embedded `Paper.consultation` list.
+- [x] Link AgendaItem to Consultation.
+- [x] Populate the embedded `Meeting.agendaItem` list in its stable agenda order.
 
 ### 10. Organization-linked external lists
 

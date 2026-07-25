@@ -43,6 +43,9 @@ data class OparlMeetingDto(
     val auxiliaryFile: List<OparlFileDto>? = null,
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
+    val agendaItem: List<OparlAgendaItemDto>? = null,
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     val license: String? = null,
 
     @JsonInclude(JsonInclude.Include.NON_NULL)

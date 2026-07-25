@@ -47,6 +47,9 @@ data class OparlPaperDto(
     val originatorOrganization: List<String>? = null,
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
+    val consultation: List<OparlConsultationDto>? = null,
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     val license: String? = null,
 
     @JsonInclude(JsonInclude.Include.NON_NULL)

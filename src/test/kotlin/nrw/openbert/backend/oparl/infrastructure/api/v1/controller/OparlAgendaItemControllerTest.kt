@@ -20,6 +20,8 @@ class OparlAgendaItemControllerTest(
     private val agendaItemUrl = "$bodyUrl/agendaitem/7b728a96-ae9a-40d1-b010-cc909ab2dd87"
     private val meetingUrl = "$bodyUrl/meeting/1dd8b01e-a39c-4b40-9f24-46f7a42a3795"
     private val fileUrl = "$bodyUrl/file/3d663f77-05ca-4a14-b788-68ad340ea271"
+    private val consultationUrl =
+        "$bodyUrl/consultation/c92d284d-6899-49c2-9422-70ad7f4f38ea"
 
     @Test
     fun `lists resolved agenda items belonging to a body`() {
@@ -28,30 +30,31 @@ class OparlAgendaItemControllerTest(
                 status { isOk() }
                 jsonPath("$.id") { value("$bodyUrl/agendaitem") }
                 jsonPath("$.type") { value("https://schema.oparl.org/1.1/List") }
-                jsonPath("$.data.length()") { value(1) }
-                jsonPath("$.data[0].id") { value(agendaItemUrl) }
-                jsonPath("$.data[0].type") {
+                jsonPath("$.data.length()") { value(2) }
+                jsonPath("$.data[1].id") { value(agendaItemUrl) }
+                jsonPath("$.data[1].type") {
                     value("https://schema.oparl.org/1.1/AgendaItem")
                 }
-                jsonPath("$.data[0].meeting") { value(meetingUrl) }
-                jsonPath("$.data[0].number") { value("10.1") }
-                jsonPath("$.data[0].order") { value(0) }
-                jsonPath("$.data[0].name") {
+                jsonPath("$.data[1].meeting") { value(meetingUrl) }
+                jsonPath("$.data[1].number") { value("10.1") }
+                jsonPath("$.data[1].order") { value(0) }
+                jsonPath("$.data[1].name") {
                     value("Haushaltssatzung für das Jahr 2027")
                 }
-                jsonPath("$.data[0].public") { value(true) }
-                jsonPath("$.data[0].result") { value("Geändert beschlossen") }
-                jsonPath("$.data[0].resolutionText") {
+                jsonPath("$.data[1].public") { value(true) }
+                jsonPath("$.data[1].consultation") { value(consultationUrl) }
+                jsonPath("$.data[1].result") { value("Geändert beschlossen") }
+                jsonPath("$.data[1].resolutionText") {
                     value("Der Haushaltsansatz wurde entsprechend der Beratung angepasst.")
                 }
-                jsonPath("$.data[0].resolutionFile.id") { value(fileUrl) }
-                jsonPath("$.data[0].auxiliaryFile.length()") { value(1) }
-                jsonPath("$.data[0].auxiliaryFile[0].id") { value(fileUrl) }
-                jsonPath("$.data[0].start") { isString() }
-                jsonPath("$.data[0].end") { isString() }
-                jsonPath("$.data[0].license") { value("CC0-1.0") }
-                jsonPath("$.data[0].keyword.length()") { value(2) }
-                jsonPath("$.data[0].web") {
+                jsonPath("$.data[1].resolutionFile.id") { value(fileUrl) }
+                jsonPath("$.data[1].auxiliaryFile.length()") { value(1) }
+                jsonPath("$.data[1].auxiliaryFile[0].id") { value(fileUrl) }
+                jsonPath("$.data[1].start") { isString() }
+                jsonPath("$.data[1].end") { isString() }
+                jsonPath("$.data[1].license") { value("CC0-1.0") }
+                jsonPath("$.data[1].keyword.length()") { value(2) }
+                jsonPath("$.data[1].web") {
                     value(
                         "https://neuoffenstadt.example.com/" +
                             "sitzungen/finanzausschuss-4/top-10-1"
@@ -72,6 +75,7 @@ class OparlAgendaItemControllerTest(
                 jsonPath("$.meeting") { value(meetingUrl) }
                 jsonPath("$.name") { value("Haushaltssatzung für das Jahr 2027") }
                 jsonPath("$.order") { value(0) }
+                jsonPath("$.consultation") { value(consultationUrl) }
             }
     }
 

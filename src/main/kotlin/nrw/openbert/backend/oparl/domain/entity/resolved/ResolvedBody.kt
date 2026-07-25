@@ -34,6 +34,10 @@ class ResolvedBody(resource: OparlResource) : AbstractBody(resource) {
     @OrderBy("id ASC")
     val files: MutableList<ResolvedFile> = mutableListOf()
 
+    @OneToMany(mappedBy = "body")
+    @OrderBy("id ASC")
+    val consultations: MutableList<ResolvedConsultation> = mutableListOf()
+
     companion object {
         fun fromRaw(raw: RawBody): ResolvedBody {
             return ResolvedBody(raw.resource).apply { applyValuesFrom(raw) }

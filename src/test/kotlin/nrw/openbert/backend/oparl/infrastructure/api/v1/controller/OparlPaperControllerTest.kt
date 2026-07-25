@@ -18,6 +18,8 @@ class OparlPaperControllerTest(
     private val bodyUrl =
         "https://example.org:8443/oparl/v1.1/body/903c26aa-dc8f-4d34-afd6-afdc5040dbd3"
     private val paperUrl = "$bodyUrl/paper/f6d47f4c-e5db-4dab-91f8-3bafc825d30c"
+    private val consultationUrl =
+        "$bodyUrl/consultation/c92d284d-6899-49c2-9422-70ad7f4f38ea"
 
     @Test
     fun `lists resolved papers belonging to a body`() {
@@ -38,6 +40,9 @@ class OparlPaperControllerTest(
                 jsonPath("$.data[0].reference") { value("V-2026-42") }
                 jsonPath("$.data[0].date") { value("2026-07-21") }
                 jsonPath("$.data[0].paperType") { value("Beschlussvorlage") }
+                jsonPath("$.data[0].consultation.length()") { value(1) }
+                jsonPath("$.data[0].consultation[0].id") { value(consultationUrl) }
+                jsonPath("$.data[0].consultation[0].paper") { doesNotExist() }
                 jsonPath("$.data[0].license") { value("CC0-1.0") }
                 jsonPath("$.data[0].keyword.length()") { value(2) }
                 jsonPath("$.data[0].web") {
@@ -57,6 +62,8 @@ class OparlPaperControllerTest(
                 }
                 jsonPath("$.body") { value(bodyUrl) }
                 jsonPath("$.reference") { value("V-2026-42") }
+                jsonPath("$.consultation.length()") { value(1) }
+                jsonPath("$.consultation[0].id") { value(consultationUrl) }
             }
     }
 

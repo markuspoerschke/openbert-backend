@@ -95,6 +95,19 @@ VALUES ('7b728a96-ae9a-40d1-b010-cc909ab2dd87', '903c26aa-dc8f-4d34-afd6-afdc504
 INSERT INTO public.oparl_resolved_agenda_item_auxiliary_file (agenda_item_id, file_id)
 VALUES ('7b728a96-ae9a-40d1-b010-cc909ab2dd87', '3d663f77-05ca-4a14-b788-68ad340ea271');
 
+-- A second agenda item verifies that Meeting.agendaItem follows agenda order rather than UUID order
+INSERT INTO public.oparl_resolved_agenda_item (id, body_id, meeting_id, resolution_file_id, number, "order", name,
+                                               public, result, resolution_text, start, "end", license, keyword, web,
+                                               system_id, url, created, modified, deleted)
+VALUES ('11111111-1111-4111-a111-111111111111', '903c26aa-dc8f-4d34-afd6-afdc5040dbd3',
+        '1dd8b01e-a39c-4b40-9f24-46f7a42a3795', null, '10.2', 1,
+        'Investitionsprogramm 2027', true, 'Zur Kenntnis genommen', null,
+        '2026-07-24 10:00:00.000000', '2026-07-24 10:30:00.000000', 'CC0-1.0',
+        '{"investitionen"}', 'https://neuoffenstadt.example.com/sitzungen/finanzausschuss-4/top-10-2',
+        '9352fa21-68c6-4f4e-8832-08a0454ff179',
+        'https://oparl-demo.example.org/oparl/v1.1/agendaitem/3272',
+        '2026-07-22 14:30:55.000000', '2026-07-24 13:05:27.000000', false);
+
 -- An unresolved agenda item must not be exposed by the public API
 INSERT INTO public.oparl_raw_agenda_item (id, number, "order", name, public, result, resolution_text, start, "end",
                                           license, keyword, web, system_id, url, created, modified, deleted)
@@ -157,4 +170,27 @@ VALUES ('47fdc541-cf5b-4e45-9bd4-46c8dcca9f34', '903c26aa-dc8f-4d34-afd6-afdc504
         '{"finanzausschuss","vorsitz"}', 'https://neuoffenstadt.example.com/mitgliedschaften/29-34',
         '9352fa21-68c6-4f4e-8832-08a0454ff179',
         'https://oparl-demo.example.org/oparl/v1.1/membership/29-34',
+        '2026-07-22 14:30:55.000000', '2026-07-22 14:30:55.000000', false);
+
+-- OParl consultation
+INSERT INTO public.oparl_resolved_consultation (id, body_id, paper_id, agenda_item_id, meeting_id, authoritative, role,
+                                                license, keyword, web, system_id, url, created, modified, deleted)
+VALUES ('c92d284d-6899-49c2-9422-70ad7f4f38ea', '903c26aa-dc8f-4d34-afd6-afdc5040dbd3',
+        'f6d47f4c-e5db-4dab-91f8-3bafc825d30c', '7b728a96-ae9a-40d1-b010-cc909ab2dd87',
+        '1dd8b01e-a39c-4b40-9f24-46f7a42a3795', true, 'Beschlussfassung', 'CC0-1.0',
+        '{"haushalt","entscheidung"}', 'https://neuoffenstadt.example.com/beratungen/47594',
+        '9352fa21-68c6-4f4e-8832-08a0454ff179',
+        'https://oparl-demo.example.org/oparl/v1.1/consultation/47594',
+        '2026-07-22 14:30:55.000000', '2026-07-24 13:05:27.000000', false);
+
+INSERT INTO public.oparl_resolved_consultation_organization
+    (consultation_id, organization_id, organization_order)
+VALUES ('c92d284d-6899-49c2-9422-70ad7f4f38ea', '9f7d37f9-cd93-4b11-a868-19a6c1e39318', 0);
+
+-- An unresolved consultation must not be exposed by the public API
+INSERT INTO public.oparl_raw_consultation (id, authoritative, role, license, keyword, web, system_id, url, created,
+                                           modified, deleted)
+VALUES ('d15aff89-2aa6-4f2d-966e-8797751ceda8', false, 'Vorberatung', null, '{}', null,
+        '9352fa21-68c6-4f4e-8832-08a0454ff179',
+        'https://oparl-demo.example.org/oparl/v1.1/consultation/999',
         '2026-07-22 14:30:55.000000', '2026-07-22 14:30:55.000000', false);
