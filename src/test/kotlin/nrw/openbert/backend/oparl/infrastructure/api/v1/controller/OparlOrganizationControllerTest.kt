@@ -61,6 +61,20 @@ class OparlOrganizationControllerTest(
                             "47fdc541-cf5b-4e45-9bd4-46c8dcca9f34"
                     )
                 }
+                jsonPath("$.data[0].meeting") {
+                    value(
+                        "https://example.org:8443/oparl/v1.1/body/" +
+                            "903c26aa-dc8f-4d34-afd6-afdc5040dbd3/organization/" +
+                            "9f7d37f9-cd93-4b11-a868-19a6c1e39318/meeting"
+                    )
+                }
+                jsonPath("$.data[0].consultation") {
+                    value(
+                        "https://example.org:8443/oparl/v1.1/body/" +
+                            "903c26aa-dc8f-4d34-afd6-afdc5040dbd3/organization/" +
+                            "9f7d37f9-cd93-4b11-a868-19a6c1e39318/consultation"
+                    )
+                }
             }
     }
 
@@ -89,6 +103,20 @@ class OparlOrganizationControllerTest(
                 }
                 jsonPath("$.name") { value("Ausschuss für Haushalt und Finanzen") }
                 jsonPath("$.membership.length()") { value(1) }
+                jsonPath("$.meeting") {
+                    value(
+                        "https://example.org:8443/oparl/v1.1/body/" +
+                            "903c26aa-dc8f-4d34-afd6-afdc5040dbd3/organization/" +
+                            "9f7d37f9-cd93-4b11-a868-19a6c1e39318/meeting"
+                    )
+                }
+                jsonPath("$.consultation") {
+                    value(
+                        "https://example.org:8443/oparl/v1.1/body/" +
+                            "903c26aa-dc8f-4d34-afd6-afdc5040dbd3/organization/" +
+                            "9f7d37f9-cd93-4b11-a868-19a6c1e39318/consultation"
+                    )
+                }
             }
     }
 

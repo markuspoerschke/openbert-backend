@@ -3,8 +3,11 @@ package nrw.openbert.backend.oparl.domain.entity.resolved
 import jakarta.persistence.Entity
 import jakarta.persistence.FetchType
 import jakarta.persistence.JoinColumn
+import jakarta.persistence.JoinTable
+import jakarta.persistence.ManyToMany
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.OneToMany
+import jakarta.persistence.OrderColumn
 import jakarta.persistence.OrderBy
 import jakarta.persistence.Table
 import jakarta.persistence.UniqueConstraint
@@ -21,13 +24,29 @@ class ResolvedMeeting(
     @JoinColumn(name = "body_id", nullable = false, updatable = false)
     val body: ResolvedBody,
 ) : AbstractMeeting(resource) {
+    @ManyToMany
+    @JoinTable(
+        name = "oparl_resolved_meeting_organization",
+        joinColumns = [JoinColumn(name = "meeting_id")],
+        inverseJoinColumns = [JoinColumn(name = "organization_id")],
+    )
+    @OrderColumn(name = "organization_order")
+    val organizations: MutableList<ResolvedOrganization> = mutableListOf()
+
     @OneToMany(mappedBy = "meeting")
     @OrderBy("order ASC, id ASC")
     val agendaItems: MutableList<ResolvedAgendaItem> = mutableListOf()
 
     companion object {
-        fun fromRaw(raw: RawMeeting, body: ResolvedBody): ResolvedMeeting {
-            return ResolvedMeeting(raw.resource, body).apply { applyValuesFrom(raw) }
+        fun fromRaw(
+            raw: RawMeeting,
+            body: ResolvedBody,
+            organizations: Collection<ResolvedOrganization> = emptyList(),
+        ): ResolvedMeeting {
+            return ResolvedMeeting(raw.resource, body).apply {
+                applyValuesFrom(raw)
+                this.organizations.addAll(organizations)
+            }
         }
     }
 }

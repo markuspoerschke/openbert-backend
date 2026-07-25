@@ -146,6 +146,10 @@ VALUES ('b6b1f18d-3147-4a2b-af0e-34f6204dc1d9', '903c26aa-dc8f-4d34-afd6-afdc504
         'https://oparl-demo.example.org/oparl/v1.1/organization/41',
         '2026-07-22 14:30:55.000000', '2026-07-22 14:30:55.000000', false);
 
+INSERT INTO public.oparl_resolved_meeting_organization
+    (meeting_id, organization_id, organization_order)
+VALUES ('1dd8b01e-a39c-4b40-9f24-46f7a42a3795', '9f7d37f9-cd93-4b11-a868-19a6c1e39318', 0);
+
 -- OParl person
 INSERT INTO public.oparl_resolved_person (id, body_id, name, family_name, given_name, form_of_address, affix, title,
                                           gender, phone, email, status, life, life_source, license, keyword, web,

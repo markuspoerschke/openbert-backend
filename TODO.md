@@ -100,11 +100,11 @@ Organization, so it is implemented after all four resource endpoints exist.
 These endpoints are small filters, but depend on the Meeting and Consultation
 relationships being available first.
 
-- [ ] Add the Organization Meeting list:
+- [x] Add the Organization Meeting list:
   `/body/{body}/organization/{organization}/meeting`.
-- [ ] Add the Organization Consultation list:
+- [x] Add the Organization Consultation list:
   `/body/{body}/organization/{organization}/consultation`.
-- [ ] Expose both external-list URLs in the Organization response.
+- [x] Expose both external-list URLs in the Organization response.
 
 ## Definition of done for every endpoint
 

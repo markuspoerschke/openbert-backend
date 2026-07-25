@@ -20,6 +20,9 @@ class OparlMeetingMapper(
             cancelled = meeting.cancelled,
             start = meeting.start?.toInstant()?.toString(),
             end = meeting.end?.toInstant()?.toString(),
+            organization = meeting.organizations
+                .map { urlGenerator.organization(it.body.id, it.id) }
+                .takeIf { it.isNotEmpty() },
             agendaItem = meeting.agendaItems
                 .map(agendaItemMapper::toDto)
                 .takeIf { it.isNotEmpty() },
