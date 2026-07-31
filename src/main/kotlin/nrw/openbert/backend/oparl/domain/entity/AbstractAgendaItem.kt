@@ -14,7 +14,7 @@ abstract class AbstractAgendaItem(resource: OparlResource) : AbstractOparlEntity
     @Column
     var number: String? = null
 
-    @Column
+    @Column(name = "\"order\"")
     var order: Int? = null
 
     @Column(length = 500)
