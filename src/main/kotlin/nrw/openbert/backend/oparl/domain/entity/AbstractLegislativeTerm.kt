@@ -11,29 +11,23 @@ abstract class AbstractLegislativeTerm(resource: OparlResource) : AbstractOparlE
         const val TYPE = "https://schema.oparl.org/1.1/LegislativeTerm"
     }
 
-    @Column
+    @Column(length = 500)
     var name: String? = null
-        protected set
 
     @Column
     var startDate: Date? = null
-        protected set
 
     @Column
     var endDate: Date? = null
-        protected set
 
     @Column
     var license: String? = null
-        protected set
 
     @Column(columnDefinition = "text[]")
     var keyword: MutableList<String> = mutableListOf()
-        protected set
 
     @Column
     var web: String? = null
-        protected set
 
     fun applyValuesFrom(other: AbstractLegislativeTerm) {
         name = other.name

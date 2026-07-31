@@ -967,7 +967,7 @@ Attribute nicht ausgegeben werden mÃ¼ssen:
 - `location` in `Paper`
 - `membership` in `Person`
 - `agendaItem` in `Meeting`
-- `legislativeTerm` in `Body`
+- `legislativeTerm` in `OparlBodyDto`
 
 Die Filter werden vom Client benutzt, indem die gewÃ¼nschten
 URL-Parameter an die URL der ersten Listenseite angehÃ¤ngt werden. Bei
@@ -1418,7 +1418,7 @@ beim Zugriff auf einen Server.
 
 MÃ¶chte ein Server mehrere zueinander inkompatible OParl-Versionen
 unterstÃ¼tzen, dann **muss** der Server fÃ¼r jede Version eine eigenen
-OParl-Schnittstelle mit einem eigenen `System`-Objekt ausgeben.
+OParl-Schnittstelle mit einem eigenen `OparlSystemDto`-Objekt ausgeben.
 
 ---
 

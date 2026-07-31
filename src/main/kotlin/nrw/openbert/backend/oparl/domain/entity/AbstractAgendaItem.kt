@@ -13,47 +13,36 @@ abstract class AbstractAgendaItem(resource: OparlResource) : AbstractOparlEntity
 
     @Column
     var number: String? = null
-        protected set
 
-    @Column
+    @Column(name = "\"order\"")
     var order: Int? = null
-        protected set
 
-    @Column
+    @Column(length = 500)
     var name: String? = null
-        protected set
 
     @Column
     var public: Boolean? = null
-        protected set
 
     @Column
     var result: String? = null
-        protected set
 
     @Column
     var resolutionText: String? = null
-        protected set
 
     @Column
     var start: Date? = null
-        protected set
 
-    @Column
+    @Column(name = "\"end\"")
     var end: Date? = null
-        protected set
 
     @Column
     var license: String? = null
-        protected set
 
     @Column(columnDefinition = "text[]")
     var keyword: MutableList<String> = mutableListOf()
-        protected set
 
     @Column
     var web: String? = null
-        protected set
 
     fun applyValuesFrom(other: AbstractAgendaItem) {
         number = other.number

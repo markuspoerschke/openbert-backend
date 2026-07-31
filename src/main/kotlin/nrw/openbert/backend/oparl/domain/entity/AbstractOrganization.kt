@@ -14,50 +14,39 @@ abstract class AbstractOrganization(resource: OparlResource) : AbstractOparlEnti
         const val TYPE = "https://schema.oparl.org/1.1/Organization"
     }
 
-    @Column
+    @Column(length = 500)
     var name: String? = null
-        protected set
 
     @Column
     var shortName: String? = null
-        protected set
 
     @Column(columnDefinition = "text[]")
     var post: MutableList<String> = mutableListOf()
-        protected set
 
     @Column
     var organizationType: String? = null
-        protected set
 
     @Column
     var classification: String? = null
-        protected set
 
     @Column
     var startDate: Date? = null
-        protected set
 
     @Column
     var endDate: Date? = null
-        protected set
 
     @Convert(converter = OparlUrlConverter::class)
     @Column
     var website: OparlUrl? = null
-        protected set
 
     @Column
     var license: String? = null
-        protected set
 
     @Column(columnDefinition = "text[]")
     var keyword: MutableList<String> = mutableListOf()
-        protected set
 
     @Column
     var web: String? = null
-        protected set
 
     fun applyValuesFrom(other: AbstractOrganization) {
         name = other.name

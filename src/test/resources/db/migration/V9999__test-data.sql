@@ -2,6 +2,13 @@
 INSERT INTO oparl_system (id, url)
 VALUES ('9352fa21-68c6-4f4e-8832-08a0454ff179', 'https://oparl-demo.example.org');
 
+-- An already indexed crawl target is retained for provenance but is not due without new references
+INSERT INTO crawl_target (id, system_id, url, created_at, last_crawled_at, last_indexed_at, modified_at,
+                          reference_count, scheduled_at, job_id)
+VALUES ('eeeeeeee-eeee-4eee-aeee-eeeeeeeeeeee', '9352fa21-68c6-4f4e-8832-08a0454ff179',
+        'https://oparl-demo.example.org/oparl/v1.1/location/inline', '2026-07-22 14:30:55.000000', null,
+        '2026-07-22 14:30:55.000000', '2026-07-22 14:30:55.000000', 0, null, null);
+
 -- OParl body
 INSERT INTO public.oparl_resolved_body (id, short_name, name, website, license, license_valid_since, oparl_since, ags,
                                         rgs, equivalent, contact_email, contact_name, classification, keyword, web,
@@ -56,6 +63,14 @@ VALUES ('3d663f77-05ca-4a14-b788-68ad340ea271', '903c26aa-dc8f-4d34-afd6-afdc504
         '9352fa21-68c6-4f4e-8832-08a0454ff179',
         'https://oparl-demo.example.org/oparl/v1.1/file/1',
         '2026-07-22 14:30:55.000000', '2026-07-22 14:30:55.000000', false);
+
+-- Raw OParl file with extracted text longer than VARCHAR(255)
+INSERT INTO public.oparl_raw_file (id, name, text, keyword, created, modified, deleted, system_id, url)
+VALUES ('aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaaa', repeat('Long OParl file name. ', 20),
+        repeat('Extracted OParl document content. ', 20), '{}',
+        '2026-07-22 14:30:55.000000', '2026-07-22 14:30:55.000000', false,
+        '9352fa21-68c6-4f4e-8832-08a0454ff179',
+        'https://oparl-demo.example.org/oparl/v1.1/file/long-text');
 
 -- OParl paper
 INSERT INTO public.oparl_resolved_paper (id, body_id, name, reference, date, paper_type, license, keyword, web,
