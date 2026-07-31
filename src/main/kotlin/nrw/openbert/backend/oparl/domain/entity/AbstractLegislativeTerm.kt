@@ -13,27 +13,21 @@ abstract class AbstractLegislativeTerm(resource: OparlResource) : AbstractOparlE
 
     @Column
     var name: String? = null
-        protected set
 
     @Column
     var startDate: Date? = null
-        protected set
 
     @Column
     var endDate: Date? = null
-        protected set
 
     @Column
     var license: String? = null
-        protected set
 
     @Column(columnDefinition = "text[]")
     var keyword: MutableList<String> = mutableListOf()
-        protected set
 
     @Column
     var web: String? = null
-        protected set
 
     fun applyValuesFrom(other: AbstractLegislativeTerm) {
         name = other.name

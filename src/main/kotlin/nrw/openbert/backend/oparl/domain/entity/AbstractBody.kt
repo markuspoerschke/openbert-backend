@@ -1,11 +1,8 @@
 package nrw.openbert.backend.oparl.domain.entity
 
 import jakarta.persistence.Column
-import jakarta.persistence.Convert
 import jakarta.persistence.MappedSuperclass
 import nrw.openbert.backend.oparl.domain.entity.embeddable.OparlResource
-import nrw.openbert.backend.oparl.domain.valueObject.OparlUrl
-import nrw.openbert.backend.oparl.infrastructure.persistence.converter.OparlUrlConverter
 import java.util.*
 
 @MappedSuperclass
@@ -16,61 +13,45 @@ abstract class AbstractBody(resource: OparlResource) : AbstractOparlEntity(resou
 
     @Column
     var shortName: String? = null
-        protected set
 
     @Column
     var name: String = UNKNOWN
-        protected set
 
-    @Convert(converter = OparlUrlConverter::class)
     @Column
-    var website: OparlUrl? = null
-        protected set
+    var website: String? = null
 
-    @Convert(converter = OparlUrlConverter::class)
     @Column
-    var license: OparlUrl? = null
-        protected set
+    var license: String? = null
 
     @Column
     var licenseValidSince: Date? = null
-        protected set
 
     @Column
     var oparlSince: Date? = null
-        protected set
 
     @Column
     var ags: String? = null
-        protected set
 
     @Column
     var rgs: String? = null
-        protected set
 
     @Column(columnDefinition = "text[]")
     var equivalent: MutableList<String> = mutableListOf<String>()
-        protected set
 
     @Column
     var contactEmail: String? = null
-        protected set
 
     @Column
     var contactName: String? = null
-        protected set
 
     @Column
     var classification: String? = null
-        protected set
 
     @Column(columnDefinition = "text[]")
     var keyword: MutableList<String> = mutableListOf()
-        protected set
 
     @Column
     var web: String? = null
-        protected set
 
     fun applyValuesFrom(other: AbstractBody) {
         shortName = other.shortName

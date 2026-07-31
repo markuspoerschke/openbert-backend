@@ -4,10 +4,10 @@ This note captures the "must" level requirements from the specification so we kn
 
 ## Resources
 
-The OParl 1.1 schema requires us to publish the following resource types: `System`, `Body`, `LegislativeTerm`, `Organization`, `Person`, `Membership`, `Meeting`, `AgendaItem`, `Paper`, `Consultation`, `File`, and `Location`.
+The OParl 1.1 schema requires us to publish the following resource types: `OparlSystemDto`, `OparlBodyDto`, `LegislativeTerm`, `Organization`, `Person`, `Membership`, `Meeting`, `AgendaItem`, `Paper`, `Consultation`, `File`, and `Location`.
 
 ### System
-- Must expose a separate `System` object per supported OParl version, each advertising the spec URL via `oparlVersion` (`https://schema.oparl.org/1.1/`).
+- Must expose a separate `OparlSystemDto` object per supported OParl version, each advertising the spec URL via `oparlVersion` (`https://schema.oparl.org/1.1/`).
 - Has to publish the entry point to the body collection through the `body` external list URL.
 
 ### Body

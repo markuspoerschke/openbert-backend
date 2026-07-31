@@ -14,44 +14,34 @@ abstract class AbstractLocation(resource: OparlResource) : AbstractOparlEntity(r
 
     @Column
     var description: String? = null
-        protected set
 
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "jsonb")
     var geojson: Map<String, Any?>? = null
-        protected set
 
     @Column
     var streetAddress: String? = null
-        protected set
 
     @Column
     var postalCode: String? = null
-        protected set
 
     @Column
     var locality: String? = null
-        protected set
 
     @Column
     var subLocality: String? = null
-        protected set
 
     @Column
     var room: String? = null
-        protected set
 
     @Column
     var license: String? = null
-        protected set
 
     @Column(columnDefinition = "text[]")
     var keyword: MutableList<String> = mutableListOf()
-        protected set
 
     @Column
     var web: String? = null
-        protected set
 
     fun applyValuesFrom(other: AbstractLocation) {
         description = other.description

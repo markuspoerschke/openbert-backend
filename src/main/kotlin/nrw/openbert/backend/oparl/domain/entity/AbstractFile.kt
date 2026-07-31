@@ -16,67 +16,52 @@ abstract class AbstractFile(resource: OparlResource) : AbstractOparlEntity(resou
 
     @Column
     var name: String? = null
-        protected set
 
     @Column
     var fileName: String? = null
-        protected set
 
     @Column
     var mimeType: String? = null
-        protected set
 
     @Column
     var date: Date? = null
-        protected set
 
     @Column
     var size: Int? = null
-        protected set
 
     @Column
     var sha1Checksum: String? = null
-        protected set
 
     @Column
     var sha512Checksum: String? = null
-        protected set
 
     @Column
     var text: String? = null
-        protected set
 
     @Convert(converter = OparlUrlConverter::class)
     @Column
     var accessUrl: OparlUrl? = null
-        protected set
 
     @Convert(converter = OparlUrlConverter::class)
     @Column
     var downloadUrl: OparlUrl? = null
-        protected set
 
     @Convert(converter = OparlUrlConverter::class)
     @Column
     var externalServiceUrl: OparlUrl? = null
-        protected set
 
     @Convert(converter = OparlUrlConverter::class)
     @Column
     var fileLicense: OparlUrl? = null
-        protected set
 
     @Column
     var license: String? = null
-        protected set
 
     @Column(columnDefinition = "text[]")
     var keyword: MutableList<String> = mutableListOf()
-        protected set
 
     @Column
     var web: String? = null
-        protected set
 
     fun applyValuesFrom(other: AbstractFile) {
         name = other.name

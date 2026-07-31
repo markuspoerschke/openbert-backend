@@ -13,31 +13,24 @@ abstract class AbstractPaper(resource: OparlResource) : AbstractOparlEntity(reso
 
     @Column
     var name: String? = null
-        protected set
 
     @Column
     var reference: String? = null
-        protected set
 
     @Column
     var date: Date? = null
-        protected set
 
     @Column
     var paperType: String? = null
-        protected set
 
     @Column
     var license: String? = null
-        protected set
 
     @Column(columnDefinition = "text[]")
     var keyword: MutableList<String> = mutableListOf()
-        protected set
 
     @Column
     var web: String? = null
-        protected set
 
     fun applyValuesFrom(other: AbstractPaper) {
         name = other.name

@@ -14,38 +14,38 @@ abstract class AbstractSystem(resource: OparlResource) : AbstractOparlEntity(res
     }
 
     @Column
-    private var oparlVersion: String = UNKNOWN
+    var oparlVersion: String = UNKNOWN
 
     @Column(columnDefinition = "text[]")
-    private var otherOparlVersions: MutableList<String> = mutableListOf()
+    var otherOparlVersions: MutableList<String> = mutableListOf()
 
     @Convert(converter = OparlUrlConverter::class)
     @Column
-    private var license: OparlUrl? = null
+    var license: OparlUrl? = null
 
     @Column
-    private var name: String = UNKNOWN
+    var name: String = UNKNOWN
 
     @Column
-    private var contactEmail: String? = null
+    var contactEmail: String? = null
 
     @Column
-    private var contactName: String? = null
-
-    @Convert(converter = OparlUrlConverter::class)
-    @Column
-    private var website: OparlUrl? = null
+    var contactName: String? = null
 
     @Convert(converter = OparlUrlConverter::class)
     @Column
-    private var vendor: OparlUrl? = null
+    var website: OparlUrl? = null
 
     @Convert(converter = OparlUrlConverter::class)
     @Column
-    private var product: OparlUrl? = null
+    var vendor: OparlUrl? = null
+
+    @Convert(converter = OparlUrlConverter::class)
+    @Column
+    var product: OparlUrl? = null
 
     @Column
-    private var web: String? = null
+    var web: String? = null
 
     fun applyValuesFrom(other: AbstractSystem) {
         oparlVersion = other.oparlVersion

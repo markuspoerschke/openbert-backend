@@ -13,31 +13,24 @@ abstract class AbstractMembership(resource: OparlResource) : AbstractOparlEntity
 
     @Column
     var role: String? = null
-        protected set
 
     @Column
     var votingRight: Boolean? = null
-        protected set
 
     @Column
     var startDate: Date? = null
-        protected set
 
     @Column
     var endDate: Date? = null
-        protected set
 
     @Column
     var license: String? = null
-        protected set
 
     @Column(columnDefinition = "text[]")
     var keyword: MutableList<String> = mutableListOf()
-        protected set
 
     @Column
     var web: String? = null
-        protected set
 
     fun applyValuesFrom(other: AbstractMembership) {
         role = other.role
