@@ -11,7 +11,7 @@ abstract class AbstractPaper(resource: OparlResource) : AbstractOparlEntity(reso
         const val TYPE = "https://schema.oparl.org/1.1/Paper"
     }
 
-    @Column
+    @Column(length = 500)
     var name: String? = null
 
     @Column

@@ -14,7 +14,7 @@ abstract class AbstractOrganization(resource: OparlResource) : AbstractOparlEnti
         const val TYPE = "https://schema.oparl.org/1.1/Organization"
     }
 
-    @Column
+    @Column(length = 500)
     var name: String? = null
 
     @Column

@@ -5,10 +5,13 @@ import nrw.openbert.backend.crawl.infrastructure.dto.oparl.OparlObjectDto
 import nrw.openbert.backend.oparl.domain.entity.AbstractOparlEntity
 import nrw.openbert.backend.oparl.domain.entity.embeddable.OparlResource
 import nrw.openbert.backend.oparl.domain.valueObject.OparlUrl
+import org.slf4j.LoggerFactory
 
 abstract class AbstractProcessor<D : OparlObjectDto, E : AbstractOparlEntity>(
     private val crawlTargetEnqueuer: CrawlTargetEnqueuer,
 ) {
+    private val logger = LoggerFactory.getLogger(javaClass)
+
     protected abstract fun findEntity(resource: OparlResource): E?
     protected abstract fun createEntity(resource: OparlResource): E
     protected abstract fun updateEntity(entity: E, dto: D)
@@ -16,6 +19,8 @@ abstract class AbstractProcessor<D : OparlObjectDto, E : AbstractOparlEntity>(
     protected abstract fun saveEntity(entity: E): E
 
     open fun process(resource: OparlResource, dto: D): E {
+        logger.info("Processing OParl resource {}", resource.url.value)
+
         val entity = findOrCreate(resource)
         updateEntity(entity, dto)
         saveEntity(entity)

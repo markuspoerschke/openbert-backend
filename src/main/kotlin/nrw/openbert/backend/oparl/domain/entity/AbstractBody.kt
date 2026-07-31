@@ -14,7 +14,7 @@ abstract class AbstractBody(resource: OparlResource) : AbstractOparlEntity(resou
     @Column
     var shortName: String? = null
 
-    @Column
+    @Column(length = 500)
     var name: String = UNKNOWN
 
     @Column

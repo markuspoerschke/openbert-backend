@@ -17,7 +17,7 @@ abstract class AbstractAgendaItem(resource: OparlResource) : AbstractOparlEntity
     @Column
     var order: Int? = null
 
-    @Column
+    @Column(length = 500)
     var name: String? = null
 
     @Column
@@ -32,7 +32,7 @@ abstract class AbstractAgendaItem(resource: OparlResource) : AbstractOparlEntity
     @Column
     var start: Date? = null
 
-    @Column
+    @Column(name = "\"end\"")
     var end: Date? = null
 
     @Column

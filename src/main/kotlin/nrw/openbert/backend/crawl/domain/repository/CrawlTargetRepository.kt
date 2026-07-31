@@ -15,10 +15,13 @@ interface CrawlTargetRepository : JpaRepository<CrawlTarget, UUID> {
             WHERE reference_count > 0
               AND (scheduled_at <= ?1 OR scheduled_at IS NULL)
               AND job_id IS NULL
+              AND last_crawled_at IS NULL
+            ORDER BY reference_count DESC
+            LIMIT ?2
         """,
         nativeQuery = true
     )
-    fun findDue(now: Instant): List<CrawlTarget>
+    fun findDue(now: Instant, limit: Int): List<CrawlTarget>
 
     fun findByResource(resource: OparlResource): CrawlTarget?
 }

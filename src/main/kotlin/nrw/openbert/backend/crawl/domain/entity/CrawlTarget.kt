@@ -47,9 +47,6 @@ class CrawlTarget(
         lastCrawledAt = modifiedAt
     }
 
-    fun markAsIndexed() = apply {
-    }
-
     fun markAsScheduled(jobId: UUID) = apply {
         scheduledAt = null
         this.jobId = jobId

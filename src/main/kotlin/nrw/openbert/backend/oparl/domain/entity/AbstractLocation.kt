@@ -12,7 +12,7 @@ abstract class AbstractLocation(resource: OparlResource) : AbstractOparlEntity(r
         const val TYPE = "https://schema.oparl.org/1.1/Location"
     }
 
-    @Column
+    @Column(columnDefinition = "TEXT")
     var description: String? = null
 
     @JdbcTypeCode(SqlTypes.JSON)

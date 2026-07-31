@@ -30,7 +30,7 @@ class CrawlTargetRepositoryTest(
         ).increaseReferenceCounter()
         repository.saveAndFlush(referencedTarget)
 
-        val dueTargetIds = repository.findDue(Instant.now()).map(CrawlTarget::id)
+        val dueTargetIds = repository.findDue(Instant.now(), limit = 100).map(CrawlTarget::id)
 
         assertTrue(referencedTarget.id in dueTargetIds)
         assertFalse(indexedTargetId in dueTargetIds)

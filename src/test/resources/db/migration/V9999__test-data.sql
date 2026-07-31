@@ -64,6 +64,14 @@ VALUES ('3d663f77-05ca-4a14-b788-68ad340ea271', '903c26aa-dc8f-4d34-afd6-afdc504
         'https://oparl-demo.example.org/oparl/v1.1/file/1',
         '2026-07-22 14:30:55.000000', '2026-07-22 14:30:55.000000', false);
 
+-- Raw OParl file with extracted text longer than VARCHAR(255)
+INSERT INTO public.oparl_raw_file (id, name, text, keyword, created, modified, deleted, system_id, url)
+VALUES ('aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaaa', repeat('Long OParl file name. ', 20),
+        repeat('Extracted OParl document content. ', 20), '{}',
+        '2026-07-22 14:30:55.000000', '2026-07-22 14:30:55.000000', false,
+        '9352fa21-68c6-4f4e-8832-08a0454ff179',
+        'https://oparl-demo.example.org/oparl/v1.1/file/long-text');
+
 -- OParl paper
 INSERT INTO public.oparl_resolved_paper (id, body_id, name, reference, date, paper_type, license, keyword, web,
                                          system_id, url, created, modified, deleted)

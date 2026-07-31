@@ -10,7 +10,7 @@ abstract class AbstractPerson(resource: OparlResource) : AbstractOparlEntity(res
         const val TYPE = "https://schema.oparl.org/1.1/Person"
     }
 
-    @Column
+    @Column(length = 500)
     var name: String? = null
 
     @Column
@@ -40,7 +40,7 @@ abstract class AbstractPerson(resource: OparlResource) : AbstractOparlEntity(res
     @Column(columnDefinition = "text[]")
     var status: MutableList<String> = mutableListOf()
 
-    @Column
+    @Column(columnDefinition = "TEXT")
     var life: String? = null
 
     @Column

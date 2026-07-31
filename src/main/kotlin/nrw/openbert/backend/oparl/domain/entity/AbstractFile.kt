@@ -14,7 +14,7 @@ abstract class AbstractFile(resource: OparlResource) : AbstractOparlEntity(resou
         const val TYPE = "https://schema.oparl.org/1.1/File"
     }
 
-    @Column
+    @Column(length = 500)
     var name: String? = null
 
     @Column
@@ -29,13 +29,13 @@ abstract class AbstractFile(resource: OparlResource) : AbstractOparlEntity(resou
     @Column
     var size: Int? = null
 
-    @Column
+    @Column(name = "sha1_checksum")
     var sha1Checksum: String? = null
 
-    @Column
+    @Column(name = "sha512_checksum")
     var sha512Checksum: String? = null
 
-    @Column
+    @Column(columnDefinition = "TEXT")
     var text: String? = null
 
     @Convert(converter = OparlUrlConverter::class)

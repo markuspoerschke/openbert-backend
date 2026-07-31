@@ -32,6 +32,7 @@ import nrw.openbert.backend.crawl.infrastructure.dto.oparl.OparlSystemDto
 import nrw.openbert.backend.oparl.domain.entity.OparlSystem
 import nrw.openbert.backend.oparl.domain.entity.embeddable.OparlResource
 import nrw.openbert.backend.oparl.domain.valueObject.OparlUrl
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import java.util.UUID
 
@@ -53,12 +54,16 @@ class Crawler(
     private val personProcessor: PersonProcessor,
     private val systemProcessor: SystemProcessor,
 ) {
+    private val logger = LoggerFactory.getLogger(javaClass)
+
     fun run(targetId: UUID) {
         val crawlTarget = crawlTargetRepository
             .findById(targetId)
             .orElseThrow {
                 throw IllegalArgumentException("Target with id $targetId does not exist")
             }
+
+        logger.info("Crawling OParl resource {} (target {})", crawlTarget.resource.url.value, targetId)
 
         val oparlData = oparlClient.get(crawlTarget.resource.url.value)
 

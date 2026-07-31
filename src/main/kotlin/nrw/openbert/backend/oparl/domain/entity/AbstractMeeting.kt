@@ -11,7 +11,7 @@ abstract class AbstractMeeting(resource: OparlResource) : AbstractOparlEntity(re
         const val TYPE = "https://schema.oparl.org/1.1/Meeting"
     }
 
-    @Column
+    @Column(length = 500)
     var name: String? = null
 
     @Column
@@ -23,7 +23,7 @@ abstract class AbstractMeeting(resource: OparlResource) : AbstractOparlEntity(re
     @Column
     var start: Date? = null
 
-    @Column
+    @Column(name = "\"end\"")
     var end: Date? = null
 
     @Column

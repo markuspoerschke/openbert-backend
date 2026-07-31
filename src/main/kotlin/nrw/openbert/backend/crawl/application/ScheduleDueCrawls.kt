@@ -4,6 +4,7 @@ import nrw.openbert.backend.crawl.domain.repository.CrawlTargetRepository
 import org.jobrunr.jobs.annotations.Job
 import org.jobrunr.jobs.annotations.Recurring
 import org.jobrunr.scheduling.JobScheduler
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.Instant
@@ -14,11 +15,15 @@ class ScheduleDueCrawls(
     private val crawler: Crawler,
     private val jobScheduler: JobScheduler,
 ) {
+    private val logger = LoggerFactory.getLogger(javaClass)
+
     @Transactional
     @Job(name = "Crawler - Schedule")
     @Recurring(id = "crawl-schedule", cron = "PT15S")
     fun run() {
-        val dueTargets = crawlTargetRepository.findDue(Instant.now()).onEach { crawlTarget ->
+        logger.info("Running crawl scheduler")
+
+        val dueTargets = crawlTargetRepository.findDue(Instant.now(), 3).onEach { crawlTarget ->
             val jobId = jobScheduler.enqueue {
                 crawler.run(crawlTarget.id)
             }
@@ -26,5 +31,6 @@ class ScheduleDueCrawls(
         }
 
         crawlTargetRepository.saveAll(dueTargets)
+        logger.info("Scheduled {} crawl targets", dueTargets.size)
     }
 }
