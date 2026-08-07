@@ -2,6 +2,7 @@ package nrw.openbert.backend.crawl.application.processor
 
 import nrw.openbert.backend.crawl.application.CrawlTargetEnqueuer
 import nrw.openbert.backend.crawl.infrastructure.dto.oparl.OparlPersonDto
+import nrw.openbert.backend.resolve.application.ResolveTargetEnqueuer
 import nrw.openbert.backend.oparl.domain.entity.embeddable.OparlResource
 import nrw.openbert.backend.oparl.domain.entity.raw.RawPerson
 import nrw.openbert.backend.oparl.domain.repository.raw.RawPersonRepository
@@ -13,7 +14,8 @@ class PersonProcessor(
     crawlTargetEnqueuer: CrawlTargetEnqueuer,
     private val locationProcessor: LocationProcessor,
     private val membershipProcessor: MembershipProcessor,
-) : AbstractProcessor<OparlPersonDto, RawPerson>(crawlTargetEnqueuer) {
+    resolveTargetEnqueuer: ResolveTargetEnqueuer,
+) : AbstractProcessor<OparlPersonDto, RawPerson>(crawlTargetEnqueuer, resolveTargetEnqueuer) {
     override fun findEntity(resource: OparlResource): RawPerson? = rawPersonRepository.findByResource(resource)
 
     override fun createEntity(resource: OparlResource): RawPerson = RawPerson(resource)
@@ -23,7 +25,10 @@ class PersonProcessor(
     override fun process(resource: OparlResource, dto: OparlPersonDto): RawPerson {
         enqueueUrls(resource, dto.body, dto.location)
         processInline(resource, dto.locationObject, locationProcessor)
+            ?.personUrls
+            ?.addUrl(resource.url)
         processInline(resource, dto.membership, membershipProcessor)
+            .forEach { it.personUrl = resource.url }
 
         return super.process(resource, dto)
     }

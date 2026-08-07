@@ -45,6 +45,15 @@ class ResolvedAgendaItem(
     @OrderBy("id ASC")
     val auxiliaryFiles: MutableList<ResolvedFile> = mutableListOf()
 
+    fun applyRelationsFrom(
+        resolutionFile: ResolvedFile?,
+        auxiliaryFiles: Collection<ResolvedFile>,
+    ) {
+        this.resolutionFile = resolutionFile
+        this.auxiliaryFiles.clear()
+        this.auxiliaryFiles.addAll(auxiliaryFiles)
+    }
+
     companion object {
         fun fromRaw(
             raw: RawAgendaItem,
@@ -55,8 +64,7 @@ class ResolvedAgendaItem(
         ): ResolvedAgendaItem {
             return ResolvedAgendaItem(raw.resource, body, meeting).apply {
                 applyValuesFrom(raw)
-                this.resolutionFile = resolutionFile
-                this.auxiliaryFiles.addAll(auxiliaryFiles)
+                applyRelationsFrom(resolutionFile, auxiliaryFiles)
             }
         }
     }

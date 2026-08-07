@@ -65,9 +65,10 @@ VALUES ('3d663f77-05ca-4a14-b788-68ad340ea271', '903c26aa-dc8f-4d34-afd6-afdc504
         '2026-07-22 14:30:55.000000', '2026-07-22 14:30:55.000000', false);
 
 -- Raw OParl file with extracted text longer than VARCHAR(255)
-INSERT INTO public.oparl_raw_file (id, name, text, keyword, created, modified, deleted, system_id, url)
+INSERT INTO public.oparl_raw_file (id, name, text, paper_urls, keyword, created, modified, deleted, system_id, url)
 VALUES ('aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaaa', repeat('Long OParl file name. ', 20),
-        repeat('Extracted OParl document content. ', 20), '{}',
+        repeat('Extracted OParl document content. ', 20),
+        '{"https://oparl-demo.example.org/oparl/v1.1/paper/42"}', '{}',
         '2026-07-22 14:30:55.000000', '2026-07-22 14:30:55.000000', false,
         '9352fa21-68c6-4f4e-8832-08a0454ff179',
         'https://oparl-demo.example.org/oparl/v1.1/file/long-text');
@@ -80,6 +81,13 @@ VALUES ('10000000-0000-4000-8000-000000000001',
         '2026-07-22 14:30:55.000000', '2026-07-22 14:30:55.000000', false,
         '9352fa21-68c6-4f4e-8832-08a0454ff179',
         'https://oparl-demo.example.org/oparl/v1.1/legislativeterm/unresolved');
+
+-- A completed resolve queue item is retained as processing provenance
+INSERT INTO resolve_target
+    (id, raw_entity_id, entity_type, created_at, last_resolved_at, modified_at, reference_count, scheduled_at, job_id)
+VALUES ('20000000-0000-4000-8000-000000000001', '10000000-0000-4000-8000-000000000001', 'LEGISLATIVE_TERM',
+        '2026-07-22 14:30:55.000000', '2026-07-22 14:30:55.000000', '2026-07-22 14:30:55.000000',
+        0, null, null);
 
 INSERT INTO public.oparl_raw_organization
     (id, body_url, post, keyword, created, modified, deleted, system_id, url)
@@ -157,17 +165,24 @@ VALUES ('11111111-1111-4111-a111-111111111111', '903c26aa-dc8f-4d34-afd6-afdc504
         '2026-07-22 14:30:55.000000', '2026-07-24 13:05:27.000000', false);
 
 -- An unresolved agenda item must not be exposed by the public API
-INSERT INTO public.oparl_raw_agenda_item (id, number, "order", name, public, result, resolution_text, start, "end",
-                                          license, keyword, web, system_id, url, created, modified, deleted)
-VALUES ('0b30e64f-a824-4856-903f-63a81448fb70', '11', 1, 'Noch nicht aufgelöster Tagesordnungspunkt', true,
+INSERT INTO public.oparl_raw_agenda_item (id, meeting_url, resolution_file_url, auxiliary_file_urls, number, "order",
+                                          name, public, result, resolution_text, start, "end", license, keyword, web,
+                                          system_id, url, created, modified, deleted)
+VALUES ('0b30e64f-a824-4856-903f-63a81448fb70',
+        'https://oparl-demo.example.org/oparl/v1.1/meeting/999',
+        'https://oparl-demo.example.org/oparl/v1.1/file/1',
+        '{"https://oparl-demo.example.org/oparl/v1.1/file/1"}',
+        '11', 1, 'Noch nicht aufgelöster Tagesordnungspunkt', true,
         null, null, null, null, null, '{}', null, '9352fa21-68c6-4f4e-8832-08a0454ff179',
         'https://oparl-demo.example.org/oparl/v1.1/agendaitem/999',
         '2026-07-22 14:30:55.000000', '2026-07-22 14:30:55.000000', false);
 
 -- An unresolved meeting must not be exposed by the public API
-INSERT INTO public.oparl_raw_meeting (id, name, meeting_state, cancelled, start, "end", license, keyword, web,
-                                      system_id, url, created, modified, deleted)
-VALUES ('38e8985b-a504-4c24-bd18-0953fb593350', 'Noch nicht aufgelöste Sitzung', 'terminiert', false,
+INSERT INTO public.oparl_raw_meeting (id, organization_urls, name, meeting_state, cancelled, start, "end", license,
+                                      keyword, web, system_id, url, created, modified, deleted)
+VALUES ('38e8985b-a504-4c24-bd18-0953fb593350',
+        '{"https://oparl-demo.example.org/oparl/v1.1/organization/34"}',
+        'Noch nicht aufgelöste Sitzung', 'terminiert', false,
         '2026-08-01 10:00:00.000000', null, null, '{}', null, '9352fa21-68c6-4f4e-8832-08a0454ff179',
         'https://oparl-demo.example.org/oparl/v1.1/meeting/999',
         '2026-07-22 14:30:55.000000', '2026-07-22 14:30:55.000000', false);
@@ -240,9 +255,34 @@ INSERT INTO public.oparl_resolved_consultation_organization
 VALUES ('c92d284d-6899-49c2-9422-70ad7f4f38ea', '9f7d37f9-cd93-4b11-a868-19a6c1e39318', 0);
 
 -- An unresolved consultation must not be exposed by the public API
-INSERT INTO public.oparl_raw_consultation (id, authoritative, role, license, keyword, web, system_id, url, created,
+INSERT INTO public.oparl_raw_consultation (id, paper_url, agenda_item_url, meeting_url, organization_urls,
+                                           authoritative, role, license, keyword, web, system_id, url, created,
                                            modified, deleted)
-VALUES ('d15aff89-2aa6-4f2d-966e-8797751ceda8', false, 'Vorberatung', null, '{}', null,
+VALUES ('d15aff89-2aa6-4f2d-966e-8797751ceda8',
+        'https://oparl-demo.example.org/oparl/v1.1/paper/42',
+        'https://oparl-demo.example.org/oparl/v1.1/agendaitem/3272',
+        'https://oparl-demo.example.org/oparl/v1.1/meeting/281',
+        '{"https://oparl-demo.example.org/oparl/v1.1/organization/34"}',
+        false, 'Vorberatung', null, '{}', null,
         '9352fa21-68c6-4f4e-8832-08a0454ff179',
         'https://oparl-demo.example.org/oparl/v1.1/consultation/999',
         '2026-07-22 14:30:55.000000', '2026-07-22 14:30:55.000000', false);
+
+-- Raw relation fixtures for the remaining resolver types
+INSERT INTO public.oparl_raw_location
+    (id, body_urls, description, keyword, created, modified, deleted, system_id, url)
+VALUES ('10000000-0000-4000-8000-000000000005',
+        '{"https://oparl-demo.example.org/oparl/v1.1/body/123"}', 'Noch nicht aufgelöster Ort', '{}',
+        '2026-07-22 14:30:55.000000', '2026-07-22 14:30:55.000000', false,
+        '9352fa21-68c6-4f4e-8832-08a0454ff179',
+        'https://oparl-demo.example.org/oparl/v1.1/location/unresolved');
+
+INSERT INTO public.oparl_raw_membership
+    (id, person_url, organization_url, on_behalf_of_url, role, keyword, created, modified, deleted, system_id, url)
+VALUES ('10000000-0000-4000-8000-000000000006',
+        'https://oparl-demo.example.org/oparl/v1.1/person/29',
+        'https://oparl-demo.example.org/oparl/v1.1/organization/34',
+        'https://oparl-demo.example.org/oparl/v1.1/organization/41',
+        'Stellvertretung', '{}', '2026-07-22 14:30:55.000000', '2026-07-22 14:30:55.000000', false,
+        '9352fa21-68c6-4f4e-8832-08a0454ff179',
+        'https://oparl-demo.example.org/oparl/v1.1/membership/unresolved');

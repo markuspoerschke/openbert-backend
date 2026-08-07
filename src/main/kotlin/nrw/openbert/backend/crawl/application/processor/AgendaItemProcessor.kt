@@ -2,6 +2,7 @@ package nrw.openbert.backend.crawl.application.processor
 
 import nrw.openbert.backend.crawl.application.CrawlTargetEnqueuer
 import nrw.openbert.backend.crawl.infrastructure.dto.oparl.OparlAgendaItemDto
+import nrw.openbert.backend.resolve.application.ResolveTargetEnqueuer
 import nrw.openbert.backend.oparl.domain.entity.embeddable.OparlResource
 import nrw.openbert.backend.oparl.domain.entity.raw.RawAgendaItem
 import nrw.openbert.backend.oparl.domain.repository.raw.RawAgendaItemRepository
@@ -12,7 +13,8 @@ class AgendaItemProcessor(
     val rawAgendaItemRepository: RawAgendaItemRepository,
     crawlTargetEnqueuer: CrawlTargetEnqueuer,
     private val fileProcessor: FileProcessor,
-) : AbstractProcessor<OparlAgendaItemDto, RawAgendaItem>(crawlTargetEnqueuer) {
+    resolveTargetEnqueuer: ResolveTargetEnqueuer,
+) : AbstractProcessor<OparlAgendaItemDto, RawAgendaItem>(crawlTargetEnqueuer, resolveTargetEnqueuer) {
     override fun findEntity(resource: OparlResource): RawAgendaItem? =
         rawAgendaItemRepository.findByResource(resource)
 
@@ -23,12 +25,19 @@ class AgendaItemProcessor(
     override fun process(resource: OparlResource, dto: OparlAgendaItemDto): RawAgendaItem {
         enqueueUrls(resource, dto.meeting, dto.consultation)
         processInline(resource, dto.resolutionFile, fileProcessor)
+            ?.agendaItemUrls
+            ?.addUrl(resource.url)
         processInline(resource, dto.auxiliaryFile, fileProcessor)
+            .forEach { it.agendaItemUrls.addUrl(resource.url) }
 
         return super.process(resource, dto)
     }
 
     override fun updateEntity(entity: RawAgendaItem, dto: OparlAgendaItemDto) {
+        entity.meetingUrl = dto.meeting?.toOparlUrl()
+        entity.consultationUrl = dto.consultation?.toOparlUrl()
+        entity.resolutionFileUrl = dto.resolutionFile?.id?.toOparlUrl()
+        entity.auxiliaryFileUrls = dto.auxiliaryFile.orEmpty().mapNotNull { it.id }.toMutableList()
         entity.number = dto.number
         entity.order = dto.order
         entity.name = dto.name

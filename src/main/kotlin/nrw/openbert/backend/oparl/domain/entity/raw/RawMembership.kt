@@ -1,13 +1,27 @@
 package nrw.openbert.backend.oparl.domain.entity.raw
 
+import jakarta.persistence.Column
+import jakarta.persistence.Convert
 import jakarta.persistence.Entity
 import jakarta.persistence.Table
 import jakarta.persistence.UniqueConstraint
 import nrw.openbert.backend.oparl.domain.entity.AbstractMembership
 import nrw.openbert.backend.oparl.domain.entity.embeddable.OparlResource
 import nrw.openbert.backend.oparl.domain.valueObject.OparlUrl
-import java.util.UUID
+import nrw.openbert.backend.oparl.infrastructure.persistence.converter.OparlUrlConverter
 
 @Entity(name = "oparl_raw_membership")
 @Table(uniqueConstraints = [UniqueConstraint(columnNames = ["system_id", "url"])])
-class RawMembership(resource: OparlResource) : AbstractMembership(resource)
+class RawMembership(resource: OparlResource) : AbstractMembership(resource) {
+    @Convert(converter = OparlUrlConverter::class)
+    @Column(name = "person_url", length = OparlUrl.MAX_LENGTH)
+    var personUrl: OparlUrl? = null
+
+    @Convert(converter = OparlUrlConverter::class)
+    @Column(name = "organization_url", length = OparlUrl.MAX_LENGTH)
+    var organizationUrl: OparlUrl? = null
+
+    @Convert(converter = OparlUrlConverter::class)
+    @Column(name = "on_behalf_of_url", length = OparlUrl.MAX_LENGTH)
+    var onBehalfOfUrl: OparlUrl? = null
+}

@@ -44,6 +44,11 @@ class ResolvedConsultation(
     @OrderColumn(name = "organization_order")
     val organizations: MutableList<ResolvedOrganization> = mutableListOf()
 
+    fun applyRelationsFrom(organizations: Collection<ResolvedOrganization>) {
+        this.organizations.clear()
+        this.organizations.addAll(organizations)
+    }
+
     companion object {
         fun fromRaw(
             raw: RawConsultation,
@@ -61,7 +66,7 @@ class ResolvedConsultation(
                 meeting,
             ).apply {
                 applyValuesFrom(raw)
-                this.organizations.addAll(organizations)
+                applyRelationsFrom(organizations)
             }
         }
     }

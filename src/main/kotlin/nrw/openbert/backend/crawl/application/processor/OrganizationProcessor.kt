@@ -2,6 +2,7 @@ package nrw.openbert.backend.crawl.application.processor
 
 import nrw.openbert.backend.crawl.application.CrawlTargetEnqueuer
 import nrw.openbert.backend.crawl.infrastructure.dto.oparl.OparlOrganizationDto
+import nrw.openbert.backend.resolve.application.ResolveTargetEnqueuer
 import nrw.openbert.backend.oparl.domain.entity.embeddable.OparlResource
 import nrw.openbert.backend.oparl.domain.entity.raw.RawOrganization
 import nrw.openbert.backend.oparl.domain.repository.raw.RawOrganizationRepository
@@ -12,7 +13,8 @@ class OrganizationProcessor(
     val rawOrganizationRepository: RawOrganizationRepository,
     crawlTargetEnqueuer: CrawlTargetEnqueuer,
     private val locationProcessor: LocationProcessor,
-) : AbstractProcessor<OparlOrganizationDto, RawOrganization>(crawlTargetEnqueuer) {
+    resolveTargetEnqueuer: ResolveTargetEnqueuer,
+) : AbstractProcessor<OparlOrganizationDto, RawOrganization>(crawlTargetEnqueuer, resolveTargetEnqueuer) {
     override fun findEntity(resource: OparlResource): RawOrganization? =
         rawOrganizationRepository.findByResource(resource)
 
@@ -31,6 +33,8 @@ class OrganizationProcessor(
         )
         enqueueUrls(resource, dto.membership.orEmpty())
         processInline(resource, dto.location, locationProcessor)
+            ?.organizationUrls
+            ?.addUrl(resource.url)
 
         return super.process(resource, dto)
     }
