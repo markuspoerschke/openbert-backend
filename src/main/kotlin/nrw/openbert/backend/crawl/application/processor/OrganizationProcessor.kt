@@ -36,6 +36,7 @@ class OrganizationProcessor(
     }
 
     override fun updateEntity(entity: RawOrganization, dto: OparlOrganizationDto) {
+        entity.bodyUrl = dto.body?.toOparlUrl()
         entity.name = dto.name
         entity.shortName = dto.shortName
         entity.post = dto.post.orEmpty().toMutableList()

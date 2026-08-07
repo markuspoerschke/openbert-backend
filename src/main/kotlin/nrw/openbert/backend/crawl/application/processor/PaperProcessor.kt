@@ -38,6 +38,7 @@ class PaperProcessor(
     }
 
     override fun updateEntity(entity: RawPaper, dto: OparlPaperDto) {
+        entity.bodyUrl = dto.body?.toOparlUrl()
         entity.name = dto.name
         entity.reference = dto.reference
         entity.date = dto.date?.toOparlDate()

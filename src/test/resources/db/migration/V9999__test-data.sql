@@ -72,6 +72,39 @@ VALUES ('aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaaa', repeat('Long OParl file name. ',
         '9352fa21-68c6-4f4e-8832-08a0454ff179',
         'https://oparl-demo.example.org/oparl/v1.1/file/long-text');
 
+-- Raw OParl entities retain their body references as URLs until relationships are resolved
+INSERT INTO public.oparl_raw_legislative_term
+    (id, body_url, keyword, created, modified, deleted, system_id, url)
+VALUES ('10000000-0000-4000-8000-000000000001',
+        'https://oparl-demo.example.org/oparl/v1.1/body/123', '{}',
+        '2026-07-22 14:30:55.000000', '2026-07-22 14:30:55.000000', false,
+        '9352fa21-68c6-4f4e-8832-08a0454ff179',
+        'https://oparl-demo.example.org/oparl/v1.1/legislativeterm/unresolved');
+
+INSERT INTO public.oparl_raw_organization
+    (id, body_url, post, keyword, created, modified, deleted, system_id, url)
+VALUES ('10000000-0000-4000-8000-000000000002',
+        'https://oparl-demo.example.org/oparl/v1.1/body/123', '{}', '{}',
+        '2026-07-22 14:30:55.000000', '2026-07-22 14:30:55.000000', false,
+        '9352fa21-68c6-4f4e-8832-08a0454ff179',
+        'https://oparl-demo.example.org/oparl/v1.1/organization/unresolved');
+
+INSERT INTO public.oparl_raw_paper
+    (id, body_url, keyword, created, modified, deleted, system_id, url)
+VALUES ('10000000-0000-4000-8000-000000000003',
+        'https://oparl-demo.example.org/oparl/v1.1/body/123', '{}',
+        '2026-07-22 14:30:55.000000', '2026-07-22 14:30:55.000000', false,
+        '9352fa21-68c6-4f4e-8832-08a0454ff179',
+        'https://oparl-demo.example.org/oparl/v1.1/paper/unresolved');
+
+INSERT INTO public.oparl_raw_person
+    (id, body_url, title, phone, email, status, keyword, created, modified, deleted, system_id, url)
+VALUES ('10000000-0000-4000-8000-000000000004',
+        'https://oparl-demo.example.org/oparl/v1.1/body/123', '{}', '{}', '{}', '{}', '{}',
+        '2026-07-22 14:30:55.000000', '2026-07-22 14:30:55.000000', false,
+        '9352fa21-68c6-4f4e-8832-08a0454ff179',
+        'https://oparl-demo.example.org/oparl/v1.1/person/unresolved');
+
 -- OParl paper
 INSERT INTO public.oparl_resolved_paper (id, body_id, name, reference, date, paper_type, license, keyword, web,
                                          system_id, url, created, modified, deleted)
