@@ -29,6 +29,7 @@ class PersonProcessor(
     }
 
     override fun updateEntity(entity: RawPerson, dto: OparlPersonDto) {
+        entity.bodyUrl = dto.body?.toOparlUrl()
         entity.name = dto.name
         entity.familyName = dto.familyName
         entity.givenName = dto.givenName

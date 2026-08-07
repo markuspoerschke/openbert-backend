@@ -26,6 +26,7 @@ class LegislativeTermProcessor(
     }
 
     override fun updateEntity(entity: RawLegislativeTerm, dto: OparlLegislativeTermDto) {
+        entity.bodyUrl = dto.body?.toOparlUrl()
         entity.name = dto.name
         entity.startDate = dto.startDate?.toOparlDate()
         entity.endDate = dto.endDate?.toOparlDate()

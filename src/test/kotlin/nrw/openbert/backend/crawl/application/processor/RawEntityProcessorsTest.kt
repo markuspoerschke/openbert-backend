@@ -151,6 +151,7 @@ class RawEntityProcessorsTest {
         val entity = LegislativeTermProcessor(repository, crawlTargetEnqueuer).process(
             resource("legislative-term"),
             OparlLegislativeTermDto(
+                body = "https://example.org/body/1",
                 name = "2025–2030",
                 startDate = "2025-11-01",
                 endDate = "2030-10-31",
@@ -160,6 +161,7 @@ class RawEntityProcessorsTest {
             ),
         )
 
+        assertEquals("https://example.org/body/1", entity.bodyUrl?.value)
         assertEquals("2025–2030", entity.name)
         assertEquals(date("2025-11-01T00:00:00Z"), entity.startDate)
         assertEquals(date("2030-10-31T00:00:00Z"), entity.endDate)
@@ -272,6 +274,7 @@ class RawEntityProcessorsTest {
         val entity = OrganizationProcessor(repository, crawlTargetEnqueuer, locationProcessor).process(
             resource("organization"),
             OparlOrganizationDto(
+                body = "https://example.org/body/1",
                 name = "Finance committee",
                 shortName = "Finance",
                 post = listOf("Chair"),
@@ -286,6 +289,7 @@ class RawEntityProcessorsTest {
             ),
         )
 
+        assertEquals("https://example.org/body/1", entity.bodyUrl?.value)
         assertEquals("Finance committee", entity.name)
         assertEquals("Finance", entity.shortName)
         assertEquals(listOf("Chair"), entity.post)
@@ -313,6 +317,7 @@ class RawEntityProcessorsTest {
         ).process(
             resource("paper"),
             OparlPaperDto(
+                body = "https://example.org/body/1",
                 name = "Budget 2027",
                 reference = "V-2026-42",
                 date = "2026-07-24",
@@ -323,6 +328,7 @@ class RawEntityProcessorsTest {
             ),
         )
 
+        assertEquals("https://example.org/body/1", entity.bodyUrl?.value)
         assertEquals("Budget 2027", entity.name)
         assertEquals("V-2026-42", entity.reference)
         assertEquals(date("2026-07-24T00:00:00Z"), entity.date)
@@ -345,6 +351,7 @@ class RawEntityProcessorsTest {
         ).process(
             resource("person"),
             OparlPersonDto(
+                body = "https://example.org/body/1",
                 name = "Dr Jane Doe",
                 familyName = "Doe",
                 givenName = "Jane",
@@ -363,6 +370,7 @@ class RawEntityProcessorsTest {
             ),
         )
 
+        assertEquals("https://example.org/body/1", entity.bodyUrl?.value)
         assertEquals("Dr Jane Doe", entity.name)
         assertEquals("Doe", entity.familyName)
         assertEquals("Jane", entity.givenName)
