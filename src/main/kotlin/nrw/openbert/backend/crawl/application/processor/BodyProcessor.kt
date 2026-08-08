@@ -2,6 +2,7 @@ package nrw.openbert.backend.crawl.application.processor
 
 import nrw.openbert.backend.crawl.application.CrawlTargetEnqueuer
 import nrw.openbert.backend.crawl.infrastructure.dto.oparl.OparlBodyDto
+import nrw.openbert.backend.resolve.application.ResolveTargetEnqueuer
 import nrw.openbert.backend.oparl.domain.entity.AbstractOparlEntity
 import nrw.openbert.backend.oparl.domain.entity.embeddable.OparlResource
 import nrw.openbert.backend.oparl.domain.entity.raw.RawBody
@@ -14,7 +15,8 @@ class BodyProcessor(
     crawlTargetEnqueuer: CrawlTargetEnqueuer,
     private val legislativeTermProcessor: LegislativeTermProcessor,
     private val locationProcessor: LocationProcessor,
-) : AbstractProcessor<OparlBodyDto, RawBody>(crawlTargetEnqueuer) {
+    resolveTargetEnqueuer: ResolveTargetEnqueuer,
+) : AbstractProcessor<OparlBodyDto, RawBody>(crawlTargetEnqueuer, resolveTargetEnqueuer) {
     override fun findEntity(resource: OparlResource): RawBody? = rawBodyRepository.findByResource(resource)
 
     override fun createEntity(resource: OparlResource): RawBody = RawBody(resource)
@@ -38,7 +40,10 @@ class BodyProcessor(
         )
         enqueueUrls(resource, dto.equivalent.orEmpty())
         processInline(resource, dto.legislativeTerm, legislativeTermProcessor)
+            .forEach { it.bodyUrl = resource.url }
         processInline(resource, dto.location, locationProcessor)
+            ?.bodyUrls
+            ?.addUrl(resource.url)
 
         return super.process(resource, dto)
     }

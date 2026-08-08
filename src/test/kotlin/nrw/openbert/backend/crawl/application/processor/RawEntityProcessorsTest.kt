@@ -12,6 +12,7 @@ import nrw.openbert.backend.crawl.infrastructure.dto.oparl.OparlOrganizationDto
 import nrw.openbert.backend.crawl.infrastructure.dto.oparl.OparlPaperDto
 import nrw.openbert.backend.crawl.infrastructure.dto.oparl.OparlPersonDto
 import nrw.openbert.backend.crawl.infrastructure.dto.oparl.OparlSystemDto
+import nrw.openbert.backend.resolve.application.ResolveTargetEnqueuer
 import nrw.openbert.backend.oparl.domain.entity.OparlSystem
 import nrw.openbert.backend.oparl.domain.entity.embeddable.OparlResource
 import nrw.openbert.backend.oparl.domain.repository.raw.RawAgendaItemRepository
@@ -37,6 +38,7 @@ import kotlin.test.assertEquals
 class RawEntityProcessorsTest {
     private val system = OparlSystem(OparlUrl("https://oparl.example.org"))
     private val crawlTargetEnqueuer = mock(CrawlTargetEnqueuer::class.java)
+    private val resolveTargetEnqueuer = mock(ResolveTargetEnqueuer::class.java)
     private val agendaItemProcessor = mock(AgendaItemProcessor::class.java)
     private val consultationProcessor = mock(ConsultationProcessor::class.java)
     private val fileProcessor = mock(FileProcessor::class.java)
@@ -47,7 +49,7 @@ class RawEntityProcessorsTest {
     @Test
     fun `processes an agenda item`() {
         val repository = processorRepository(RawAgendaItemRepository::class.java)
-        val entity = AgendaItemProcessor(repository, crawlTargetEnqueuer, fileProcessor).process(
+        val entity = AgendaItemProcessor(repository, crawlTargetEnqueuer, fileProcessor, resolveTargetEnqueuer).process(
             resource("agenda-item"),
             OparlAgendaItemDto(
                 number = "10.1",
@@ -82,7 +84,7 @@ class RawEntityProcessorsTest {
     @Test
     fun `processes a consultation`() {
         val repository = processorRepository(RawConsultationRepository::class.java)
-        val entity = ConsultationProcessor(repository, crawlTargetEnqueuer).process(
+        val entity = ConsultationProcessor(repository, crawlTargetEnqueuer, resolveTargetEnqueuer).process(
             resource("consultation"),
             OparlConsultationDto(
                 authoritative = true,
@@ -105,7 +107,7 @@ class RawEntityProcessorsTest {
     @Test
     fun `processes a file`() {
         val repository = processorRepository(RawFileRepository::class.java)
-        val entity = FileProcessor(repository, crawlTargetEnqueuer).process(
+        val entity = FileProcessor(repository, crawlTargetEnqueuer, resolveTargetEnqueuer).process(
             resource("file"),
             OparlFileDto(
                 name = "Budget",
@@ -148,7 +150,7 @@ class RawEntityProcessorsTest {
     @Test
     fun `processes a legislative term`() {
         val repository = processorRepository(RawLegislativeTermRepository::class.java)
-        val entity = LegislativeTermProcessor(repository, crawlTargetEnqueuer).process(
+        val entity = LegislativeTermProcessor(repository, crawlTargetEnqueuer, resolveTargetEnqueuer).process(
             resource("legislative-term"),
             OparlLegislativeTermDto(
                 body = "https://example.org/body/1",
@@ -176,7 +178,7 @@ class RawEntityProcessorsTest {
     fun `processes a location`() {
         val repository = processorRepository(RawLocationRepository::class.java)
         val geojson = mapOf<String, Any?>("type" to "Point", "coordinates" to listOf(1, 2))
-        val entity = LocationProcessor(repository, crawlTargetEnqueuer).process(
+        val entity = LocationProcessor(repository, crawlTargetEnqueuer, resolveTargetEnqueuer).process(
             resource("location"),
             OparlLocationDto(
                 description = "City hall",
@@ -215,6 +217,7 @@ class RawEntityProcessorsTest {
             locationProcessor,
             fileProcessor,
             agendaItemProcessor,
+            resolveTargetEnqueuer,
         ).process(
             resource("meeting"),
             OparlMeetingDto(
@@ -244,7 +247,7 @@ class RawEntityProcessorsTest {
     @Test
     fun `processes a membership`() {
         val repository = processorRepository(RawMembershipRepository::class.java)
-        val entity = MembershipProcessor(repository, crawlTargetEnqueuer).process(
+        val entity = MembershipProcessor(repository, crawlTargetEnqueuer, resolveTargetEnqueuer).process(
             resource("membership"),
             OparlMembershipDto(
                 role = "Chair",
@@ -271,7 +274,7 @@ class RawEntityProcessorsTest {
     @Test
     fun `processes an organization`() {
         val repository = processorRepository(RawOrganizationRepository::class.java)
-        val entity = OrganizationProcessor(repository, crawlTargetEnqueuer, locationProcessor).process(
+        val entity = OrganizationProcessor(repository, crawlTargetEnqueuer, locationProcessor, resolveTargetEnqueuer).process(
             resource("organization"),
             OparlOrganizationDto(
                 body = "https://example.org/body/1",
@@ -314,6 +317,7 @@ class RawEntityProcessorsTest {
             fileProcessor,
             locationProcessor,
             consultationProcessor,
+            resolveTargetEnqueuer,
         ).process(
             resource("paper"),
             OparlPaperDto(
@@ -348,6 +352,7 @@ class RawEntityProcessorsTest {
             crawlTargetEnqueuer,
             locationProcessor,
             membershipProcessor,
+            resolveTargetEnqueuer,
         ).process(
             resource("person"),
             OparlPersonDto(
@@ -393,7 +398,7 @@ class RawEntityProcessorsTest {
     @Test
     fun `processes a system`() {
         val repository = processorRepository(RawSystemRepository::class.java)
-        val entity = SystemProcessor(repository, crawlTargetEnqueuer).process(
+        val entity = SystemProcessor(repository, crawlTargetEnqueuer, resolveTargetEnqueuer).process(
             resource("system"),
             OparlSystemDto(
                 oparlVersion = "https://schema.oparl.org/1.1/",
@@ -421,6 +426,7 @@ class RawEntityProcessorsTest {
         assertEquals("https://example.org/system", entity.web)
         verify(repository).save(entity)
         verify(crawlTargetEnqueuer).markAsCrawled(entity.resource)
+        verify(resolveTargetEnqueuer).enqueue(entity)
     }
 
     private fun resource(path: String) =

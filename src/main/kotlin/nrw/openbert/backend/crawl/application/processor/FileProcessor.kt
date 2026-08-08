@@ -2,6 +2,7 @@ package nrw.openbert.backend.crawl.application.processor
 
 import nrw.openbert.backend.crawl.application.CrawlTargetEnqueuer
 import nrw.openbert.backend.crawl.infrastructure.dto.oparl.OparlFileDto
+import nrw.openbert.backend.resolve.application.ResolveTargetEnqueuer
 import nrw.openbert.backend.oparl.domain.entity.embeddable.OparlResource
 import nrw.openbert.backend.oparl.domain.entity.raw.RawFile
 import nrw.openbert.backend.oparl.domain.repository.raw.RawFileRepository
@@ -11,7 +12,8 @@ import org.springframework.stereotype.Service
 class FileProcessor(
     val rawFileRepository: RawFileRepository,
     crawlTargetEnqueuer: CrawlTargetEnqueuer,
-) : AbstractProcessor<OparlFileDto, RawFile>(crawlTargetEnqueuer) {
+    resolveTargetEnqueuer: ResolveTargetEnqueuer,
+) : AbstractProcessor<OparlFileDto, RawFile>(crawlTargetEnqueuer, resolveTargetEnqueuer) {
     override fun findEntity(resource: OparlResource): RawFile? = rawFileRepository.findByResource(resource)
 
     override fun createEntity(resource: OparlResource): RawFile = RawFile(resource)
@@ -29,6 +31,9 @@ class FileProcessor(
     }
 
     override fun updateEntity(entity: RawFile, dto: OparlFileDto) {
+        entity.meetingUrls = dto.meeting.orEmpty().toMutableList()
+        entity.agendaItemUrls = dto.agendaItem.orEmpty().toMutableList()
+        entity.paperUrls = dto.paper.orEmpty().toMutableList()
         entity.name = dto.name
         entity.fileName = dto.fileName
         entity.mimeType = dto.mimeType

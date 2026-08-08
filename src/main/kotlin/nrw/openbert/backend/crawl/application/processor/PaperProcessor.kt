@@ -2,6 +2,7 @@ package nrw.openbert.backend.crawl.application.processor
 
 import nrw.openbert.backend.crawl.application.CrawlTargetEnqueuer
 import nrw.openbert.backend.crawl.infrastructure.dto.oparl.OparlPaperDto
+import nrw.openbert.backend.resolve.application.ResolveTargetEnqueuer
 import nrw.openbert.backend.oparl.domain.entity.embeddable.OparlResource
 import nrw.openbert.backend.oparl.domain.entity.raw.RawPaper
 import nrw.openbert.backend.oparl.domain.repository.raw.RawPaperRepository
@@ -14,7 +15,8 @@ class PaperProcessor(
     private val fileProcessor: FileProcessor,
     private val locationProcessor: LocationProcessor,
     private val consultationProcessor: ConsultationProcessor,
-) : AbstractProcessor<OparlPaperDto, RawPaper>(crawlTargetEnqueuer) {
+    resolveTargetEnqueuer: ResolveTargetEnqueuer,
+) : AbstractProcessor<OparlPaperDto, RawPaper>(crawlTargetEnqueuer, resolveTargetEnqueuer) {
     override fun findEntity(resource: OparlResource): RawPaper? = rawPaperRepository.findByResource(resource)
 
     override fun createEntity(resource: OparlResource): RawPaper = RawPaper(resource)
@@ -30,9 +32,14 @@ class PaperProcessor(
         enqueueUrls(resource, dto.underDirectionOf.orEmpty())
         enqueueUrls(resource, dto.originatorOrganization.orEmpty())
         processInline(resource, dto.mainFile, fileProcessor)
+            ?.paperUrls
+            ?.addUrl(resource.url)
         processInline(resource, dto.auxiliaryFile, fileProcessor)
+            .forEach { it.paperUrls.addUrl(resource.url) }
         processInline(resource, dto.location, locationProcessor)
+            .forEach { it.paperUrls.addUrl(resource.url) }
         processInline(resource, dto.consultation, consultationProcessor)
+            .forEach { it.paperUrl = resource.url }
 
         return super.process(resource, dto)
     }

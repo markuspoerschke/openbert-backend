@@ -37,6 +37,11 @@ class ResolvedMeeting(
     @OrderBy("order ASC, id ASC")
     val agendaItems: MutableList<ResolvedAgendaItem> = mutableListOf()
 
+    fun applyRelationsFrom(organizations: Collection<ResolvedOrganization>) {
+        this.organizations.clear()
+        this.organizations.addAll(organizations)
+    }
+
     companion object {
         fun fromRaw(
             raw: RawMeeting,
@@ -45,7 +50,7 @@ class ResolvedMeeting(
         ): ResolvedMeeting {
             return ResolvedMeeting(raw.resource, body).apply {
                 applyValuesFrom(raw)
-                this.organizations.addAll(organizations)
+                applyRelationsFrom(organizations)
             }
         }
     }

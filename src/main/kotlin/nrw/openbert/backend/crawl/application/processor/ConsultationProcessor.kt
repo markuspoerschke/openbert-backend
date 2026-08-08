@@ -2,6 +2,7 @@ package nrw.openbert.backend.crawl.application.processor
 
 import nrw.openbert.backend.crawl.application.CrawlTargetEnqueuer
 import nrw.openbert.backend.crawl.infrastructure.dto.oparl.OparlConsultationDto
+import nrw.openbert.backend.resolve.application.ResolveTargetEnqueuer
 import nrw.openbert.backend.oparl.domain.entity.embeddable.OparlResource
 import nrw.openbert.backend.oparl.domain.entity.raw.RawConsultation
 import nrw.openbert.backend.oparl.domain.repository.raw.RawConsultationRepository
@@ -11,7 +12,8 @@ import org.springframework.stereotype.Service
 class ConsultationProcessor(
     val rawConsultationRepository: RawConsultationRepository,
     crawlTargetEnqueuer: CrawlTargetEnqueuer,
-) : AbstractProcessor<OparlConsultationDto, RawConsultation>(crawlTargetEnqueuer) {
+    resolveTargetEnqueuer: ResolveTargetEnqueuer,
+) : AbstractProcessor<OparlConsultationDto, RawConsultation>(crawlTargetEnqueuer, resolveTargetEnqueuer) {
     override fun findEntity(resource: OparlResource): RawConsultation? =
         rawConsultationRepository.findByResource(resource)
 
@@ -27,6 +29,10 @@ class ConsultationProcessor(
     }
 
     override fun updateEntity(entity: RawConsultation, dto: OparlConsultationDto) {
+        entity.paperUrl = dto.paper?.toOparlUrl()
+        entity.agendaItemUrl = dto.agendaItem?.toOparlUrl()
+        entity.meetingUrl = dto.meeting?.toOparlUrl()
+        entity.organizationUrls = dto.organization.orEmpty().toMutableList()
         entity.authoritative = dto.authoritative
         entity.role = dto.role
         entity.license = dto.license

@@ -28,9 +28,13 @@ class ResolvedMembership(
     val organization: ResolvedOrganization,
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "on_behalf_of_id", updatable = false)
-    val onBehalfOf: ResolvedOrganization? = null,
+    @JoinColumn(name = "on_behalf_of_id")
+    var onBehalfOf: ResolvedOrganization? = null,
 ) : AbstractMembership(resource) {
+    fun applyRelationsFrom(onBehalfOf: ResolvedOrganization?) {
+        this.onBehalfOf = onBehalfOf
+    }
+
     companion object {
         fun fromRaw(
             raw: RawMembership,

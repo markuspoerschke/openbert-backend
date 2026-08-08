@@ -2,6 +2,7 @@ package nrw.openbert.backend.crawl.application.processor
 
 import nrw.openbert.backend.crawl.application.CrawlTargetEnqueuer
 import nrw.openbert.backend.crawl.infrastructure.dto.oparl.OparlLocationDto
+import nrw.openbert.backend.resolve.application.ResolveTargetEnqueuer
 import nrw.openbert.backend.oparl.domain.entity.embeddable.OparlResource
 import nrw.openbert.backend.oparl.domain.entity.raw.RawLocation
 import nrw.openbert.backend.oparl.domain.repository.raw.RawLocationRepository
@@ -11,7 +12,8 @@ import org.springframework.stereotype.Service
 class LocationProcessor(
     val rawLocationRepository: RawLocationRepository,
     crawlTargetEnqueuer: CrawlTargetEnqueuer,
-) : AbstractProcessor<OparlLocationDto, RawLocation>(crawlTargetEnqueuer) {
+    resolveTargetEnqueuer: ResolveTargetEnqueuer,
+) : AbstractProcessor<OparlLocationDto, RawLocation>(crawlTargetEnqueuer, resolveTargetEnqueuer) {
     override fun findEntity(resource: OparlResource): RawLocation? = rawLocationRepository.findByResource(resource)
 
     override fun createEntity(resource: OparlResource): RawLocation = RawLocation(resource)
@@ -29,6 +31,11 @@ class LocationProcessor(
     }
 
     override fun updateEntity(entity: RawLocation, dto: OparlLocationDto) {
+        entity.bodyUrls = dto.bodies.orEmpty().toMutableList()
+        entity.organizationUrls = dto.organizations.orEmpty().toMutableList()
+        entity.personUrls = dto.persons.orEmpty().toMutableList()
+        entity.meetingUrls = dto.meetings.orEmpty().toMutableList()
+        entity.paperUrls = dto.papers.orEmpty().toMutableList()
         entity.description = dto.description
         entity.geojson = dto.geojson
         entity.streetAddress = dto.streetAddress
