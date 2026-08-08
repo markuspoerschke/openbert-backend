@@ -1,6 +1,7 @@
 package nrw.openbert.backend.crawl.application.processor
 
 import nrw.openbert.backend.crawl.application.CrawlTargetEnqueuer
+import nrw.openbert.backend.crawl.domain.entity.CrawlEntityType
 import nrw.openbert.backend.crawl.infrastructure.dto.oparl.OparlPaperDto
 import nrw.openbert.backend.resolve.application.ResolveTargetEnqueuer
 import nrw.openbert.backend.oparl.domain.entity.embeddable.OparlResource
@@ -24,13 +25,13 @@ class PaperProcessor(
     override fun saveEntity(entity: RawPaper) = rawPaperRepository.save(entity)
 
     override fun process(resource: OparlResource, dto: OparlPaperDto): RawPaper {
-        enqueueUrls(resource, dto.body)
-        enqueueUrls(resource, dto.relatedPaper.orEmpty())
-        enqueueUrls(resource, dto.superordinatedPaper.orEmpty())
-        enqueueUrls(resource, dto.subordinatedPaper.orEmpty())
-        enqueueUrls(resource, dto.originatorPerson.orEmpty())
-        enqueueUrls(resource, dto.underDirectionOf.orEmpty())
-        enqueueUrls(resource, dto.originatorOrganization.orEmpty())
+        enqueueUrls(resource, CrawlEntityType.BODY, dto.body)
+        enqueueUrls(resource, CrawlEntityType.PAPER, dto.relatedPaper.orEmpty())
+        enqueueUrls(resource, CrawlEntityType.PAPER, dto.superordinatedPaper.orEmpty())
+        enqueueUrls(resource, CrawlEntityType.PAPER, dto.subordinatedPaper.orEmpty())
+        enqueueUrls(resource, CrawlEntityType.PERSON, dto.originatorPerson.orEmpty())
+        enqueueUrls(resource, CrawlEntityType.ORGANIZATION, dto.underDirectionOf.orEmpty())
+        enqueueUrls(resource, CrawlEntityType.ORGANIZATION, dto.originatorOrganization.orEmpty())
         processInline(resource, dto.mainFile, fileProcessor)
             ?.paperUrls
             ?.addUrl(resource.url)

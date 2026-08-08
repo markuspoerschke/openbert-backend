@@ -1,6 +1,7 @@
 package nrw.openbert.backend.crawl.application.processor
 
 import nrw.openbert.backend.crawl.application.CrawlTargetEnqueuer
+import nrw.openbert.backend.crawl.domain.entity.CrawlEntityType
 import nrw.openbert.backend.crawl.infrastructure.dto.oparl.OparlObjectDto
 import nrw.openbert.backend.resolve.application.ResolveTargetEnqueuer
 import nrw.openbert.backend.oparl.domain.entity.AbstractOparlEntity
@@ -37,18 +38,20 @@ abstract class AbstractProcessor<D : OparlObjectDto, E : AbstractOparlEntity>(
 
     protected fun enqueueUrls(
         source: OparlResource,
+        entityType: CrawlEntityType,
         vararg urls: String?,
     ) {
-        enqueueUrls(source, urls.asIterable())
+        enqueueUrls(source, entityType, urls.asIterable())
     }
 
     protected fun enqueueUrls(
         source: OparlResource,
+        entityType: CrawlEntityType,
         urls: Iterable<String?>,
     ) {
         urls.filterNotNull()
             .map { source.withUrl(it) }
-            .forEach(crawlTargetEnqueuer::enqueue)
+            .forEach { crawlTargetEnqueuer.enqueue(it, entityType) }
     }
 
     protected fun <

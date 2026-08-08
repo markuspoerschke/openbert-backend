@@ -1,6 +1,7 @@
 package nrw.openbert.backend.crawl.application.processor
 
 import nrw.openbert.backend.crawl.application.CrawlTargetEnqueuer
+import nrw.openbert.backend.crawl.domain.entity.CrawlEntityType
 import nrw.openbert.backend.crawl.infrastructure.dto.oparl.OparlLocationDto
 import nrw.openbert.backend.resolve.application.ResolveTargetEnqueuer
 import nrw.openbert.backend.oparl.domain.entity.embeddable.OparlResource
@@ -21,11 +22,11 @@ class LocationProcessor(
     override fun saveEntity(entity: RawLocation) = rawLocationRepository.save(entity)
 
     override fun process(resource: OparlResource, dto: OparlLocationDto): RawLocation {
-        enqueueUrls(resource, dto.bodies.orEmpty())
-        enqueueUrls(resource, dto.organizations.orEmpty())
-        enqueueUrls(resource, dto.persons.orEmpty())
-        enqueueUrls(resource, dto.meetings.orEmpty())
-        enqueueUrls(resource, dto.papers.orEmpty())
+        enqueueUrls(resource, CrawlEntityType.BODY, dto.bodies.orEmpty())
+        enqueueUrls(resource, CrawlEntityType.ORGANIZATION, dto.organizations.orEmpty())
+        enqueueUrls(resource, CrawlEntityType.PERSON, dto.persons.orEmpty())
+        enqueueUrls(resource, CrawlEntityType.MEETING, dto.meetings.orEmpty())
+        enqueueUrls(resource, CrawlEntityType.PAPER, dto.papers.orEmpty())
 
         return super.process(resource, dto)
     }

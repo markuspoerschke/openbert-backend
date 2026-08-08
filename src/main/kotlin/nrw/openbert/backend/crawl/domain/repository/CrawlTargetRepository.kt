@@ -16,7 +16,23 @@ interface CrawlTargetRepository : JpaRepository<CrawlTarget, UUID> {
               AND (scheduled_at <= ?1 OR scheduled_at IS NULL)
               AND job_id IS NULL
               AND last_crawled_at IS NULL
-            ORDER BY reference_count DESC
+            ORDER BY CASE entity_type
+                WHEN 'SYSTEM' THEN 0
+                WHEN 'BODY' THEN 1
+                WHEN 'ORGANIZATION' THEN 2
+                WHEN 'PAPER' THEN 2
+                WHEN 'LEGISLATIVE_TERM' THEN 2
+                WHEN 'PERSON' THEN 3
+                WHEN 'MEETING' THEN 4
+                WHEN 'MEMBERSHIP' THEN 4
+                WHEN 'FILE' THEN 5
+                WHEN 'AGENDA_ITEM' THEN 6
+                WHEN 'CONSULTATION' THEN 7
+                WHEN 'LOCATION' THEN 7
+                ELSE 8
+            END,
+            reference_count DESC,
+            created_at ASC
             LIMIT ?2
         """,
         nativeQuery = true
