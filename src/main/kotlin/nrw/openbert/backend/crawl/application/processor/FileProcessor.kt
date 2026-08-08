@@ -1,6 +1,7 @@
 package nrw.openbert.backend.crawl.application.processor
 
 import nrw.openbert.backend.crawl.application.CrawlTargetEnqueuer
+import nrw.openbert.backend.crawl.domain.entity.CrawlEntityType
 import nrw.openbert.backend.crawl.infrastructure.dto.oparl.OparlFileDto
 import nrw.openbert.backend.resolve.application.ResolveTargetEnqueuer
 import nrw.openbert.backend.oparl.domain.entity.embeddable.OparlResource
@@ -21,11 +22,11 @@ class FileProcessor(
     override fun saveEntity(entity: RawFile) = rawFileRepository.save(entity)
 
     override fun process(resource: OparlResource, dto: OparlFileDto): RawFile {
-        enqueueUrls(resource, dto.masterFile)
-        enqueueUrls(resource, dto.derivativeFile.orEmpty())
-        enqueueUrls(resource, dto.meeting.orEmpty())
-        enqueueUrls(resource, dto.agendaItem.orEmpty())
-        enqueueUrls(resource, dto.paper.orEmpty())
+        enqueueUrls(resource, CrawlEntityType.FILE, dto.masterFile)
+        enqueueUrls(resource, CrawlEntityType.FILE, dto.derivativeFile.orEmpty())
+        enqueueUrls(resource, CrawlEntityType.MEETING, dto.meeting.orEmpty())
+        enqueueUrls(resource, CrawlEntityType.AGENDA_ITEM, dto.agendaItem.orEmpty())
+        enqueueUrls(resource, CrawlEntityType.PAPER, dto.paper.orEmpty())
 
         return super.process(resource, dto)
     }

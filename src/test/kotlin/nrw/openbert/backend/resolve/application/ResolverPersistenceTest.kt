@@ -117,6 +117,44 @@ class ResolverPersistenceTest(
         assertEquals(setOf(systemTarget.id, paperTarget.id), dueTargets.map { it.id }.toSet())
     }
 
+    @Test
+    fun `orders organization and person before membership regardless of reference count`() {
+        val organizationTarget = targetRepository.save(
+            ResolveTarget(
+                rawEntityId = UUID.randomUUID(),
+                entityType = ResolveEntityType.ORGANIZATION,
+                referenceCount = 1,
+            ),
+        )
+        val personTarget = targetRepository.save(
+            ResolveTarget(
+                rawEntityId = UUID.randomUUID(),
+                entityType = ResolveEntityType.PERSON,
+                referenceCount = 10,
+            ),
+        )
+        val membershipTarget = targetRepository.save(
+            ResolveTarget(
+                rawEntityId = UUID.randomUUID(),
+                entityType = ResolveEntityType.MEMBERSHIP,
+                referenceCount = 100,
+            ),
+        )
+
+        val dependencyTargets = targetRepository.findDue(
+            Instant.now(),
+            resolver.supportedEntityTypes,
+            PageRequest.of(0, 100),
+        ).map(ResolveTarget::id).filter {
+            it in setOf(organizationTarget.id, personTarget.id, membershipTarget.id)
+        }
+
+        assertEquals(
+            listOf(organizationTarget.id, personTarget.id, membershipTarget.id),
+            dependencyTargets,
+        )
+    }
+
     private fun assertResolved(targetId: UUID) {
         val target = targetRepository.findById(targetId).orElseThrow()
         assertNotNull(targetRepository.findById(target.id).orElseThrow().lastResolvedAt)

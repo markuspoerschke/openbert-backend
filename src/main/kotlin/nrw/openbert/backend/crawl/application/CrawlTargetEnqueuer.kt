@@ -1,5 +1,6 @@
 package nrw.openbert.backend.crawl.application
 
+import nrw.openbert.backend.crawl.domain.entity.CrawlEntityType
 import nrw.openbert.backend.crawl.domain.entity.CrawlTarget
 import nrw.openbert.backend.crawl.domain.repository.CrawlTargetRepository
 import nrw.openbert.backend.oparl.domain.entity.embeddable.OparlResource
@@ -12,10 +13,11 @@ class CrawlTargetEnqueuer(
 ) {
     private val logger = LoggerFactory.getLogger(javaClass)
 
-    fun enqueue(resource: OparlResource) {
+    fun enqueue(resource: OparlResource, entityType: CrawlEntityType? = null) {
         logger.info("Enqueuing OParl resource {}", resource.url.value)
 
-        val crawlTarget = findOrCreate(resource)
+        val crawlTarget = findOrCreate(resource, entityType)
+        entityType?.let(crawlTarget::assignEntityType)
         crawlTarget.increaseReferenceCounter()
         repository.save(crawlTarget)
     }
@@ -27,7 +29,7 @@ class CrawlTargetEnqueuer(
         repository.save(crawlTarget)
     }
 
-    private fun findOrCreate(resource: OparlResource): CrawlTarget =
+    private fun findOrCreate(resource: OparlResource, entityType: CrawlEntityType? = null): CrawlTarget =
         repository.findByResource(resource)
-            ?: CrawlTarget.create(resource)
+            ?: CrawlTarget.create(resource, entityType)
 }

@@ -1,6 +1,7 @@
 package nrw.openbert.backend.crawl.application.processor
 
 import nrw.openbert.backend.crawl.application.CrawlTargetEnqueuer
+import nrw.openbert.backend.crawl.domain.entity.CrawlEntityType
 import nrw.openbert.backend.crawl.infrastructure.dto.oparl.OparlConsultationDto
 import nrw.openbert.backend.resolve.application.ResolveTargetEnqueuer
 import nrw.openbert.backend.oparl.domain.entity.embeddable.OparlResource
@@ -22,8 +23,10 @@ class ConsultationProcessor(
     override fun saveEntity(entity: RawConsultation) = rawConsultationRepository.save(entity)
 
     override fun process(resource: OparlResource, dto: OparlConsultationDto): RawConsultation {
-        enqueueUrls(resource, dto.paper, dto.agendaItem, dto.meeting)
-        enqueueUrls(resource, dto.organization.orEmpty())
+        enqueueUrls(resource, CrawlEntityType.PAPER, dto.paper)
+        enqueueUrls(resource, CrawlEntityType.AGENDA_ITEM, dto.agendaItem)
+        enqueueUrls(resource, CrawlEntityType.MEETING, dto.meeting)
+        enqueueUrls(resource, CrawlEntityType.ORGANIZATION, dto.organization.orEmpty())
 
         return super.process(resource, dto)
     }
