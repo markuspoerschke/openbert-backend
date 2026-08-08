@@ -19,11 +19,11 @@ class ScheduleDueCrawls(
 
     @Transactional
     @Job(name = "Crawler - Schedule")
-    @Recurring(id = "crawl-schedule", cron = "PT15S")
+    @Recurring(id = "crawl-schedule", cron = "PT30S")
     fun run() {
         logger.info("Running crawl scheduler")
 
-        val dueTargets = crawlTargetRepository.findDue(Instant.now(), 3).onEach { crawlTarget ->
+        val dueTargets = crawlTargetRepository.findDue(Instant.now(), 1).onEach { crawlTarget ->
             val jobId = jobScheduler.enqueue {
                 crawler.run(crawlTarget.id)
             }

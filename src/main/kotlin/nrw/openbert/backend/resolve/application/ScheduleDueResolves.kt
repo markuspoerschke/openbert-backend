@@ -27,7 +27,7 @@ class ScheduleDueResolves(
         val targets = resolveTargetRepository.findDue(
             Instant.now(),
             resolver.supportedEntityTypes,
-            PageRequest.of(0, 3),
+            PageRequest.of(0, 30),
         ).onEach { target ->
             val jobId = jobScheduler.enqueue { resolver.run(target.id) }
             target.markAsScheduled(jobId.asUUID())
