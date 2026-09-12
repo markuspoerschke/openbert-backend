@@ -83,4 +83,8 @@ data class OparlBodyDto(
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
     val deleted: Boolean? = null,
-)
+) {
+    companion object {
+        const val TYPE = "https://schema.oparl.org/1.1/Body"
+    }
+}

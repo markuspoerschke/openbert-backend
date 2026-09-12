@@ -2,6 +2,16 @@
 INSERT INTO oparl_system (id, url)
 VALUES ('9352fa21-68c6-4f4e-8832-08a0454ff179', 'https://oparl-demo.example.org');
 
+-- Resolved OParl system
+INSERT INTO public.oparl_resolved_system (id, oparl_version, other_oparl_versions, license, name, contact_email,
+                                          contact_name, website, vendor, product, web, system_id, url, created,
+                                          modified, deleted)
+VALUES ('44444444-4444-4444-a444-444444444444', 'https://schema.oparl.org/1.1/', '{}', null,
+        'OpenBERT demo search system', 'info@oparl-demo.example.org', 'OpenBERT Team',
+        'https://oparl-demo.example.org', null, null, null, '9352fa21-68c6-4f4e-8832-08a0454ff179',
+        'https://oparl-demo.example.org/oparl/v1.1/system',
+        '2026-07-22 14:30:55.000000', '2026-07-22 14:30:55.000000', false);
+
 -- An already indexed crawl target is retained for provenance but is not due without new references
 INSERT INTO crawl_target (id, system_id, url, created_at, last_crawled_at, last_indexed_at, modified_at,
                           reference_count, scheduled_at, job_id)
@@ -62,6 +72,23 @@ VALUES ('3d663f77-05ca-4a14-b788-68ad340ea271', '903c26aa-dc8f-4d34-afd6-afdc504
         'CC0-1.0', '{"mock","council document"}', 'https://neuoffenstadt.example.com/documents/1',
         '9352fa21-68c6-4f4e-8832-08a0454ff179',
         'https://oparl-demo.example.org/oparl/v1.1/file/1',
+        '2026-07-22 14:30:55.000000', '2026-07-22 14:30:55.000000', false);
+
+-- Search fixtures belong to the second body so the existing first-body file list remains stable
+INSERT INTO public.oparl_resolved_file (id, body_id, name, file_name, mime_type, date, size, sha1_checksum,
+                                        sha512_checksum, text, access_url, download_url, external_service_url,
+                                        file_license, license, keyword, web, system_id, url, created, modified, deleted)
+VALUES ('22222222-2222-4222-a222-222222222222', 'ffffffff-ffff-4fff-afff-ffffffffffff',
+        'Mobility plan', 'mobility-plan.txt', 'text/plain', '2026-07-21 00:00:00.000000', 48, null, null,
+        'A searchable document about public transport.', 'https://oparl-demo.example.org/files/2', null, null,
+        null, 'CC0-1.0', '{"mobility"}', null, '9352fa21-68c6-4f4e-8832-08a0454ff179',
+        'https://oparl-demo.example.org/oparl/v1.1/file/2',
+        '2026-07-22 14:30:55.000000', '2026-07-22 14:30:55.000000', false),
+       ('33333333-3333-4333-a333-333333333333', 'ffffffff-ffff-4fff-afff-ffffffffffff',
+        'Park plan', 'park-plan.txt', 'text/plain', '2026-07-22 00:00:00.000000', 44, null, null,
+        'A searchable document about the city park.', 'https://oparl-demo.example.org/files/3', null, null,
+        null, 'CC0-1.0', '{"park"}', null, '9352fa21-68c6-4f4e-8832-08a0454ff179',
+        'https://oparl-demo.example.org/oparl/v1.1/file/3',
         '2026-07-22 14:30:55.000000', '2026-07-22 14:30:55.000000', false);
 
 -- Raw OParl file with extracted text longer than VARCHAR(255)

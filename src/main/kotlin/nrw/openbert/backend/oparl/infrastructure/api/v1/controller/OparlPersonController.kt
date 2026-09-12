@@ -1,13 +1,10 @@
 package nrw.openbert.backend.oparl.infrastructure.api.v1.controller
 
-import nrw.openbert.backend.oparl.domain.entity.AbstractPerson
-import nrw.openbert.backend.oparl.domain.entity.resolved.ResolvedPerson
 import nrw.openbert.backend.oparl.infrastructure.api.v1.dto.OparlListDto
 import nrw.openbert.backend.oparl.infrastructure.api.v1.dto.OparlPersonDto
-import nrw.openbert.backend.oparl.infrastructure.api.v1.mapper.OparlMembershipMapper
+import nrw.openbert.backend.oparl.infrastructure.api.v1.mapper.OparlPersonMapper
 import nrw.openbert.backend.oparl.infrastructure.api.v1.urlGenerator.OparlUrlGenerator
 import nrw.openbert.backend.oparl.infrastructure.persistence.repository.ResolvedBodyRepository
-import nrw.openbert.backend.oparl.infrastructure.persistence.repository.ResolvedMembershipRepository
 import nrw.openbert.backend.oparl.infrastructure.persistence.repository.ResolvedPersonRepository
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
@@ -18,9 +15,8 @@ import java.util.UUID
 @RestController
 class OparlPersonController(
     private val urlGenerator: OparlUrlGenerator,
-    private val membershipMapper: OparlMembershipMapper,
+    private val personMapper: OparlPersonMapper,
     private val resolvedBodyRepository: ResolvedBodyRepository,
-    private val resolvedMembershipRepository: ResolvedMembershipRepository,
     private val resolvedPersonRepository: ResolvedPersonRepository,
 ) {
     @GetMapping("oparl/v1.1/body/{bodyId}/person")
@@ -31,7 +27,7 @@ class OparlPersonController(
 
         val persons = resolvedPersonRepository
             .findAllByBody_IdOrderById(bodyId)
-            .map { it.toDto() }
+            .map(personMapper::toDto)
 
         return ResponseEntity.ok(
             OparlListDto(
@@ -52,36 +48,6 @@ class OparlPersonController(
             return ResponseEntity.notFound().build()
         }
 
-        return ResponseEntity.ok(person.get().toDto())
-    }
-
-    private fun ResolvedPerson.toDto(): OparlPersonDto {
-        return OparlPersonDto(
-            id = urlGenerator.person(body.id, id),
-            type = AbstractPerson.TYPE,
-            body = urlGenerator.body(body.id),
-            membership = resolvedMembershipRepository
-                .findAllByPerson_IdAndBody_IdOrderById(id, body.id)
-                .map { membershipMapper.toDto(it, includePerson = false) }
-                .takeIf { it.isNotEmpty() },
-            name = name,
-            familyName = familyName,
-            givenName = givenName,
-            formOfAddress = formOfAddress,
-            affix = affix,
-            title = title.toList().takeIf { it.isNotEmpty() },
-            gender = gender,
-            phone = phone.toList().takeIf { it.isNotEmpty() },
-            email = email.toList().takeIf { it.isNotEmpty() },
-            status = status.toList().takeIf { it.isNotEmpty() },
-            life = life,
-            lifeSource = lifeSource,
-            license = license,
-            keyword = keyword.toList().takeIf { it.isNotEmpty() },
-            created = created.toString(),
-            modified = modified.toString(),
-            web = web,
-            deleted = deleted,
-        )
+        return ResponseEntity.ok(personMapper.toDto(person.get()))
     }
 }
