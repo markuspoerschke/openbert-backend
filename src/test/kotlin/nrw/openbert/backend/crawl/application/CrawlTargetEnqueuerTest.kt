@@ -1,5 +1,6 @@
 package nrw.openbert.backend.crawl.application
 
+import nrw.openbert.backend.crawl.domain.entity.CrawlEntityType
 import nrw.openbert.backend.crawl.domain.entity.CrawlTarget
 import nrw.openbert.backend.crawl.domain.repository.CrawlTargetRepository
 import nrw.openbert.backend.oparl.domain.entity.OparlSystem
@@ -27,10 +28,11 @@ class CrawlTargetEnqueuerTest {
         `when`(repository.findByResource(resource))
             .thenReturn(null)
 
-        enqueuer.enqueue(resource)
+        enqueuer.enqueue(resource, CrawlEntityType.BODY)
 
         val target = captureSavedTarget()
         assertEquals(resource, target.resource)
+        assertEquals(CrawlEntityType.BODY, target.entityType)
         assertEquals(1, target.referenceCount)
         assertNull(target.lastIndexedAt)
         assertNull(target.lastCrawledAt)

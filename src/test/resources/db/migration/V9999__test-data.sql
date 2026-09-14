@@ -21,11 +21,23 @@ VALUES ('55555555-5555-4555-a555-555555555555', 'https://schema.oparl.org/1.1/',
         '2026-07-22 14:30:55.000000', '2026-07-22 14:30:55.000000', false);
 
 -- An already indexed crawl target is retained for provenance but is not due without new references
-INSERT INTO crawl_target (id, system_id, url, created_at, last_crawled_at, last_indexed_at, modified_at,
+INSERT INTO crawl_target (id, system_id, url, entity_type, created_at, last_crawled_at, last_indexed_at, modified_at,
                           reference_count, scheduled_at, job_id)
 VALUES ('eeeeeeee-eeee-4eee-aeee-eeeeeeeeeeee', '9352fa21-68c6-4f4e-8832-08a0454ff179',
-        'https://oparl-demo.example.org/oparl/v1.1/location/inline', '2026-07-22 14:30:55.000000', null,
+        'https://oparl-demo.example.org/oparl/v1.1/location/inline', 'LOCATION', '2026-07-22 14:30:55.000000', null,
         '2026-07-22 14:30:55.000000', '2026-07-22 14:30:55.000000', 0, null, null);
+
+-- Due crawl targets use deliberately inverted reference counts to verify dependency ordering wins
+INSERT INTO crawl_target (id, system_id, url, entity_type, created_at, modified_at, reference_count)
+VALUES ('30000000-0000-4000-8000-000000000001', '9352fa21-68c6-4f4e-8832-08a0454ff179',
+        'https://oparl-demo.example.org/oparl/v1.1/organization/due', 'ORGANIZATION',
+        '2026-07-22 14:30:55.000000', '2026-07-22 14:30:55.000000', 1),
+       ('30000000-0000-4000-8000-000000000002', '9352fa21-68c6-4f4e-8832-08a0454ff179',
+        'https://oparl-demo.example.org/oparl/v1.1/person/due', 'PERSON',
+        '2026-07-22 14:30:55.000000', '2026-07-22 14:30:55.000000', 10),
+       ('30000000-0000-4000-8000-000000000003', '9352fa21-68c6-4f4e-8832-08a0454ff179',
+        'https://oparl-demo.example.org/oparl/v1.1/membership/due', 'MEMBERSHIP',
+        '2026-07-22 14:30:55.000000', '2026-07-22 14:30:55.000000', 100);
 
 -- OParl body
 INSERT INTO public.oparl_resolved_body (id, short_name, name, website, license, license_valid_since, oparl_since, ags,

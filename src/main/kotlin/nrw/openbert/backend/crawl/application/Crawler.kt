@@ -12,6 +12,7 @@ import nrw.openbert.backend.crawl.application.processor.OrganizationProcessor
 import nrw.openbert.backend.crawl.application.processor.PaperProcessor
 import nrw.openbert.backend.crawl.application.processor.PersonProcessor
 import nrw.openbert.backend.crawl.application.processor.SystemProcessor
+import nrw.openbert.backend.crawl.domain.entity.CrawlEntityType
 import nrw.openbert.backend.crawl.domain.repository.CrawlTargetRepository
 import nrw.openbert.backend.crawl.infrastructure.client.OparlClient
 import nrw.openbert.backend.crawl.infrastructure.dto.oparl.OparlAgendaItemDto
@@ -71,6 +72,7 @@ class Crawler(
             response = oparlData,
             system = crawlTarget.resource.system,
             fallbackUrl = crawlTarget.resource.url.value,
+            entityType = crawlTarget.entityType,
         )
 
         crawlTarget.markAsCrawled()
@@ -81,6 +83,7 @@ class Crawler(
         response: OparlResponseDto,
         system: OparlSystem,
         fallbackUrl: String,
+        entityType: CrawlEntityType?,
     ) {
         when (response) {
             is OparlListDto -> {
@@ -88,7 +91,8 @@ class Crawler(
                     process(dto, resource(system, requireNotNull(dto.id) { "OParl list item has no id" }))
                 }
                 response.links?.next?.let { next ->
-                    crawlTargetEnqueuer.enqueue(resource(system, next))
+                    val listEntityType = entityType ?: response.data.orEmpty().firstOrNull()?.let(::entityTypeOf)
+                    crawlTargetEnqueuer.enqueue(resource(system, next), listEntityType)
                 }
             }
 
@@ -111,6 +115,21 @@ class Crawler(
             is OparlPersonDto -> personProcessor.process(resource, dto)
             is OparlSystemDto -> systemProcessor.process(resource, dto)
         }
+    }
+
+    private fun entityTypeOf(dto: OparlObjectDto): CrawlEntityType = when (dto) {
+        is OparlAgendaItemDto -> CrawlEntityType.AGENDA_ITEM
+        is OparlBodyDto -> CrawlEntityType.BODY
+        is OparlConsultationDto -> CrawlEntityType.CONSULTATION
+        is OparlFileDto -> CrawlEntityType.FILE
+        is OparlLegislativeTermDto -> CrawlEntityType.LEGISLATIVE_TERM
+        is OparlLocationDto -> CrawlEntityType.LOCATION
+        is OparlMeetingDto -> CrawlEntityType.MEETING
+        is OparlMembershipDto -> CrawlEntityType.MEMBERSHIP
+        is OparlOrganizationDto -> CrawlEntityType.ORGANIZATION
+        is OparlPaperDto -> CrawlEntityType.PAPER
+        is OparlPersonDto -> CrawlEntityType.PERSON
+        is OparlSystemDto -> CrawlEntityType.SYSTEM
     }
 
     private fun resource(system: OparlSystem, url: String) =

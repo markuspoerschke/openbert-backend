@@ -2,6 +2,8 @@ package nrw.openbert.backend.crawl.domain.entity
 
 import jakarta.persistence.Embedded
 import jakarta.persistence.Entity
+import jakarta.persistence.EnumType
+import jakarta.persistence.Enumerated
 import jakarta.persistence.Id
 import jakarta.persistence.Table
 import jakarta.persistence.UniqueConstraint
@@ -21,6 +23,8 @@ class CrawlTarget(
     var id: UUID = UUID.randomUUID(),
     @Embedded
     val resource: OparlResource,
+    @Enumerated(EnumType.STRING)
+    var entityType: CrawlEntityType? = null,
     val createdAt: Instant = Instant.now(),
     var lastCrawledAt: Instant? = null,
     var lastIndexedAt: Instant? = null,
@@ -30,12 +34,19 @@ class CrawlTarget(
     var jobId: UUID? = null,
 ) {
     companion object {
-        fun create(resource: OparlResource): CrawlTarget = CrawlTarget(resource = resource)
+        fun create(resource: OparlResource, entityType: CrawlEntityType? = null): CrawlTarget =
+            CrawlTarget(resource = resource, entityType = entityType)
     }
 
     fun increaseReferenceCounter() = apply {
         referenceCount++
         modifiedAt = Instant.now()
+    }
+
+    fun assignEntityType(entityType: CrawlEntityType) = apply {
+        if (this.entityType == null) {
+            this.entityType = entityType
+        }
     }
 
     fun markAsCrawled() = apply {

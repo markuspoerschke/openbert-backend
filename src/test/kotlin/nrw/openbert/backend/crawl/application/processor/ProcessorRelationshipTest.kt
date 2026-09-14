@@ -164,7 +164,7 @@ class ProcessorRelationshipTest {
 
         val actual = mockingDetails(crawlTargetEnqueuer).invocations
             .filter { it.method.name == "enqueue" }
-            .map { (it.arguments.single() as OparlResource).url.value }
+            .map { (it.arguments[0] as OparlResource).url.value }
 
         assertEquals(expected, actual.toSet())
         assertEquals(expected.size, actual.size)

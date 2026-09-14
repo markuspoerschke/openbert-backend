@@ -1,6 +1,7 @@
 package nrw.openbert.backend.crawl.application.processor
 
 import nrw.openbert.backend.crawl.application.CrawlTargetEnqueuer
+import nrw.openbert.backend.crawl.domain.entity.CrawlEntityType
 import nrw.openbert.backend.crawl.infrastructure.dto.oparl.OparlMembershipDto
 import nrw.openbert.backend.resolve.application.ResolveTargetEnqueuer
 import nrw.openbert.backend.oparl.domain.entity.embeddable.OparlResource
@@ -22,7 +23,8 @@ class MembershipProcessor(
     override fun saveEntity(entity: RawMembership) = rawMembershipRepository.save(entity)
 
     override fun process(resource: OparlResource, dto: OparlMembershipDto): RawMembership {
-        enqueueUrls(resource, dto.person, dto.organization, dto.onBehalfOf)
+        enqueueUrls(resource, CrawlEntityType.PERSON, dto.person)
+        enqueueUrls(resource, CrawlEntityType.ORGANIZATION, dto.organization, dto.onBehalfOf)
 
         return super.process(resource, dto)
     }

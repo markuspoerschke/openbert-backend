@@ -10,6 +10,7 @@ import org.springframework.context.annotation.Import
 import org.springframework.transaction.annotation.Transactional
 import java.time.Instant
 import java.util.UUID
+import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
@@ -34,5 +35,18 @@ class CrawlTargetRepositoryTest(
 
         assertTrue(referencedTarget.id in dueTargetIds)
         assertFalse(indexedTargetId in dueTargetIds)
+    }
+
+    @Test
+    fun `orders organization and person before membership regardless of reference count`() {
+        val organizationId = UUID.fromString("30000000-0000-4000-8000-000000000001")
+        val personId = UUID.fromString("30000000-0000-4000-8000-000000000002")
+        val membershipId = UUID.fromString("30000000-0000-4000-8000-000000000003")
+
+        val dependencyTargets = repository.findDue(Instant.now(), limit = 100)
+            .map(CrawlTarget::id)
+            .filter { it in setOf(organizationId, personId, membershipId) }
+
+        assertEquals(listOf(organizationId, personId, membershipId), dependencyTargets)
     }
 }

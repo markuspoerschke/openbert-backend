@@ -1,6 +1,7 @@
 package nrw.openbert.backend.crawl.application.processor
 
 import nrw.openbert.backend.crawl.application.CrawlTargetEnqueuer
+import nrw.openbert.backend.crawl.domain.entity.CrawlEntityType
 import nrw.openbert.backend.crawl.infrastructure.dto.oparl.OparlBodyDto
 import nrw.openbert.backend.resolve.application.ResolveTargetEnqueuer
 import nrw.openbert.backend.oparl.domain.entity.AbstractOparlEntity
@@ -24,21 +25,18 @@ class BodyProcessor(
     override fun saveEntity(entity: RawBody) = rawBodyRepository.save(entity)
 
     override fun process(resource: OparlResource, dto: OparlBodyDto): RawBody {
-        enqueueUrls(
-            resource,
-            dto.system,
-            dto.organization,
-            dto.person,
-            dto.meeting,
-            dto.paper,
-            dto.agendaItem,
-            dto.consultation,
-            dto.file,
-            dto.locationList,
-            dto.legislativeTermList,
-            dto.membership,
-        )
-        enqueueUrls(resource, dto.equivalent.orEmpty())
+        enqueueUrls(resource, CrawlEntityType.SYSTEM, dto.system)
+        enqueueUrls(resource, CrawlEntityType.ORGANIZATION, dto.organization)
+        enqueueUrls(resource, CrawlEntityType.PERSON, dto.person)
+        enqueueUrls(resource, CrawlEntityType.MEETING, dto.meeting)
+        enqueueUrls(resource, CrawlEntityType.PAPER, dto.paper)
+        enqueueUrls(resource, CrawlEntityType.AGENDA_ITEM, dto.agendaItem)
+        enqueueUrls(resource, CrawlEntityType.CONSULTATION, dto.consultation)
+        enqueueUrls(resource, CrawlEntityType.FILE, dto.file)
+        enqueueUrls(resource, CrawlEntityType.LOCATION, dto.locationList)
+        enqueueUrls(resource, CrawlEntityType.LEGISLATIVE_TERM, dto.legislativeTermList)
+        enqueueUrls(resource, CrawlEntityType.MEMBERSHIP, dto.membership)
+        enqueueUrls(resource, CrawlEntityType.BODY, dto.equivalent.orEmpty())
         processInline(resource, dto.legislativeTerm, legislativeTermProcessor)
             .forEach { it.bodyUrl = resource.url }
         processInline(resource, dto.location, locationProcessor)
