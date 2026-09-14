@@ -11,12 +11,20 @@ import nrw.openbert.backend.oparl.infrastructure.api.v1.controller.OparlMembersh
 import nrw.openbert.backend.oparl.infrastructure.api.v1.controller.OparlOrganizationController
 import nrw.openbert.backend.oparl.infrastructure.api.v1.controller.OparlPaperController
 import nrw.openbert.backend.oparl.infrastructure.api.v1.controller.OparlPersonController
+import nrw.openbert.backend.oparl.infrastructure.api.v1.controller.OparlSystemController
 import org.springframework.stereotype.Component
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder
 import java.util.UUID
 
 @Component
 class OparlUrlGenerator {
+    fun system(): String {
+        return MvcUriComponentsBuilder
+            .fromMethodName(OparlSystemController::class.java, "get")
+            .build()
+            .toString()
+    }
+
     fun bodyList(): String {
         return MvcUriComponentsBuilder
             .fromMethodName(OparlBodyController::class.java, "list")
