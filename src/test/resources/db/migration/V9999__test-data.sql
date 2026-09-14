@@ -12,6 +12,14 @@ VALUES ('44444444-4444-4444-a444-444444444444', 'https://schema.oparl.org/1.1/',
         'https://oparl-demo.example.org/oparl/v1.1/system',
         '2026-07-22 14:30:55.000000', '2026-07-22 14:30:55.000000', false);
 
+-- A second source system must not be represented by the same local System ID in search.
+INSERT INTO public.oparl_resolved_system
+    (id, oparl_version, other_oparl_versions, name, system_id, url, created, modified, deleted)
+VALUES ('55555555-5555-4555-a555-555555555555', 'https://schema.oparl.org/1.1/', '{}',
+        'Another demo search system', '9352fa21-68c6-4f4e-8832-08a0454ff179',
+        'https://second-oparl.example.org/oparl/v1.1/system',
+        '2026-07-22 14:30:55.000000', '2026-07-22 14:30:55.000000', false);
+
 -- An already indexed crawl target is retained for provenance but is not due without new references
 INSERT INTO crawl_target (id, system_id, url, created_at, last_crawled_at, last_indexed_at, modified_at,
                           reference_count, scheduled_at, job_id)
@@ -87,9 +95,17 @@ VALUES ('22222222-2222-4222-a222-222222222222', 'ffffffff-ffff-4fff-afff-fffffff
        ('33333333-3333-4333-a333-333333333333', 'ffffffff-ffff-4fff-afff-ffffffffffff',
         'Park plan', 'park-plan.txt', 'text/plain', '2026-07-22 00:00:00.000000', 44, null, null,
         'A searchable document about the city park.', 'https://oparl-demo.example.org/files/3', null, null,
-        null, 'CC0-1.0', '{"park"}', null, '9352fa21-68c6-4f4e-8832-08a0454ff179',
+        null, 'CC0-1.0', ARRAY['park', 'budget%2026', 'budget_2026', 'budget\2026', 'budget!2026'], null, '9352fa21-68c6-4f4e-8832-08a0454ff179',
         'https://oparl-demo.example.org/oparl/v1.1/file/3',
         '2026-07-22 14:30:55.000000', '2026-07-22 14:30:55.000000', false);
+
+-- A tombstone retaining matching text must not affect search results or pagination.
+INSERT INTO public.oparl_resolved_file
+    (id, body_id, name, text, keyword, system_id, url, created, modified, deleted)
+VALUES ('66666666-6666-4666-a666-666666666666', 'ffffffff-ffff-4fff-afff-ffffffffffff',
+        'Deleted mobility plan', 'A searchable document about public transport.', '{}',
+        '9352fa21-68c6-4f4e-8832-08a0454ff179', 'https://oparl-demo.example.org/oparl/v1.1/file/deleted',
+        '2026-07-22 14:30:55.000000', '2026-07-22 14:30:55.000000', true);
 
 -- Raw OParl file with extracted text longer than VARCHAR(255)
 INSERT INTO public.oparl_raw_file (id, name, text, paper_urls, keyword, created, modified, deleted, system_id, url)

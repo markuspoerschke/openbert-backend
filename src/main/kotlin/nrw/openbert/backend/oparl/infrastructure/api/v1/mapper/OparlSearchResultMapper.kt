@@ -12,7 +12,6 @@ import nrw.openbert.backend.oparl.domain.entity.resolved.ResolvedMembership
 import nrw.openbert.backend.oparl.domain.entity.resolved.ResolvedOrganization
 import nrw.openbert.backend.oparl.domain.entity.resolved.ResolvedPaper
 import nrw.openbert.backend.oparl.domain.entity.resolved.ResolvedPerson
-import nrw.openbert.backend.oparl.domain.entity.resolved.ResolvedSystem
 import nrw.openbert.backend.oparl.infrastructure.persistence.repository.OparlSearchEntityType
 import nrw.openbert.backend.oparl.infrastructure.persistence.repository.OparlSearchReference
 import org.springframework.stereotype.Component
@@ -20,7 +19,6 @@ import org.springframework.stereotype.Component
 @Component
 class OparlSearchResultMapper(
     private val entityManager: EntityManager,
-    private val systemMapper: OparlSystemMapper,
     private val bodyMapper: OparlBodyMapper,
     private val legislativeTermMapper: OparlLegislativeTermMapper,
     private val organizationMapper: OparlOrganizationMapper,
@@ -35,7 +33,6 @@ class OparlSearchResultMapper(
 ) {
     fun toDto(reference: OparlSearchReference): Any {
         return when (reference.entityType) {
-            OparlSearchEntityType.SYSTEM -> systemMapper.toDto(find<ResolvedSystem>(reference))
             OparlSearchEntityType.BODY -> bodyMapper.toDto(find<ResolvedBody>(reference))
             OparlSearchEntityType.LEGISLATIVE_TERM -> {
                 legislativeTermMapper.toDto(find<ResolvedLegislativeTerm>(reference))

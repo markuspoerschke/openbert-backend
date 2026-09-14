@@ -42,9 +42,8 @@ class OparlSearchControllerTest(
     }
 
     @Test
-    fun `searches text fields of every resolved OParl entity type`() {
+    fun `searches text fields of every exposed resolved OParl entity type`() {
         val searchesByExpectedType = mapOf(
-            "demo search system" to "System",
             "Stadtparlament" to "Body",
             "21. Wahlperiode" to "LegislativeTerm",
             "Bürgerfraktion" to "Organization",
@@ -68,6 +67,56 @@ class OparlSearchControllerTest(
                     value("https://schema.oparl.org/1.1/$expectedType")
                 }
             }
+        }
+    }
+
+    @Test
+    fun `excludes source systems without individual local endpoints`() {
+        listOf("demo search system", "https://schema.oparl.org/1.1/").forEach { text ->
+            mockMvc.get(searchUrl) {
+                param("text", text)
+            }.andExpect {
+                status { isOk() }
+                jsonPath("$.data.length()") { value(0) }
+                jsonPath("$.pagination.totalElements") { value(0) }
+            }
+        }
+    }
+
+    @Test
+    fun `matches literal substrings including pattern metacharacters`() {
+        listOf("ARCHABL", "budget%2026", "budget_2026", "budget\\2026", "budget!2026").forEach { text ->
+            mockMvc.get(searchUrl) {
+                param("text", text)
+            }.andExpect {
+                status { isOk() }
+                jsonPath("$.pagination.totalElements") { value(if (text == "ARCHABL") 2 else 1) }
+            }
+        }
+
+        listOf("searchable%", "searchable_", "budget2026").forEach { text ->
+            mockMvc.get(searchUrl) {
+                param("text", text)
+            }.andExpect {
+                status { isOk() }
+                jsonPath("$.data.length()") { value(0) }
+                jsonPath("$.pagination.totalElements") { value(0) }
+            }
+        }
+    }
+
+    @Test
+    fun `excludes deleted matches from results counts and pagination`() {
+        mockMvc.get(searchUrl) {
+            param("text", "searchable")
+            param("page", "3")
+            param("size", "1")
+        }.andExpect {
+            status { isOk() }
+            jsonPath("$.data.length()") { value(0) }
+            jsonPath("$.pagination.totalElements") { value(2) }
+            jsonPath("$.pagination.totalPages") { value(2) }
+            jsonPath("$.links.next") { doesNotExist() }
         }
     }
 
@@ -146,10 +195,12 @@ class OparlSearchControllerTest(
 
     @Test
     fun `rejects invalid search parameters`() {
-        mockMvc.get(searchUrl) {
-            param("text", " ")
-        }.andExpect {
-            status { isBadRequest() }
+        listOf(" ", "a", "ab", "a b c", "%%%", "ab_cd").forEach { text ->
+            mockMvc.get(searchUrl) {
+                param("text", text)
+            }.andExpect {
+                status { isBadRequest() }
+            }
         }
 
         mockMvc.get(searchUrl) {

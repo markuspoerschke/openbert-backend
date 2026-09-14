@@ -1,5 +1,6 @@
 package nrw.openbert.backend.oparl.infrastructure.api.v1.controller
 
+import io.swagger.v3.oas.annotations.Parameter
 import nrw.openbert.backend.oparl.application.OparlEntitySearchService
 import nrw.openbert.backend.oparl.infrastructure.api.v1.dto.OparlListLinksDto
 import nrw.openbert.backend.oparl.infrastructure.api.v1.dto.OparlListPaginationDto
@@ -17,12 +18,13 @@ class OparlSearchController(
 ) {
     @GetMapping("oparl/v1.1/search")
     fun search(
+        @Parameter(description = "Literal substring containing at least three consecutive letters or digits")
         @RequestParam text: String,
         @RequestParam(defaultValue = "1") page: Int,
         @RequestParam(defaultValue = "20") size: Int,
     ): ResponseEntity<OparlSearchResultListDto> {
         val searchText = text.trim()
-        if (searchText.isEmpty() || page < 1 || size !in 1..MAX_PAGE_SIZE) {
+        if (!SEARCHABLE_TEXT.containsMatchIn(searchText) || page < 1 || size !in 1..MAX_PAGE_SIZE) {
             return ResponseEntity.badRequest().build()
         }
 
@@ -74,6 +76,8 @@ class OparlSearchController(
     }
 
     companion object {
+        // Patterns without a complete trigram would scan the whole search index.
+        private val SEARCHABLE_TEXT = Regex("[\\p{L}\\p{Nd}]{3}")
         private const val MAX_PAGE_SIZE = 100
     }
 }

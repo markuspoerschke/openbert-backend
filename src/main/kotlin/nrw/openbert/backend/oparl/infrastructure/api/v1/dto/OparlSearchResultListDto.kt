@@ -12,7 +12,6 @@ data class OparlSearchResultListDto(
         schema = Schema(
             discriminatorProperty = "type",
             discriminatorMapping = [
-                DiscriminatorMapping(value = OparlSystemDto.TYPE, schema = OparlSystemDto::class),
                 DiscriminatorMapping(value = OparlBodyDto.TYPE, schema = OparlBodyDto::class),
                 DiscriminatorMapping(
                     value = OparlLegislativeTermDto.TYPE,
@@ -41,7 +40,6 @@ data class OparlSearchResultListDto(
                 DiscriminatorMapping(value = OparlLocationDto.TYPE, schema = OparlLocationDto::class),
             ],
             oneOf = [
-                OparlSystemDto::class,
                 OparlBodyDto::class,
                 OparlLegislativeTermDto::class,
                 OparlOrganizationDto::class,

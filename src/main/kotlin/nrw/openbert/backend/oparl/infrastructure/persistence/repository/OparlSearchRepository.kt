@@ -8,7 +8,6 @@ import org.springframework.stereotype.Repository
 import java.util.UUID
 
 enum class OparlSearchEntityType {
-    SYSTEM,
     BODY,
     LEGISLATIVE_TERM,
     ORGANIZATION,
@@ -33,7 +32,7 @@ class OparlSearchRepository(
 ) {
     fun search(text: String, pageable: Pageable): Page<OparlSearchReference> {
         val parameters = mapOf(
-            "text" to text,
+            "pattern" to "%${text.replace("!", "!!").replace("%", "!%").replace("_", "!_")}%",
             "limit" to pageable.pageSize,
             "offset" to pageable.offset,
         )
@@ -45,7 +44,7 @@ class OparlSearchRepository(
         }
         val totalElements = jdbcTemplate.queryForObject(
             COUNT_QUERY,
-            mapOf("text" to text),
+            parameters,
             Long::class.java,
         ) ?: 0
 
@@ -53,85 +52,63 @@ class OparlSearchRepository(
     }
 
     companion object {
-        private const val SEARCHABLE_ENTITIES = """
-            SELECT 1 AS type_order, 'SYSTEM' AS entity_type, id AS entity_id,
-                   concat_ws(' ', oparl_version, array_to_string(other_oparl_versions, ' '), license,
-                       name, contact_email, contact_name, website, vendor, product, web, url) AS searchable_text
-              FROM oparl_resolved_system
-            UNION ALL
-            SELECT 2, 'BODY', id,
-                   concat_ws(' ', short_name, name, website, license, ags, rgs,
-                       array_to_string(equivalent, ' '), contact_email, contact_name, classification,
-                       array_to_string(keyword, ' '), web, url)
-              FROM oparl_resolved_body
-            UNION ALL
-            SELECT 3, 'LEGISLATIVE_TERM', id,
-                   concat_ws(' ', name, license, array_to_string(keyword, ' '), web, url)
-              FROM oparl_resolved_legislative_term
-            UNION ALL
-            SELECT 4, 'ORGANIZATION', id,
-                   concat_ws(' ', name, short_name, array_to_string(post, ' '), organization_type,
-                       classification, website, license, array_to_string(keyword, ' '), web, url)
-              FROM oparl_resolved_organization
-            UNION ALL
-            SELECT 5, 'PERSON', id,
-                   concat_ws(' ', name, family_name, given_name, form_of_address, affix,
-                       array_to_string(title, ' '), gender, array_to_string(phone, ' '),
-                       array_to_string(email, ' '), array_to_string(status, ' '), life, life_source,
-                       license, array_to_string(keyword, ' '), web, url)
-              FROM oparl_resolved_person
-            UNION ALL
-            SELECT 6, 'MEMBERSHIP', id,
-                   concat_ws(' ', role, license, array_to_string(keyword, ' '), web, url)
-              FROM oparl_resolved_membership
-            UNION ALL
-            SELECT 7, 'MEETING', id,
-                   concat_ws(' ', name, meeting_state, license, array_to_string(keyword, ' '), web, url)
-              FROM oparl_resolved_meeting
-            UNION ALL
-            SELECT 8, 'AGENDA_ITEM', id,
-                   concat_ws(' ', number, name, result, resolution_text, license,
-                       array_to_string(keyword, ' '), web, url)
-              FROM oparl_resolved_agenda_item
-            UNION ALL
-            SELECT 9, 'PAPER', id,
-                   concat_ws(' ', name, reference, paper_type, license,
-                       array_to_string(keyword, ' '), web, url)
-              FROM oparl_resolved_paper
-            UNION ALL
-            SELECT 10, 'CONSULTATION', id,
-                   concat_ws(' ', role, license, array_to_string(keyword, ' '), web, url)
-              FROM oparl_resolved_consultation
-            UNION ALL
-            SELECT 11, 'FILE', id,
-                   concat_ws(' ', name, file_name, mime_type, text, access_url, download_url,
-                       external_service_url, file_license, license, array_to_string(keyword, ' '), web, url)
-              FROM oparl_resolved_file
-            UNION ALL
-            SELECT 12, 'LOCATION', id,
-                   concat_ws(' ', description, geojson::text, street_address, postal_code, locality,
-                       sub_locality, room, license, array_to_string(keyword, ' '), web, url)
-              FROM oparl_resolved_location
-        """
-
+        // Source systems have no individual local endpoint and must not appear as the local system.
         private const val MATCHED_ENTITIES = """
-            SELECT type_order, entity_type, entity_id
-              FROM searchable_entities
-             WHERE position(lower(:text) in lower(searchable_text)) > 0
+            SELECT 1 AS type_order, 'BODY' AS entity_type, id AS entity_id
+              FROM oparl_resolved_body
+             WHERE NOT deleted AND searchable_text LIKE lower(:pattern) ESCAPE '!'
+            UNION ALL
+            SELECT 2 AS type_order, 'LEGISLATIVE_TERM' AS entity_type, id AS entity_id
+              FROM oparl_resolved_legislative_term
+             WHERE NOT deleted AND searchable_text LIKE lower(:pattern) ESCAPE '!'
+            UNION ALL
+            SELECT 3 AS type_order, 'ORGANIZATION' AS entity_type, id AS entity_id
+              FROM oparl_resolved_organization
+             WHERE NOT deleted AND searchable_text LIKE lower(:pattern) ESCAPE '!'
+            UNION ALL
+            SELECT 4 AS type_order, 'PERSON' AS entity_type, id AS entity_id
+              FROM oparl_resolved_person
+             WHERE NOT deleted AND searchable_text LIKE lower(:pattern) ESCAPE '!'
+            UNION ALL
+            SELECT 5 AS type_order, 'MEMBERSHIP' AS entity_type, id AS entity_id
+              FROM oparl_resolved_membership
+             WHERE NOT deleted AND searchable_text LIKE lower(:pattern) ESCAPE '!'
+            UNION ALL
+            SELECT 6 AS type_order, 'MEETING' AS entity_type, id AS entity_id
+              FROM oparl_resolved_meeting
+             WHERE NOT deleted AND searchable_text LIKE lower(:pattern) ESCAPE '!'
+            UNION ALL
+            SELECT 7 AS type_order, 'AGENDA_ITEM' AS entity_type, id AS entity_id
+              FROM oparl_resolved_agenda_item
+             WHERE NOT deleted AND searchable_text LIKE lower(:pattern) ESCAPE '!'
+            UNION ALL
+            SELECT 8 AS type_order, 'PAPER' AS entity_type, id AS entity_id
+              FROM oparl_resolved_paper
+             WHERE NOT deleted AND searchable_text LIKE lower(:pattern) ESCAPE '!'
+            UNION ALL
+            SELECT 9 AS type_order, 'CONSULTATION' AS entity_type, id AS entity_id
+              FROM oparl_resolved_consultation
+             WHERE NOT deleted AND searchable_text LIKE lower(:pattern) ESCAPE '!'
+            UNION ALL
+            SELECT 10 AS type_order, 'FILE' AS entity_type, id AS entity_id
+              FROM oparl_resolved_file
+             WHERE NOT deleted AND searchable_text LIKE lower(:pattern) ESCAPE '!'
+            UNION ALL
+            SELECT 11 AS type_order, 'LOCATION' AS entity_type, id AS entity_id
+              FROM oparl_resolved_location
+             WHERE NOT deleted AND searchable_text LIKE lower(:pattern) ESCAPE '!'
         """
 
-        private const val SEARCH_QUERY = """
-            WITH searchable_entities AS ($SEARCHABLE_ENTITIES),
-                 matched_entities AS ($MATCHED_ENTITIES)
+        internal const val SEARCH_QUERY = """
+            WITH matched_entities AS ($MATCHED_ENTITIES)
             SELECT entity_type, entity_id
               FROM matched_entities
              ORDER BY type_order, entity_id
              LIMIT :limit OFFSET :offset
         """
 
-        private const val COUNT_QUERY = """
-            WITH searchable_entities AS ($SEARCHABLE_ENTITIES),
-                 matched_entities AS ($MATCHED_ENTITIES)
+        internal const val COUNT_QUERY = """
+            WITH matched_entities AS ($MATCHED_ENTITIES)
             SELECT count(*)
               FROM matched_entities
         """
