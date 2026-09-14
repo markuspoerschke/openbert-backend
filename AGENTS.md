@@ -20,3 +20,4 @@
 ## Further Resources
 
 - See [OParl-1.1.md](docs/oparl/OParl-1.1.md) for the specs of Oparl
+- Follow wording defined in [GLOSSARY.md](docs/GLOSSARY.md)
