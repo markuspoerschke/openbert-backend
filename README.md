@@ -22,7 +22,7 @@ It provides data from council information systems through an OParl-compatible AP
 ```mermaid
 flowchart TD
     AI[AI Agents]
-    RIS[Parliament Information System]
+    CIS[Council Information System]
 
     subgraph Openbert[Openbert]
         Frontend[Frontend]
@@ -37,8 +37,8 @@ flowchart TD
 
     AI -->|MCP Endpoint| BE
 
-    BE -->|OParl API| RIS
-    OParlProxy -->|HTML Crawler / Other API| RIS
+    BE -->|OParl API| CIS
+    OParlProxy -->|HTML Crawler / Other API| CIS
 ```
 
 ## Backend Architecture and Software Design Decisions
@@ -47,7 +47,7 @@ This project follows the principles of Domain-Driven Design and [Hexagonal Archi
 
 The codebase is organized into multiple sub-domains to separate different concerns. The current sub-domains are:
 - `crawl`, which fetches raw data from remote council information systems.
-- `enrich`, which enriches the data (for example by adding geo-locations) and persists the enrichment in dedicated tables.
+- `enrich` (planned), which enriches the data (for example by adding geo-locations) and persists the enrichment in dedicated tables.
 - `resolve`, which merges raw and enriched data into resolved data that is later presented to users.
 - `oparl`, which contains data structures shared between `crawl`, `enrich`, and `resolve`.
 
