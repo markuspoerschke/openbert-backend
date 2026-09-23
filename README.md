@@ -68,15 +68,11 @@ flowchart TD
 The architecture currently uses the following layers:
 - `domain`, which contains entities, value objects, and domain services.
 - `application`, which contains use cases and ports such as repositories.
-- `infrastructure` (planned to be renamed to `adapters`), which contains integrations with the outside world, such as repository implementations.
+- `adapter`, which contains integrations with the outside world, such as repository implementations.
 
 ```mermaid
 flowchart TD
-    D[domain]
-    A[application]
-    I[infrastructure / adapters]
-
-    A --> D
-    I --> A
-    I --> D
+    Application --> Domain
+    Adapter --> Application
+    Adapter --> Domain
 ```

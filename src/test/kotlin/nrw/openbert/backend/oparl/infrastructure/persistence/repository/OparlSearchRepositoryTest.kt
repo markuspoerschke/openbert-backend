@@ -1,6 +1,8 @@
 package nrw.openbert.backend.oparl.infrastructure.persistence.repository
 
 import nrw.openbert.backend.TestcontainersConfiguration
+import nrw.openbert.backend.parldata.adapter.outbound.persistence.repository.OparlSearchEntityType
+import nrw.openbert.backend.parldata.adapter.outbound.persistence.repository.OparlSearchRepository
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest

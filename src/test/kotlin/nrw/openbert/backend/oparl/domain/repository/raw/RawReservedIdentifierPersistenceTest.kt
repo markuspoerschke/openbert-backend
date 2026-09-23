@@ -2,11 +2,13 @@ package nrw.openbert.backend.oparl.domain.repository.raw
 
 import jakarta.persistence.EntityManager
 import nrw.openbert.backend.TestcontainersConfiguration
-import nrw.openbert.backend.oparl.domain.entity.OparlSystem
-import nrw.openbert.backend.oparl.domain.entity.embeddable.OparlResource
-import nrw.openbert.backend.oparl.domain.entity.raw.RawAgendaItem
-import nrw.openbert.backend.oparl.domain.entity.raw.RawMeeting
-import nrw.openbert.backend.oparl.domain.valueObject.OparlUrl
+import nrw.openbert.backend.parldata.domain.entity.OparlSystem
+import nrw.openbert.backend.parldata.domain.entity.embeddable.OparlResource
+import nrw.openbert.backend.parldata.domain.entity.raw.RawAgendaItem
+import nrw.openbert.backend.parldata.domain.entity.raw.RawMeeting
+import nrw.openbert.backend.parldata.application.port.outbound.repository.RawAgendaItemRepository
+import nrw.openbert.backend.parldata.application.port.outbound.repository.RawMeetingRepository
+import nrw.openbert.backend.parldata.domain.valueObject.OparlUrl
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest

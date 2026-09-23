@@ -1,38 +1,41 @@
 package nrw.openbert.backend.crawl.application
 
-import nrw.openbert.backend.crawl.application.processor.AgendaItemProcessor
-import nrw.openbert.backend.crawl.application.processor.BodyProcessor
-import nrw.openbert.backend.crawl.application.processor.ConsultationProcessor
-import nrw.openbert.backend.crawl.application.processor.FileProcessor
-import nrw.openbert.backend.crawl.application.processor.LegislativeTermProcessor
-import nrw.openbert.backend.crawl.application.processor.LocationProcessor
-import nrw.openbert.backend.crawl.application.processor.MeetingProcessor
-import nrw.openbert.backend.crawl.application.processor.MembershipProcessor
-import nrw.openbert.backend.crawl.application.processor.OrganizationProcessor
-import nrw.openbert.backend.crawl.application.processor.PaperProcessor
-import nrw.openbert.backend.crawl.application.processor.PersonProcessor
-import nrw.openbert.backend.crawl.application.processor.SystemProcessor
-import nrw.openbert.backend.crawl.domain.entity.CrawlEntityType
-import nrw.openbert.backend.crawl.domain.entity.CrawlTarget
-import nrw.openbert.backend.crawl.domain.repository.CrawlTargetRepository
-import nrw.openbert.backend.crawl.infrastructure.client.OparlClient
-import nrw.openbert.backend.crawl.infrastructure.dto.oparl.OparlAgendaItemDto
-import nrw.openbert.backend.crawl.infrastructure.dto.oparl.OparlBodyDto
-import nrw.openbert.backend.crawl.infrastructure.dto.oparl.OparlConsultationDto
-import nrw.openbert.backend.crawl.infrastructure.dto.oparl.OparlFileDto
-import nrw.openbert.backend.crawl.infrastructure.dto.oparl.OparlLegislativeTermDto
-import nrw.openbert.backend.crawl.infrastructure.dto.oparl.OparlListDto
-import nrw.openbert.backend.crawl.infrastructure.dto.oparl.OparlListLinksDto
-import nrw.openbert.backend.crawl.infrastructure.dto.oparl.OparlLocationDto
-import nrw.openbert.backend.crawl.infrastructure.dto.oparl.OparlMeetingDto
-import nrw.openbert.backend.crawl.infrastructure.dto.oparl.OparlMembershipDto
-import nrw.openbert.backend.crawl.infrastructure.dto.oparl.OparlOrganizationDto
-import nrw.openbert.backend.crawl.infrastructure.dto.oparl.OparlPaperDto
-import nrw.openbert.backend.crawl.infrastructure.dto.oparl.OparlPersonDto
-import nrw.openbert.backend.crawl.infrastructure.dto.oparl.OparlSystemDto
-import nrw.openbert.backend.oparl.domain.entity.OparlSystem
-import nrw.openbert.backend.oparl.domain.entity.embeddable.OparlResource
-import nrw.openbert.backend.oparl.domain.valueObject.OparlUrl
+import nrw.openbert.backend.parldata.adapter.inbound.crawler.processor.AgendaItemProcessor
+import nrw.openbert.backend.parldata.adapter.inbound.crawler.processor.BodyProcessor
+import nrw.openbert.backend.parldata.adapter.inbound.crawler.processor.ConsultationProcessor
+import nrw.openbert.backend.parldata.adapter.inbound.crawler.processor.FileProcessor
+import nrw.openbert.backend.parldata.adapter.inbound.crawler.processor.LegislativeTermProcessor
+import nrw.openbert.backend.parldata.adapter.inbound.crawler.processor.LocationProcessor
+import nrw.openbert.backend.parldata.adapter.inbound.crawler.processor.MeetingProcessor
+import nrw.openbert.backend.parldata.adapter.inbound.crawler.processor.MembershipProcessor
+import nrw.openbert.backend.parldata.adapter.inbound.crawler.processor.OrganizationProcessor
+import nrw.openbert.backend.parldata.adapter.inbound.crawler.processor.PaperProcessor
+import nrw.openbert.backend.parldata.adapter.inbound.crawler.processor.PersonProcessor
+import nrw.openbert.backend.parldata.adapter.inbound.crawler.processor.SystemProcessor
+import nrw.openbert.backend.parldata.adapter.inbound.crawler.CrawlTargetEnqueuer
+import nrw.openbert.backend.parldata.adapter.inbound.crawler.Crawler
+import nrw.openbert.backend.parldata.domain.enums.CrawlEntityType
+import nrw.openbert.backend.parldata.domain.entity.CrawlTarget
+import nrw.openbert.backend.parldata.application.port.outbound.repository.CrawlTargetRepository
+import nrw.openbert.backend.parldata.adapter.outbound.client.oparl.OparlClient
+import nrw.openbert.backend.parldata.adapter.outbound.client.oparl.dto.OparlAgendaItemDto
+import nrw.openbert.backend.parldata.adapter.outbound.client.oparl.dto.OparlBodyDto
+import nrw.openbert.backend.parldata.adapter.outbound.client.oparl.dto.OparlConsultationDto
+import nrw.openbert.backend.parldata.adapter.outbound.client.oparl.dto.OparlFileDto
+import nrw.openbert.backend.parldata.adapter.outbound.client.oparl.dto.OparlLegislativeTermDto
+import nrw.openbert.backend.parldata.adapter.outbound.client.oparl.dto.OparlListDto
+import nrw.openbert.backend.parldata.adapter.outbound.client.oparl.dto.OparlListLinksDto
+import nrw.openbert.backend.parldata.adapter.outbound.client.oparl.dto.OparlLocationDto
+import nrw.openbert.backend.parldata.adapter.outbound.client.oparl.dto.OparlMeetingDto
+import nrw.openbert.backend.parldata.adapter.outbound.client.oparl.dto.OparlMembershipDto
+import nrw.openbert.backend.parldata.adapter.outbound.client.oparl.dto.OparlOrganizationDto
+import nrw.openbert.backend.parldata.adapter.outbound.client.oparl.dto.OparlPaperDto
+import nrw.openbert.backend.parldata.adapter.outbound.client.oparl.dto.OparlPersonDto
+import nrw.openbert.backend.parldata.adapter.outbound.client.oparl.dto.OparlResponseDto
+import nrw.openbert.backend.parldata.adapter.outbound.client.oparl.dto.OparlSystemDto
+import nrw.openbert.backend.parldata.domain.entity.OparlSystem
+import nrw.openbert.backend.parldata.domain.entity.embeddable.OparlResource
+import nrw.openbert.backend.parldata.domain.valueObject.OparlUrl
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.doThrow
 import org.mockito.Mockito.mock
@@ -194,7 +197,7 @@ class CrawlerTest {
 
         fun respondWith(
             target: CrawlTarget,
-            response: nrw.openbert.backend.crawl.infrastructure.dto.oparl.OparlResponseDto,
+            response: OparlResponseDto,
         ) {
             org.mockito.Mockito.`when`(crawlTargetRepository.findById(target.id))
                 .thenReturn(Optional.of(target))
