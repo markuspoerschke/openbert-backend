@@ -14,7 +14,7 @@ class OparlMeetingMapper(
     fun toDto(meeting: ResolvedMeeting): OparlMeetingDto {
         return OparlMeetingDto(
             id = urlGenerator.meeting(meeting.body.id, meeting.id),
-            type = AbstractMeeting.TYPE,
+            type = meeting.getType().url,
             name = meeting.name,
             meetingState = meeting.meetingState,
             cancelled = meeting.cancelled,

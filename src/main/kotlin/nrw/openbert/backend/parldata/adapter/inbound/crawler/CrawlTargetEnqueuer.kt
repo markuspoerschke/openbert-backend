@@ -1,6 +1,6 @@
 package nrw.openbert.backend.parldata.adapter.inbound.crawler
 
-import nrw.openbert.backend.parldata.domain.enums.CrawlEntityType
+import nrw.openbert.backend.parldata.domain.enums.OparlType
 import nrw.openbert.backend.parldata.domain.entity.CrawlTarget
 import nrw.openbert.backend.parldata.application.port.outbound.repository.CrawlTargetRepository
 import nrw.openbert.backend.parldata.domain.entity.embeddable.OparlResource
@@ -13,7 +13,7 @@ class CrawlTargetEnqueuer(
 ) {
     private val logger = LoggerFactory.getLogger(javaClass)
 
-    fun enqueue(resource: OparlResource, entityType: CrawlEntityType? = null) {
+    fun enqueue(resource: OparlResource, entityType: OparlType? = null) {
         logger.info("Enqueuing OParl resource {}", resource.url.value)
 
         val crawlTarget = findOrCreate(resource, entityType)
@@ -29,7 +29,7 @@ class CrawlTargetEnqueuer(
         repository.save(crawlTarget)
     }
 
-    private fun findOrCreate(resource: OparlResource, entityType: CrawlEntityType? = null): CrawlTarget =
+    private fun findOrCreate(resource: OparlResource, entityType: OparlType? = null): CrawlTarget =
         repository.findByResource(resource)
             ?: CrawlTarget.create(resource, entityType)
 }

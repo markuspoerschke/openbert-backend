@@ -16,7 +16,7 @@ class OparlPersonMapper(
     fun toDto(person: ResolvedPerson): OparlPersonDto {
         return OparlPersonDto(
             id = urlGenerator.person(person.body.id, person.id),
-            type = AbstractPerson.TYPE,
+            type = person.getType().url,
             body = urlGenerator.body(person.body.id),
             membership = resolvedMembershipRepository
                 .findAllByPerson_IdAndBody_IdOrderById(person.id, person.body.id)

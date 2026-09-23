@@ -12,7 +12,7 @@ import nrw.openbert.backend.parldata.adapter.inbound.crawler.processor.Organizat
 import nrw.openbert.backend.parldata.adapter.inbound.crawler.processor.PaperProcessor
 import nrw.openbert.backend.parldata.adapter.inbound.crawler.processor.PersonProcessor
 import nrw.openbert.backend.parldata.adapter.inbound.crawler.processor.SystemProcessor
-import nrw.openbert.backend.parldata.domain.enums.CrawlEntityType
+import nrw.openbert.backend.parldata.domain.enums.OparlType
 import nrw.openbert.backend.parldata.application.port.outbound.repository.CrawlTargetRepository
 import nrw.openbert.backend.parldata.adapter.outbound.client.oparl.OparlClient
 import nrw.openbert.backend.parldata.adapter.outbound.client.oparl.dto.OparlAgendaItemDto
@@ -83,7 +83,7 @@ class Crawler(
         response: OparlResponseDto,
         system: OparlSystem,
         fallbackUrl: String,
-        entityType: CrawlEntityType?,
+        entityType: OparlType?,
     ) {
         when (response) {
             is OparlListDto -> {
@@ -117,19 +117,19 @@ class Crawler(
         }
     }
 
-    private fun entityTypeOf(dto: OparlObjectDto): CrawlEntityType = when (dto) {
-        is OparlAgendaItemDto -> CrawlEntityType.AGENDA_ITEM
-        is OparlBodyDto -> CrawlEntityType.BODY
-        is OparlConsultationDto -> CrawlEntityType.CONSULTATION
-        is OparlFileDto -> CrawlEntityType.FILE
-        is OparlLegislativeTermDto -> CrawlEntityType.LEGISLATIVE_TERM
-        is OparlLocationDto -> CrawlEntityType.LOCATION
-        is OparlMeetingDto -> CrawlEntityType.MEETING
-        is OparlMembershipDto -> CrawlEntityType.MEMBERSHIP
-        is OparlOrganizationDto -> CrawlEntityType.ORGANIZATION
-        is OparlPaperDto -> CrawlEntityType.PAPER
-        is OparlPersonDto -> CrawlEntityType.PERSON
-        is OparlSystemDto -> CrawlEntityType.SYSTEM
+    private fun entityTypeOf(dto: OparlObjectDto): OparlType = when (dto) {
+        is OparlAgendaItemDto -> OparlType.AGENDA_ITEM
+        is OparlBodyDto -> OparlType.BODY
+        is OparlConsultationDto -> OparlType.CONSULTATION
+        is OparlFileDto -> OparlType.FILE
+        is OparlLegislativeTermDto -> OparlType.LEGISLATIVE_TERM
+        is OparlLocationDto -> OparlType.LOCATION
+        is OparlMeetingDto -> OparlType.MEETING
+        is OparlMembershipDto -> OparlType.MEMBERSHIP
+        is OparlOrganizationDto -> OparlType.ORGANIZATION
+        is OparlPaperDto -> OparlType.PAPER
+        is OparlPersonDto -> OparlType.PERSON
+        is OparlSystemDto -> OparlType.SYSTEM
     }
 
     private fun resource(system: OparlSystem, url: String) = OparlResource(system, OparlUrl(url))

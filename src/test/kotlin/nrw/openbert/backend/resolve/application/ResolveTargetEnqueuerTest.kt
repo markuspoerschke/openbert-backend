@@ -1,6 +1,6 @@
 package nrw.openbert.backend.resolve.application
 
-import nrw.openbert.backend.parldata.domain.enums.ResolveEntityType
+import nrw.openbert.backend.parldata.domain.enums.OparlType
 import nrw.openbert.backend.parldata.domain.entity.ResolveTarget
 import nrw.openbert.backend.parldata.application.port.outbound.repository.ResolveTargetRepository
 import nrw.openbert.backend.parldata.application.resolve.ResolveTargetEnqueuer
@@ -24,13 +24,13 @@ class ResolveTargetEnqueuerTest {
     @Test
     fun `creates a resolve target for a crawled raw entity`() {
         val raw = RawPaper(OparlResource(system, OparlUrl("https://oparl.example.org/paper/1")))
-        `when`(repository.findByRawEntityIdAndEntityType(raw.id, ResolveEntityType.PAPER)).thenReturn(null)
+        `when`(repository.findByRawEntityIdAndEntityType(raw.id, OparlType.PAPER)).thenReturn(null)
 
         enqueuer.enqueue(raw)
 
         val target = captureSavedTarget()
         assertEquals(raw.id, target.rawEntityId)
-        assertEquals(ResolveEntityType.PAPER, target.entityType)
+        assertEquals(OparlType.PAPER, target.entityType)
         assertEquals(1, target.referenceCount)
         assertNull(target.lastResolvedAt)
     }
@@ -39,7 +39,7 @@ class ResolveTargetEnqueuerTest {
     fun `requeues an existing resolve target when raw data is crawled again`() {
         val raw = RawPaper(OparlResource(system, OparlUrl("https://oparl.example.org/paper/1")))
         val target = ResolveTarget.create(raw).apply { markAsResolved() }
-        `when`(repository.findByRawEntityIdAndEntityType(raw.id, ResolveEntityType.PAPER)).thenReturn(target)
+        `when`(repository.findByRawEntityIdAndEntityType(raw.id, OparlType.PAPER)).thenReturn(target)
 
         enqueuer.enqueue(raw)
 

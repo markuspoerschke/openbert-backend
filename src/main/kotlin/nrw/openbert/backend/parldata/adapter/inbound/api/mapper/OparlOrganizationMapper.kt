@@ -17,7 +17,7 @@ class OparlOrganizationMapper(
     fun toDto(organization: ResolvedOrganization): OparlOrganizationDto {
         return OparlOrganizationDto(
             id = urlGenerator.organization(organization.body.id, organization.id),
-            type = AbstractOrganization.TYPE,
+            type = organization.getType().url,
             body = urlGenerator.body(organization.body.id),
             membership = resolvedMembershipRepository
                 .findAllByOrganization_IdAndBody_IdOrderById(organization.id, organization.body.id)

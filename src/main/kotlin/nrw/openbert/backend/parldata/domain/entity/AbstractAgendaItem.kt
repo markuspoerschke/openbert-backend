@@ -3,14 +3,11 @@ package nrw.openbert.backend.parldata.domain.entity
 import jakarta.persistence.Column
 import jakarta.persistence.MappedSuperclass
 import nrw.openbert.backend.parldata.domain.entity.embeddable.OparlResource
+import nrw.openbert.backend.parldata.domain.enums.OparlType
 import java.util.*
 
 @MappedSuperclass
 abstract class AbstractAgendaItem(resource: OparlResource) : AbstractOparlEntity(resource) {
-    companion object {
-        const val TYPE = "https://schema.oparl.org/1.1/AgendaItem"
-    }
-
     @Column
     var number: String? = null
 
@@ -57,4 +54,6 @@ abstract class AbstractAgendaItem(resource: OparlResource) : AbstractOparlEntity
         keyword = other.keyword
         web = other.web
     }
+
+    override fun getType() = OparlType.AGENDA_ITEM
 }

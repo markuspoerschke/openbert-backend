@@ -18,7 +18,7 @@ class OparlMembershipMapper(
     ): OparlMembershipDto {
         return OparlMembershipDto(
             id = urlGenerator.membership(membership.body.id, membership.id),
-            type = AbstractMembership.TYPE,
+            type = membership.getType().url,
             person = membership.person
                 .takeIf { includePerson }
                 ?.let { urlGenerator.person(it.body.id, it.id) },

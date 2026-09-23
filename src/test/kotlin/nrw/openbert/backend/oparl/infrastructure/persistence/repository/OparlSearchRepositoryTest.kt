@@ -1,8 +1,8 @@
 package nrw.openbert.backend.oparl.infrastructure.persistence.repository
 
 import nrw.openbert.backend.TestcontainersConfiguration
-import nrw.openbert.backend.parldata.adapter.outbound.persistence.repository.OparlSearchEntityType
-import nrw.openbert.backend.parldata.adapter.outbound.persistence.repository.OparlSearchRepository
+import nrw.openbert.backend.parldata.domain.enums.OparlType
+import nrw.openbert.backend.parldata.adapter.outbound.persistence.repository.JpaOparlSearchRepository
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -19,7 +19,7 @@ import kotlin.test.assertTrue
 @SpringBootTest
 @Transactional
 class OparlSearchRepositoryTest(
-    @Autowired private val searchRepository: OparlSearchRepository,
+    @Autowired private val searchRepository: JpaOparlSearchRepository,
     @Autowired private val jdbcTemplate: NamedParameterJdbcTemplate,
 ) {
     private val page = PageRequest.of(0, 100)
@@ -27,10 +27,10 @@ class OparlSearchRepositoryTest(
     @Test
     fun `excludes deleted records of every searchable type from data and counts`() {
         val initial = searchRepository.search("oparl-demo.example.org", page)
-        assertEquals(OparlSearchEntityType.entries.toSet(), initial.content.map { it.entityType }.toSet())
+        assertEquals(OparlType.entries.toSet(), initial.content.map { it.entityType }.toSet())
         var expectedTotal = initial.totalElements
 
-        OparlSearchEntityType.entries.forEach { type ->
+        OparlType.entries.forEach { type ->
             val table = "oparl_resolved_${type.name.lowercase(Locale.ROOT)}"
             jdbcTemplate.jdbcTemplate.update("UPDATE $table SET deleted = true")
             expectedTotal -= initial.content.count { it.entityType == type }
@@ -82,10 +82,10 @@ class OparlSearchRepositoryTest(
         jdbcTemplate.jdbcTemplate.execute("SET LOCAL enable_seqscan = off")
         val parameters = mapOf("pattern" to "%not-present%", "limit" to 20, "offset" to 0)
 
-        listOf(OparlSearchRepository.SEARCH_QUERY, OparlSearchRepository.COUNT_QUERY).forEach { query ->
+        listOf(JpaOparlSearchRepository.SEARCH_QUERY, JpaOparlSearchRepository.COUNT_QUERY).forEach { query ->
             val plan = jdbcTemplate.queryForList("EXPLAIN $query", parameters, String::class.java)
                 .joinToString("\n")
-            OparlSearchEntityType.entries.forEach { type ->
+            OparlType.entries.forEach { type ->
                 val index = "oparl_resolved_${type.name.lowercase(Locale.ROOT)}_search_trgm_idx"
                 assertTrue(plan.contains(index), "Expected $index in query plan:\n$plan")
             }

@@ -6,13 +6,10 @@ import jakarta.persistence.MappedSuperclass
 import nrw.openbert.backend.parldata.domain.entity.embeddable.OparlResource
 import nrw.openbert.backend.parldata.domain.valueObject.OparlUrl
 import nrw.openbert.backend.parldata.adapter.outbound.persistence.converter.OparlUrlConverter
+import nrw.openbert.backend.parldata.domain.enums.OparlType
 
 @MappedSuperclass
 abstract class AbstractSystem(resource: OparlResource) : AbstractOparlEntity(resource) {
-    companion object {
-        const val TYPE = "https://schema.oparl.org/1.1/System"
-    }
-
     @Column
     var oparlVersion: String = UNKNOWN
 
@@ -59,4 +56,6 @@ abstract class AbstractSystem(resource: OparlResource) : AbstractOparlEntity(res
         product = other.product
         web = other.web
     }
+
+    override fun getType() = OparlType.SYSTEM
 }

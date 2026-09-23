@@ -1,7 +1,7 @@
 package nrw.openbert.backend.parldata.adapter.inbound.crawler.processor
 
 import nrw.openbert.backend.parldata.adapter.inbound.crawler.CrawlTargetEnqueuer
-import nrw.openbert.backend.parldata.domain.enums.CrawlEntityType
+import nrw.openbert.backend.parldata.domain.enums.OparlType
 import nrw.openbert.backend.parldata.adapter.outbound.client.oparl.dto.OparlObjectDto
 import nrw.openbert.backend.parldata.application.resolve.ResolveTargetEnqueuer
 import nrw.openbert.backend.parldata.domain.entity.AbstractOparlEntity
@@ -38,7 +38,7 @@ abstract class AbstractProcessor<D : OparlObjectDto, E : AbstractOparlEntity>(
 
     protected fun enqueueUrls(
         source: OparlResource,
-        entityType: CrawlEntityType,
+        entityType: OparlType,
         vararg urls: String?,
     ) {
         enqueueUrls(source, entityType, urls.asIterable())
@@ -46,7 +46,7 @@ abstract class AbstractProcessor<D : OparlObjectDto, E : AbstractOparlEntity>(
 
     protected fun enqueueUrls(
         source: OparlResource,
-        entityType: CrawlEntityType,
+        entityType: OparlType,
         urls: Iterable<String?>,
     ) {
         urls.filterNotNull()

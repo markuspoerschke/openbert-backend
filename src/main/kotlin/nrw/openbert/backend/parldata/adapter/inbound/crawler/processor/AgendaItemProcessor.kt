@@ -1,7 +1,7 @@
 package nrw.openbert.backend.parldata.adapter.inbound.crawler.processor
 
 import nrw.openbert.backend.parldata.adapter.inbound.crawler.CrawlTargetEnqueuer
-import nrw.openbert.backend.parldata.domain.enums.CrawlEntityType
+import nrw.openbert.backend.parldata.domain.enums.OparlType
 import nrw.openbert.backend.parldata.adapter.outbound.client.oparl.dto.OparlAgendaItemDto
 import nrw.openbert.backend.parldata.application.resolve.ResolveTargetEnqueuer
 import nrw.openbert.backend.parldata.domain.entity.embeddable.OparlResource
@@ -24,8 +24,8 @@ class AgendaItemProcessor(
     override fun saveEntity(entity: RawAgendaItem) = rawAgendaItemRepository.save(entity)
 
     override fun process(resource: OparlResource, dto: OparlAgendaItemDto): RawAgendaItem {
-        enqueueUrls(resource, CrawlEntityType.MEETING, dto.meeting)
-        enqueueUrls(resource, CrawlEntityType.CONSULTATION, dto.consultation)
+        enqueueUrls(resource, OparlType.MEETING, dto.meeting)
+        enqueueUrls(resource, OparlType.CONSULTATION, dto.consultation)
         processInline(resource, dto.resolutionFile, fileProcessor)
             ?.agendaItemUrls
             ?.addUrl(resource.url)

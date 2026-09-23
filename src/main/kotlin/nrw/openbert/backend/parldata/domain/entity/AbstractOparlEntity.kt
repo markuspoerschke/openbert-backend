@@ -5,6 +5,7 @@ import jakarta.persistence.Embedded
 import jakarta.persistence.Id
 import jakarta.persistence.MappedSuperclass
 import nrw.openbert.backend.parldata.domain.entity.embeddable.OparlResource
+import nrw.openbert.backend.parldata.domain.enums.OparlType
 import java.time.Instant
 import java.util.*
 
@@ -34,4 +35,6 @@ abstract class AbstractOparlEntity(
 
     @Column
     val deleted: Boolean = false
+
+    abstract fun getType(): OparlType
 }

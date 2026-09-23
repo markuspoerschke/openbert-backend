@@ -1,16 +1,16 @@
 package nrw.openbert.backend.parldata.application.port.outbound.repository
 
-import nrw.openbert.backend.parldata.domain.enums.ResolveEntityType
 import nrw.openbert.backend.parldata.domain.entity.ResolveTarget
+import nrw.openbert.backend.parldata.domain.enums.OparlType
 import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param
 import java.time.Instant
-import java.util.UUID
+import java.util.*
 
 interface ResolveTargetRepository : JpaRepository<ResolveTarget, UUID> {
-    fun findByRawEntityIdAndEntityType(rawEntityId: UUID, entityType: ResolveEntityType): ResolveTarget?
+    fun findByRawEntityIdAndEntityType(rawEntityId: UUID, entityType: OparlType): ResolveTarget?
 
     @Query(
         """
@@ -21,18 +21,18 @@ interface ResolveTargetRepository : JpaRepository<ResolveTarget, UUID> {
               AND target.jobId IS NULL
               AND target.entityType IN :entityTypes
             ORDER BY CASE target.entityType
-                WHEN nrw.openbert.backend.parldata.domain.enums.ResolveEntityType.SYSTEM THEN 0
-                WHEN nrw.openbert.backend.parldata.domain.enums.ResolveEntityType.BODY THEN 1
-                WHEN nrw.openbert.backend.parldata.domain.enums.ResolveEntityType.ORGANIZATION THEN 2
-                WHEN nrw.openbert.backend.parldata.domain.enums.ResolveEntityType.PAPER THEN 2
-                WHEN nrw.openbert.backend.parldata.domain.enums.ResolveEntityType.LEGISLATIVE_TERM THEN 2
-                WHEN nrw.openbert.backend.parldata.domain.enums.ResolveEntityType.PERSON THEN 3
-                WHEN nrw.openbert.backend.parldata.domain.enums.ResolveEntityType.MEETING THEN 4
-                WHEN nrw.openbert.backend.parldata.domain.enums.ResolveEntityType.MEMBERSHIP THEN 4
-                WHEN nrw.openbert.backend.parldata.domain.enums.ResolveEntityType.AGENDA_ITEM THEN 5
-                WHEN nrw.openbert.backend.parldata.domain.enums.ResolveEntityType.FILE THEN 6
-                WHEN nrw.openbert.backend.parldata.domain.enums.ResolveEntityType.CONSULTATION THEN 7
-                WHEN nrw.openbert.backend.parldata.domain.enums.ResolveEntityType.LOCATION THEN 7
+                WHEN nrw.openbert.backend.parldata.domain.enums.OparlType.SYSTEM THEN 0
+                WHEN nrw.openbert.backend.parldata.domain.enums.OparlType.BODY THEN 1
+                WHEN nrw.openbert.backend.parldata.domain.enums.OparlType.ORGANIZATION THEN 2
+                WHEN nrw.openbert.backend.parldata.domain.enums.OparlType.PAPER THEN 2
+                WHEN nrw.openbert.backend.parldata.domain.enums.OparlType.LEGISLATIVE_TERM THEN 2
+                WHEN nrw.openbert.backend.parldata.domain.enums.OparlType.PERSON THEN 3
+                WHEN nrw.openbert.backend.parldata.domain.enums.OparlType.MEETING THEN 4
+                WHEN nrw.openbert.backend.parldata.domain.enums.OparlType.MEMBERSHIP THEN 4
+                WHEN nrw.openbert.backend.parldata.domain.enums.OparlType.AGENDA_ITEM THEN 5
+                WHEN nrw.openbert.backend.parldata.domain.enums.OparlType.FILE THEN 6
+                WHEN nrw.openbert.backend.parldata.domain.enums.OparlType.CONSULTATION THEN 7
+                WHEN nrw.openbert.backend.parldata.domain.enums.OparlType.LOCATION THEN 7
                 ELSE 8
             END,
             target.referenceCount DESC,
@@ -41,7 +41,7 @@ interface ResolveTargetRepository : JpaRepository<ResolveTarget, UUID> {
     )
     fun findDue(
         @Param("now") now: Instant,
-        @Param("entityTypes") entityTypes: Collection<ResolveEntityType>,
+        @Param("entityTypes") entityTypes: Collection<OparlType>,
         pageable: Pageable,
     ): List<ResolveTarget>
 }

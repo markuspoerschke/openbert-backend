@@ -1,7 +1,7 @@
 package nrw.openbert.backend.parldata.adapter.inbound.crawler.processor
 
 import nrw.openbert.backend.parldata.adapter.inbound.crawler.CrawlTargetEnqueuer
-import nrw.openbert.backend.parldata.domain.enums.CrawlEntityType
+import nrw.openbert.backend.parldata.domain.enums.OparlType
 import nrw.openbert.backend.parldata.adapter.outbound.client.oparl.dto.OparlLocationDto
 import nrw.openbert.backend.parldata.application.resolve.ResolveTargetEnqueuer
 import nrw.openbert.backend.parldata.domain.entity.embeddable.OparlResource
@@ -22,11 +22,11 @@ class LocationProcessor(
     override fun saveEntity(entity: RawLocation) = rawLocationRepository.save(entity)
 
     override fun process(resource: OparlResource, dto: OparlLocationDto): RawLocation {
-        enqueueUrls(resource, CrawlEntityType.BODY, dto.bodies.orEmpty())
-        enqueueUrls(resource, CrawlEntityType.ORGANIZATION, dto.organizations.orEmpty())
-        enqueueUrls(resource, CrawlEntityType.PERSON, dto.persons.orEmpty())
-        enqueueUrls(resource, CrawlEntityType.MEETING, dto.meetings.orEmpty())
-        enqueueUrls(resource, CrawlEntityType.PAPER, dto.papers.orEmpty())
+        enqueueUrls(resource, OparlType.BODY, dto.bodies.orEmpty())
+        enqueueUrls(resource, OparlType.ORGANIZATION, dto.organizations.orEmpty())
+        enqueueUrls(resource, OparlType.PERSON, dto.persons.orEmpty())
+        enqueueUrls(resource, OparlType.MEETING, dto.meetings.orEmpty())
+        enqueueUrls(resource, OparlType.PAPER, dto.papers.orEmpty())
 
         return super.process(resource, dto)
     }

@@ -15,7 +15,7 @@ class OparlFileMapper(
     fun toDto(file: ResolvedFile): OparlFileDto {
         return OparlFileDto(
             id = urlGenerator.file(file.body.id, file.id),
-            type = AbstractFile.TYPE,
+            type = file.getType().url,
             name = file.name,
             fileName = file.fileName,
             mimeType = file.mimeType,

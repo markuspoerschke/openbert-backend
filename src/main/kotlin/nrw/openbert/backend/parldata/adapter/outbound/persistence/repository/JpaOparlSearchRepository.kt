@@ -1,5 +1,8 @@
 package nrw.openbert.backend.parldata.adapter.outbound.persistence.repository
 
+import nrw.openbert.backend.parldata.domain.valueObject.OparlSearchReference
+import nrw.openbert.backend.parldata.application.port.outbound.repository.OparlSearchRepository
+import nrw.openbert.backend.parldata.domain.enums.OparlType
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
@@ -7,30 +10,11 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.stereotype.Repository
 import java.util.UUID
 
-enum class OparlSearchEntityType {
-    BODY,
-    LEGISLATIVE_TERM,
-    ORGANIZATION,
-    PERSON,
-    MEMBERSHIP,
-    MEETING,
-    AGENDA_ITEM,
-    PAPER,
-    CONSULTATION,
-    FILE,
-    LOCATION,
-}
-
-data class OparlSearchReference(
-    val entityType: OparlSearchEntityType,
-    val entityId: UUID,
-)
-
 @Repository
-class OparlSearchRepository(
+class JpaOparlSearchRepository(
     private val jdbcTemplate: NamedParameterJdbcTemplate,
-) {
-    fun search(text: String, pageable: Pageable): Page<OparlSearchReference> {
+): OparlSearchRepository {
+    override fun search(text: String, pageable: Pageable): Page<OparlSearchReference> {
         val parameters = mapOf(
             "pattern" to "%${text.replace("!", "!!").replace("%", "!%").replace("_", "!_")}%",
             "limit" to pageable.pageSize,
@@ -38,7 +22,7 @@ class OparlSearchRepository(
         )
         val references = jdbcTemplate.query(SEARCH_QUERY, parameters) { resultSet, _ ->
             OparlSearchReference(
-                entityType = OparlSearchEntityType.valueOf(resultSet.getString("entity_type")),
+                entityType = OparlType.valueOf(resultSet.getString("entity_type")),
                 entityId = resultSet.getObject("entity_id", UUID::class.java),
             )
         }
