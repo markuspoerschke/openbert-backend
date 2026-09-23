@@ -1,7 +1,7 @@
 package nrw.openbert.backend.parldata.adapter.inbound.api.controller
 
-import nrw.openbert.backend.oparl.infrastructure.api.v1.urlGenerator.OparlUrlGenerator
-import nrw.openbert.backend.oparl.infrastructure.api.v1.dto.OparlSystemDto
+import nrw.openbert.backend.parldata.adapter.inbound.api.dto.OparlSystemDto
+import nrw.openbert.backend.parldata.adapter.inbound.api.urlGenerator.OparlUrlGenerator
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping

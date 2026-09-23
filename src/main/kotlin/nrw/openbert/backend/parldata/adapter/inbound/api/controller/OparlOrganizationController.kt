@@ -1,6 +1,8 @@
 package nrw.openbert.backend.parldata.adapter.inbound.api.controller
 
+import nrw.openbert.backend.parldata.adapter.inbound.api.dto.OparlConsultationDto
 import nrw.openbert.backend.parldata.adapter.inbound.api.dto.OparlListDto
+import nrw.openbert.backend.parldata.adapter.inbound.api.dto.OparlMeetingDto
 import nrw.openbert.backend.parldata.adapter.inbound.api.dto.OparlOrganizationDto
 import nrw.openbert.backend.parldata.adapter.inbound.api.mapper.OparlConsultationMapper
 import nrw.openbert.backend.parldata.adapter.inbound.api.mapper.OparlMeetingMapper
