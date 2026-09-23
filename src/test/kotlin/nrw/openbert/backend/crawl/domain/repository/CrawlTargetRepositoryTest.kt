@@ -1,8 +1,9 @@
 package nrw.openbert.backend.crawl.domain.repository
 
 import nrw.openbert.backend.TestcontainersConfiguration
-import nrw.openbert.backend.crawl.domain.entity.CrawlTarget
-import nrw.openbert.backend.oparl.domain.valueObject.OparlUrl
+import nrw.openbert.backend.parldata.domain.entity.CrawlTarget
+import nrw.openbert.backend.parldata.application.port.outbound.repository.CrawlTargetRepository
+import nrw.openbert.backend.parldata.domain.valueObject.OparlUrl
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest

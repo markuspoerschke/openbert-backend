@@ -1,0 +1,46 @@
+package nrw.openbert.backend.parldata.domain.entity.resolved
+
+import jakarta.persistence.Entity
+import jakarta.persistence.OneToMany
+import jakarta.persistence.OrderBy
+import jakarta.persistence.Table
+import jakarta.persistence.UniqueConstraint
+import nrw.openbert.backend.parldata.domain.entity.AbstractBody
+import nrw.openbert.backend.parldata.domain.entity.embeddable.OparlResource
+import nrw.openbert.backend.parldata.domain.entity.raw.RawBody
+
+@Entity(name = "oparl_resolved_body")
+@Table(uniqueConstraints = [UniqueConstraint(columnNames = ["system_id", "url"])])
+class ResolvedBody(resource: OparlResource) : AbstractBody(resource) {
+    @OneToMany(mappedBy = "body")
+    val organizations: MutableList<ResolvedOrganization> = mutableListOf()
+
+    @OneToMany(mappedBy = "body")
+    val persons: MutableList<ResolvedPerson> = mutableListOf()
+
+    @OneToMany(mappedBy = "body")
+    @OrderBy("id ASC")
+    val meetings: MutableList<ResolvedMeeting> = mutableListOf()
+
+    @OneToMany(mappedBy = "body")
+    @OrderBy("id ASC")
+    val legislativeTerms: MutableList<ResolvedLegislativeTerm> = mutableListOf()
+
+    @OneToMany(mappedBy = "body")
+    @OrderBy("id ASC")
+    val locations: MutableList<ResolvedLocation> = mutableListOf()
+
+    @OneToMany(mappedBy = "body")
+    @OrderBy("id ASC")
+    val files: MutableList<ResolvedFile> = mutableListOf()
+
+    @OneToMany(mappedBy = "body")
+    @OrderBy("id ASC")
+    val consultations: MutableList<ResolvedConsultation> = mutableListOf()
+
+    companion object {
+        fun fromRaw(raw: RawBody): ResolvedBody {
+            return ResolvedBody(raw.resource).apply { applyValuesFrom(raw) }
+        }
+    }
+}

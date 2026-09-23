@@ -1,11 +1,12 @@
 package nrw.openbert.backend.crawl.application
 
-import nrw.openbert.backend.crawl.domain.entity.CrawlEntityType
-import nrw.openbert.backend.crawl.domain.entity.CrawlTarget
-import nrw.openbert.backend.crawl.domain.repository.CrawlTargetRepository
-import nrw.openbert.backend.oparl.domain.entity.OparlSystem
-import nrw.openbert.backend.oparl.domain.entity.embeddable.OparlResource
-import nrw.openbert.backend.oparl.domain.valueObject.OparlUrl
+import nrw.openbert.backend.parldata.adapter.inbound.crawler.CrawlTargetEnqueuer
+import nrw.openbert.backend.parldata.domain.enums.CrawlEntityType
+import nrw.openbert.backend.parldata.domain.entity.CrawlTarget
+import nrw.openbert.backend.parldata.application.port.outbound.repository.CrawlTargetRepository
+import nrw.openbert.backend.parldata.domain.entity.OparlSystem
+import nrw.openbert.backend.parldata.domain.entity.embeddable.OparlResource
+import nrw.openbert.backend.parldata.domain.valueObject.OparlUrl
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentCaptor
 import org.mockito.Mockito.mock
