@@ -1,10 +1,10 @@
 plugins {
-    kotlin("jvm") version "2.4.10"
+    kotlin("jvm") version "2.4.20"
     kotlin("plugin.spring") version "2.4.10"
-    id("org.springframework.boot") version "4.1.0"
+    id("org.springframework.boot") version "4.1.1"
     id("io.spring.dependency-management") version "1.1.7"
     id("org.asciidoctor.jvm.convert") version "4.0.5"
-    kotlin("plugin.jpa") version "2.4.10"
+    kotlin("plugin.jpa") version "2.4.20"
 }
 
 group = "nrw.openbert"
@@ -31,7 +31,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-webmvc")
     implementation("org.flywaydb:flyway-database-postgresql")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
-    implementation("org.jobrunr:jobrunr-spring-boot-4-starter:8.7.0")
+    implementation("org.jobrunr:jobrunr-spring-boot-4-starter:8.8.2")
     implementation("tools.jackson.module:jackson-module-kotlin")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     developmentOnly("org.springframework.boot:spring-boot-devtools")
