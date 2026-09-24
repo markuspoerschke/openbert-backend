@@ -50,6 +50,7 @@ dependencies {
     testImplementation("org.testcontainers:testcontainers-postgresql")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.3")
+    implementation("org.springframework.ai:spring-ai-starter-mcp-server-webmvc:2.0.1")
 }
 
 kotlin {
