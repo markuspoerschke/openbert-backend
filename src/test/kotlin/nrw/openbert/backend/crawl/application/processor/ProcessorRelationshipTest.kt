@@ -1,6 +1,6 @@
 package nrw.openbert.backend.crawl.application.processor
 
-import nrw.openbert.backend.parldata.adapter.inbound.crawler.CrawlTargetEnqueuer
+import nrw.openbert.backend.parldata.application.crawl.CrawlTargetEnqueuer
 import nrw.openbert.backend.parldata.adapter.inbound.crawler.processor.AgendaItemProcessor
 import nrw.openbert.backend.parldata.adapter.inbound.crawler.processor.BodyProcessor
 import nrw.openbert.backend.parldata.adapter.inbound.crawler.processor.ConsultationProcessor

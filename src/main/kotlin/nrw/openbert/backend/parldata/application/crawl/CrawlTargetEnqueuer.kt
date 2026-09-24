@@ -1,4 +1,4 @@
-package nrw.openbert.backend.parldata.adapter.inbound.crawler
+package nrw.openbert.backend.parldata.application.crawl
 
 import nrw.openbert.backend.parldata.domain.enums.OparlType
 import nrw.openbert.backend.parldata.domain.entity.CrawlTarget
@@ -19,6 +19,7 @@ class CrawlTargetEnqueuer(
         val crawlTarget = findOrCreate(resource, entityType)
         entityType?.let(crawlTarget::assignEntityType)
         crawlTarget.increaseReferenceCounter()
+
         repository.save(crawlTarget)
     }
 
