@@ -1,6 +1,6 @@
 package nrw.openbert.backend.parldata.adapter.inbound.crawler.processor
 
-import nrw.openbert.backend.parldata.adapter.inbound.crawler.CrawlTargetEnqueuer
+import nrw.openbert.backend.parldata.application.crawl.CrawlTargetEnqueuer
 import nrw.openbert.backend.parldata.domain.enums.OparlType
 import nrw.openbert.backend.parldata.adapter.outbound.client.oparl.dto.OparlLocationDto
 import nrw.openbert.backend.parldata.application.resolve.ResolveTargetEnqueuer

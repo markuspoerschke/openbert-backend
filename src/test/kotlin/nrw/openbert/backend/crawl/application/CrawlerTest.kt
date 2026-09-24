@@ -12,7 +12,7 @@ import nrw.openbert.backend.parldata.adapter.inbound.crawler.processor.Organizat
 import nrw.openbert.backend.parldata.adapter.inbound.crawler.processor.PaperProcessor
 import nrw.openbert.backend.parldata.adapter.inbound.crawler.processor.PersonProcessor
 import nrw.openbert.backend.parldata.adapter.inbound.crawler.processor.SystemProcessor
-import nrw.openbert.backend.parldata.adapter.inbound.crawler.CrawlTargetEnqueuer
+import nrw.openbert.backend.parldata.application.crawl.CrawlTargetEnqueuer
 import nrw.openbert.backend.parldata.adapter.inbound.crawler.Crawler
 import nrw.openbert.backend.parldata.domain.enums.OparlType
 import nrw.openbert.backend.parldata.domain.entity.CrawlTarget
