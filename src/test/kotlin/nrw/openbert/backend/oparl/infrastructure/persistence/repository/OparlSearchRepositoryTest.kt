@@ -22,12 +22,28 @@ class OparlSearchRepositoryTest(
     @Autowired private val searchRepository: JpaOparlSearchRepository,
     @Autowired private val jdbcTemplate: NamedParameterJdbcTemplate,
 ) {
-    private val page = PageRequest.of(0, 100)
+    companion object {
+        val SEARCHABLE_TYPES = listOf(
+            OparlType.AGENDA_ITEM,
+            OparlType.BODY,
+            OparlType.CONSULTATION,
+            OparlType.FILE,
+            OparlType.LEGISLATIVE_TERM,
+            OparlType.LOCATION,
+            OparlType.MEETING,
+            OparlType.MEMBERSHIP,
+            OparlType.ORGANIZATION,
+            OparlType.PAPER,
+            OparlType.PERSON,
+        )
+    }
+
+    private val page = PageRequest.of (0, 100)
 
     @Test
     fun `excludes deleted records of every searchable type from data and counts`() {
         val initial = searchRepository.search("oparl-demo.example.org", page)
-        assertEquals(OparlType.entries.toSet(), initial.content.map { it.entityType }.toSet())
+        assertEquals(SEARCHABLE_TYPES.toSet(), initial.content.map { it.entityType }.toSet())
         var expectedTotal = initial.totalElements
 
         OparlType.entries.forEach { type ->
@@ -85,7 +101,7 @@ class OparlSearchRepositoryTest(
         listOf(JpaOparlSearchRepository.SEARCH_QUERY, JpaOparlSearchRepository.COUNT_QUERY).forEach { query ->
             val plan = jdbcTemplate.queryForList("EXPLAIN $query", parameters, String::class.java)
                 .joinToString("\n")
-            OparlType.entries.forEach { type ->
+            SEARCHABLE_TYPES.forEach { type ->
                 val index = "oparl_resolved_${type.name.lowercase(Locale.ROOT)}_search_trgm_idx"
                 assertTrue(plan.contains(index), "Expected $index in query plan:\n$plan")
             }
