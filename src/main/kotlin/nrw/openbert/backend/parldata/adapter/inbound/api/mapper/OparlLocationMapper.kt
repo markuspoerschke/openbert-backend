@@ -13,7 +13,7 @@ class OparlLocationMapper(
     fun toDto(location: ResolvedLocation): OparlLocationDto {
         return OparlLocationDto(
             id = urlGenerator.location(location.body.id, location.id),
-            type = AbstractLocation.TYPE,
+            type = location.getType().url,
             description = location.description,
             geojson = location.geojson,
             streetAddress = location.streetAddress,

@@ -3,7 +3,7 @@ package nrw.openbert.backend.parldata.application.resolve
 import nrw.openbert.backend.parldata.domain.entity.resolved.ResolvedSystem
 import nrw.openbert.backend.parldata.application.port.outbound.repository.RawSystemRepository
 import nrw.openbert.backend.parldata.application.port.outbound.repository.ResolvedSystemRepository
-import nrw.openbert.backend.parldata.domain.enums.ResolveEntityType
+import nrw.openbert.backend.parldata.domain.enums.OparlType
 import org.springframework.stereotype.Service
 import java.util.UUID
 
@@ -12,7 +12,7 @@ class SystemResolver(
     private val rawRepository: RawSystemRepository,
     private val resolvedRepository: ResolvedSystemRepository,
 ) : EntityResolver {
-    override val entityType = ResolveEntityType.SYSTEM
+    override val entityType = OparlType.SYSTEM
 
     override fun resolve(rawEntityId: UUID) {
         val raw = rawRepository.findById(rawEntityId).orElseThrow {

@@ -6,7 +6,7 @@ import jakarta.persistence.Enumerated
 import jakarta.persistence.Id
 import jakarta.persistence.Table
 import jakarta.persistence.UniqueConstraint
-import nrw.openbert.backend.parldata.domain.enums.ResolveEntityType
+import nrw.openbert.backend.parldata.domain.enums.OparlType
 import java.time.Instant
 import java.util.UUID
 
@@ -20,7 +20,7 @@ class ResolveTarget(
     val id: UUID = UUID.randomUUID(),
     val rawEntityId: UUID,
     @Enumerated(EnumType.STRING)
-    val entityType: ResolveEntityType,
+    val entityType: OparlType,
     val createdAt: Instant = Instant.now(),
     var lastResolvedAt: Instant? = null,
     var modifiedAt: Instant = Instant.now(),
@@ -49,7 +49,7 @@ class ResolveTarget(
     companion object {
         fun create(entity: AbstractOparlEntity) = ResolveTarget(
             rawEntityId = entity.id,
-            entityType = ResolveEntityType.from(entity),
+            entityType = entity.getType(),
         )
     }
 }

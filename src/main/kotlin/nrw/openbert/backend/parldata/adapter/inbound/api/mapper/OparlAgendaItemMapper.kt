@@ -2,7 +2,6 @@ package nrw.openbert.backend.parldata.adapter.inbound.api.mapper
 
 import nrw.openbert.backend.parldata.adapter.inbound.api.dto.OparlAgendaItemDto
 import nrw.openbert.backend.parldata.adapter.inbound.api.urlGenerator.OparlUrlGenerator
-import nrw.openbert.backend.parldata.domain.entity.AbstractAgendaItem
 import nrw.openbert.backend.parldata.domain.entity.resolved.ResolvedAgendaItem
 import org.springframework.stereotype.Component
 
@@ -14,7 +13,7 @@ class OparlAgendaItemMapper(
     fun toDto(agendaItem: ResolvedAgendaItem): OparlAgendaItemDto {
         return OparlAgendaItemDto(
             id = urlGenerator.agendaItem(agendaItem.body.id, agendaItem.id),
-            type = AbstractAgendaItem.TYPE,
+            type = agendaItem.getType().url,
             meeting = urlGenerator.meeting(agendaItem.body.id, agendaItem.meeting.id),
             number = agendaItem.number,
             order = requireNotNull(agendaItem.order) {

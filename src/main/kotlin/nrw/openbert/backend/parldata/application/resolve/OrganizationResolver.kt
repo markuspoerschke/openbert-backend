@@ -8,7 +8,7 @@ import nrw.openbert.backend.parldata.application.port.outbound.repository.RawOrg
 import nrw.openbert.backend.parldata.application.port.outbound.repository.ResolvedBodyRepository
 import nrw.openbert.backend.parldata.application.port.outbound.repository.ResolvedOrganizationRepository
 import nrw.openbert.backend.parldata.domain.entity.resolved.ResolvedBody
-import nrw.openbert.backend.parldata.domain.enums.ResolveEntityType
+import nrw.openbert.backend.parldata.domain.enums.OparlType
 import org.springframework.stereotype.Service
 import java.util.UUID
 
@@ -19,7 +19,7 @@ class OrganizationResolver(
     private val resolvedRepository: ResolvedOrganizationRepository,
     private val resolvedBodyRepository: ResolvedBodyRepository,
 ) : EntityResolver {
-    override val entityType = ResolveEntityType.ORGANIZATION
+    override val entityType = OparlType.ORGANIZATION
 
     override fun resolve(rawEntityId: UUID) {
         val raw = rawRepository.findById(rawEntityId).orElseThrow {

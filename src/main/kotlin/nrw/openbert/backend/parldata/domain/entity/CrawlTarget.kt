@@ -7,7 +7,7 @@ import jakarta.persistence.Enumerated
 import jakarta.persistence.Id
 import jakarta.persistence.Table
 import jakarta.persistence.UniqueConstraint
-import nrw.openbert.backend.parldata.domain.enums.CrawlEntityType
+import nrw.openbert.backend.parldata.domain.enums.OparlType
 import nrw.openbert.backend.parldata.domain.entity.embeddable.OparlResource
 import java.time.Instant
 import java.util.UUID
@@ -25,7 +25,7 @@ class CrawlTarget(
     @Embedded
     val resource: OparlResource,
     @Enumerated(EnumType.STRING)
-    var entityType: CrawlEntityType? = null,
+    var entityType: OparlType? = null,
     val createdAt: Instant = Instant.now(),
     var lastCrawledAt: Instant? = null,
     var lastIndexedAt: Instant? = null,
@@ -35,7 +35,7 @@ class CrawlTarget(
     var jobId: UUID? = null,
 ) {
     companion object {
-        fun create(resource: OparlResource, entityType: CrawlEntityType? = null): CrawlTarget =
+        fun create(resource: OparlResource, entityType: OparlType? = null): CrawlTarget =
             CrawlTarget(resource = resource, entityType = entityType)
     }
 
@@ -44,7 +44,7 @@ class CrawlTarget(
         modifiedAt = Instant.now()
     }
 
-    fun assignEntityType(entityType: CrawlEntityType) = apply {
+    fun assignEntityType(entityType: OparlType) = apply {
         if (this.entityType == null) {
             this.entityType = entityType
         }

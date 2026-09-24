@@ -1,6 +1,6 @@
 package nrw.openbert.backend.parldata.application.resolve
 
-import nrw.openbert.backend.parldata.domain.enums.ResolveEntityType
+import nrw.openbert.backend.parldata.domain.enums.OparlType
 import nrw.openbert.backend.parldata.application.port.outbound.repository.ResolveTargetRepository
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
@@ -15,7 +15,7 @@ class Resolver(
     private val logger = LoggerFactory.getLogger(javaClass)
     private val entityResolvers = entityResolvers.associateBy(EntityResolver::entityType)
 
-    val supportedEntityTypes: Set<ResolveEntityType>
+    val supportedEntityTypes: Set<OparlType>
         get() = entityResolvers.keys
 
     @Transactional

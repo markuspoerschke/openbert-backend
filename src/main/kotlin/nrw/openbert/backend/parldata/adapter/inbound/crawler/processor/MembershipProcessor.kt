@@ -1,7 +1,7 @@
 package nrw.openbert.backend.parldata.adapter.inbound.crawler.processor
 
 import nrw.openbert.backend.parldata.adapter.inbound.crawler.CrawlTargetEnqueuer
-import nrw.openbert.backend.parldata.domain.enums.CrawlEntityType
+import nrw.openbert.backend.parldata.domain.enums.OparlType
 import nrw.openbert.backend.parldata.adapter.outbound.client.oparl.dto.OparlMembershipDto
 import nrw.openbert.backend.parldata.application.resolve.ResolveTargetEnqueuer
 import nrw.openbert.backend.parldata.domain.entity.embeddable.OparlResource
@@ -23,8 +23,8 @@ class MembershipProcessor(
     override fun saveEntity(entity: RawMembership) = rawMembershipRepository.save(entity)
 
     override fun process(resource: OparlResource, dto: OparlMembershipDto): RawMembership {
-        enqueueUrls(resource, CrawlEntityType.PERSON, dto.person)
-        enqueueUrls(resource, CrawlEntityType.ORGANIZATION, dto.organization, dto.onBehalfOf)
+        enqueueUrls(resource, OparlType.PERSON, dto.person)
+        enqueueUrls(resource, OparlType.ORGANIZATION, dto.organization, dto.onBehalfOf)
 
         return super.process(resource, dto)
     }

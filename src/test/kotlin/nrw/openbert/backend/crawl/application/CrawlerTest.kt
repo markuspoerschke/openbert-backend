@@ -14,7 +14,7 @@ import nrw.openbert.backend.parldata.adapter.inbound.crawler.processor.PersonPro
 import nrw.openbert.backend.parldata.adapter.inbound.crawler.processor.SystemProcessor
 import nrw.openbert.backend.parldata.adapter.inbound.crawler.CrawlTargetEnqueuer
 import nrw.openbert.backend.parldata.adapter.inbound.crawler.Crawler
-import nrw.openbert.backend.parldata.domain.enums.CrawlEntityType
+import nrw.openbert.backend.parldata.domain.enums.OparlType
 import nrw.openbert.backend.parldata.domain.entity.CrawlTarget
 import nrw.openbert.backend.parldata.application.port.outbound.repository.CrawlTargetRepository
 import nrw.openbert.backend.parldata.adapter.outbound.client.oparl.OparlClient
@@ -103,7 +103,7 @@ class CrawlerTest {
         verify(fixture.paperProcessor).process(fixture.resource(paper.id!!), paper)
         verify(fixture.personProcessor).process(fixture.resource(person.id!!), person)
         verify(fixture.systemProcessor).process(fixture.resource(systemDto.id!!), systemDto)
-        verify(fixture.crawlTargetEnqueuer).enqueue(fixture.resource(nextPage), CrawlEntityType.AGENDA_ITEM)
+        verify(fixture.crawlTargetEnqueuer).enqueue(fixture.resource(nextPage), OparlType.AGENDA_ITEM)
         assertNotNull(target.lastCrawledAt)
         assertNotNull(target.lastIndexedAt)
         assertEquals(0, target.referenceCount)

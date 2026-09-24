@@ -1,7 +1,7 @@
 package nrw.openbert.backend.parldata.adapter.inbound.crawler.processor
 
 import nrw.openbert.backend.parldata.adapter.inbound.crawler.CrawlTargetEnqueuer
-import nrw.openbert.backend.parldata.domain.enums.CrawlEntityType
+import nrw.openbert.backend.parldata.domain.enums.OparlType
 import nrw.openbert.backend.parldata.adapter.outbound.client.oparl.dto.OparlLegislativeTermDto
 import nrw.openbert.backend.parldata.application.resolve.ResolveTargetEnqueuer
 import nrw.openbert.backend.parldata.domain.entity.embeddable.OparlResource
@@ -23,7 +23,7 @@ class LegislativeTermProcessor(
     override fun saveEntity(entity: RawLegislativeTerm) = rawLegislativeTermRepository.save(entity)
 
     override fun process(resource: OparlResource, dto: OparlLegislativeTermDto): RawLegislativeTerm {
-        enqueueUrls(resource, CrawlEntityType.BODY, dto.body)
+        enqueueUrls(resource, OparlType.BODY, dto.body)
 
         return super.process(resource, dto)
     }

@@ -14,7 +14,7 @@ class OparlBodyMapper(
     fun toDto(body: ResolvedBody): OparlBodyDto {
         return OparlBodyDto(
             id = urlGenerator.body(body.id),
-            type = AbstractBody.TYPE,
+            type = body.getType().url,
             name = body.name,
             organization = urlGenerator.organizationList(body.id),
             person = urlGenerator.personList(body.id),

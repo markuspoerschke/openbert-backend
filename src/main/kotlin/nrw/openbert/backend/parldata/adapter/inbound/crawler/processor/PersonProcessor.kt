@@ -1,7 +1,7 @@
 package nrw.openbert.backend.parldata.adapter.inbound.crawler.processor
 
 import nrw.openbert.backend.parldata.adapter.inbound.crawler.CrawlTargetEnqueuer
-import nrw.openbert.backend.parldata.domain.enums.CrawlEntityType
+import nrw.openbert.backend.parldata.domain.enums.OparlType
 import nrw.openbert.backend.parldata.adapter.outbound.client.oparl.dto.OparlPersonDto
 import nrw.openbert.backend.parldata.application.resolve.ResolveTargetEnqueuer
 import nrw.openbert.backend.parldata.domain.entity.embeddable.OparlResource
@@ -24,8 +24,8 @@ class PersonProcessor(
     override fun saveEntity(entity: RawPerson) = rawPersonRepository.save(entity)
 
     override fun process(resource: OparlResource, dto: OparlPersonDto): RawPerson {
-        enqueueUrls(resource, CrawlEntityType.BODY, dto.body)
-        enqueueUrls(resource, CrawlEntityType.LOCATION, dto.location)
+        enqueueUrls(resource, OparlType.BODY, dto.body)
+        enqueueUrls(resource, OparlType.LOCATION, dto.location)
         processInline(resource, dto.locationObject, locationProcessor)
             ?.personUrls
             ?.addUrl(resource.url)

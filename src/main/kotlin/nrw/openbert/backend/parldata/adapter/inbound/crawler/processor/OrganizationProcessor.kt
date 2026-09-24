@@ -1,7 +1,7 @@
 package nrw.openbert.backend.parldata.adapter.inbound.crawler.processor
 
 import nrw.openbert.backend.parldata.adapter.inbound.crawler.CrawlTargetEnqueuer
-import nrw.openbert.backend.parldata.domain.enums.CrawlEntityType
+import nrw.openbert.backend.parldata.domain.enums.OparlType
 import nrw.openbert.backend.parldata.adapter.outbound.client.oparl.dto.OparlOrganizationDto
 import nrw.openbert.backend.parldata.application.resolve.ResolveTargetEnqueuer
 import nrw.openbert.backend.parldata.domain.entity.embeddable.OparlResource
@@ -24,11 +24,11 @@ class OrganizationProcessor(
     override fun saveEntity(entity: RawOrganization) = rawOrganizationRepository.save(entity)
 
     override fun process(resource: OparlResource, dto: OparlOrganizationDto): RawOrganization {
-        enqueueUrls(resource, CrawlEntityType.BODY, dto.body, dto.externalBody)
-        enqueueUrls(resource, CrawlEntityType.MEETING, dto.meeting)
-        enqueueUrls(resource, CrawlEntityType.CONSULTATION, dto.consultation)
-        enqueueUrls(resource, CrawlEntityType.ORGANIZATION, dto.subOrganizationOf)
-        enqueueUrls(resource, CrawlEntityType.MEMBERSHIP, dto.membership.orEmpty())
+        enqueueUrls(resource, OparlType.BODY, dto.body, dto.externalBody)
+        enqueueUrls(resource, OparlType.MEETING, dto.meeting)
+        enqueueUrls(resource, OparlType.CONSULTATION, dto.consultation)
+        enqueueUrls(resource, OparlType.ORGANIZATION, dto.subOrganizationOf)
+        enqueueUrls(resource, OparlType.MEMBERSHIP, dto.membership.orEmpty())
         processInline(resource, dto.location, locationProcessor)
             ?.organizationUrls
             ?.addUrl(resource.url)

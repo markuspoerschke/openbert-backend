@@ -8,7 +8,7 @@ import nrw.openbert.backend.parldata.domain.entity.raw.RawBody
 import nrw.openbert.backend.parldata.domain.entity.raw.RawSystem
 import nrw.openbert.backend.parldata.application.port.outbound.repository.RawBodyRepository
 import nrw.openbert.backend.parldata.domain.entity.ResolveTarget
-import nrw.openbert.backend.parldata.domain.enums.ResolveEntityType
+import nrw.openbert.backend.parldata.domain.enums.OparlType
 import nrw.openbert.backend.parldata.application.port.outbound.repository.ResolveTargetRepository
 import nrw.openbert.backend.parldata.application.port.outbound.repository.RawOrganizationRepository
 import nrw.openbert.backend.parldata.application.port.outbound.repository.RawPaperRepository
@@ -97,7 +97,7 @@ class ResolverPersistenceTest(
 
     @Test
     fun `exposes every entity type to the scheduler`() {
-        assertEquals(ResolveEntityType.entries.toSet(), resolver.supportedEntityTypes)
+        assertEquals(OparlType.entries.toSet(), resolver.supportedEntityTypes)
     }
 
     @Test
@@ -123,21 +123,21 @@ class ResolverPersistenceTest(
         val organizationTarget = targetRepository.save(
             ResolveTarget(
                 rawEntityId = UUID.randomUUID(),
-                entityType = ResolveEntityType.ORGANIZATION,
+                entityType = OparlType.ORGANIZATION,
                 referenceCount = 1,
             ),
         )
         val personTarget = targetRepository.save(
             ResolveTarget(
                 rawEntityId = UUID.randomUUID(),
-                entityType = ResolveEntityType.PERSON,
+                entityType = OparlType.PERSON,
                 referenceCount = 10,
             ),
         )
         val membershipTarget = targetRepository.save(
             ResolveTarget(
                 rawEntityId = UUID.randomUUID(),
-                entityType = ResolveEntityType.MEMBERSHIP,
+                entityType = OparlType.MEMBERSHIP,
                 referenceCount = 100,
             ),
         )

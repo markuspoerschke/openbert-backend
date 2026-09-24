@@ -3,14 +3,11 @@ package nrw.openbert.backend.parldata.domain.entity
 import jakarta.persistence.Column
 import jakarta.persistence.MappedSuperclass
 import nrw.openbert.backend.parldata.domain.entity.embeddable.OparlResource
+import nrw.openbert.backend.parldata.domain.enums.OparlType
 import java.util.Date
 
 @MappedSuperclass
 abstract class AbstractPaper(resource: OparlResource) : AbstractOparlEntity(resource) {
-    companion object {
-        const val TYPE = "https://schema.oparl.org/1.1/Paper"
-    }
-
     @Column(length = 500)
     var name: String? = null
 
@@ -41,4 +38,6 @@ abstract class AbstractPaper(resource: OparlResource) : AbstractOparlEntity(reso
         keyword = other.keyword
         web = other.web
     }
+
+    override fun getType() = OparlType.PAPER
 }

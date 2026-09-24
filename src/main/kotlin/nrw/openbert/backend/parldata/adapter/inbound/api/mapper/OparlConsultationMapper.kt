@@ -16,7 +16,7 @@ class OparlConsultationMapper(
     ): OparlConsultationDto {
         return OparlConsultationDto(
             id = urlGenerator.consultation(consultation.body.id, consultation.id),
-            type = AbstractConsultation.TYPE,
+            type = consultation.getType().url,
             paper = consultation.paper
                 .takeIf { includePaper }
                 ?.let { urlGenerator.paper(it.body.id, it.id) },

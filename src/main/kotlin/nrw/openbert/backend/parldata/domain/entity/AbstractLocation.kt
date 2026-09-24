@@ -3,15 +3,12 @@ package nrw.openbert.backend.parldata.domain.entity
 import jakarta.persistence.Column
 import jakarta.persistence.MappedSuperclass
 import nrw.openbert.backend.parldata.domain.entity.embeddable.OparlResource
+import nrw.openbert.backend.parldata.domain.enums.OparlType
 import org.hibernate.annotations.JdbcTypeCode
 import org.hibernate.type.SqlTypes
 
 @MappedSuperclass
 abstract class AbstractLocation(resource: OparlResource) : AbstractOparlEntity(resource) {
-    companion object {
-        const val TYPE = "https://schema.oparl.org/1.1/Location"
-    }
-
     @Column(columnDefinition = "TEXT")
     var description: String? = null
 
@@ -55,4 +52,6 @@ abstract class AbstractLocation(resource: OparlResource) : AbstractOparlEntity(r
         keyword = other.keyword
         web = other.web
     }
+
+    override fun getType() = OparlType.LOCATION
 }
