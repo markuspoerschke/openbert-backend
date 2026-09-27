@@ -76,3 +76,14 @@ flowchart TD
     Adapter --> Application
     Adapter --> Domain
 ```
+
+## Getting Started
+
+1. Clone this project
+2. Run `docker compose up -d` in the project directory to start the database
+3. Run the following query to initialize the first system.
+
+```sql
+INSERT INTO oparl_system (id, url) VALUES ('c0512c3e-a284-4fdc-81d9-684f4e0e77d6', 'https://oparl-proxy.openbert.de/oparl/v1.1/system');
+INSERT INTO crawl_target (id, system_id, url, created_at, last_crawled_at, last_indexed_at, modified_at, reference_count, scheduled_at, job_id, entity_type) VALUES ('f62871f6-b9df-41cf-ab04-482a6109baa9', 'c0512c3e-a284-4fdc-81d9-684f4e0e77d6', 'https://oparl-proxy.openbert.de/oparl/v1.1/system', '2026-09-25 20:54:26.000000', null, null, '2026-09-25 20:54:29.000000', 1, null, null, null);
+```
