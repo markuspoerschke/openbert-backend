@@ -81,7 +81,8 @@ flowchart TD
 
 1. Clone this project
 2. Run `docker compose up -d` in the project directory to start the database
-3. Run the following query to initialize the first system.
+3. Start the application (which will execute the migrations)
+4. Run the following query to initialize the first system.
 
 ```sql
 INSERT INTO oparl_system (id, url) VALUES ('c0512c3e-a284-4fdc-81d9-684f4e0e77d6', 'https://oparl-proxy.openbert.de/oparl/v1.1/system');
