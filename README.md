@@ -76,3 +76,10 @@ flowchart TD
     Adapter --> Application
     Adapter --> Domain
 ```
+
+## Getting Started
+
+1. Clone this project.
+2. Run `docker compose up -d` in the project directory to start the database.
+3. Start the application (which will execute the migrations).
+4. Run the [fixtures query](./docs/fixtures.sql) to initialise first system.
