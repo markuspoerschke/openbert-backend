@@ -2,6 +2,7 @@ package nrw.openbert.backend.parldata.application.service
 
 import nrw.openbert.backend.parldata.application.port.inbound.OparlEntitySearchServiceInterface
 import nrw.openbert.backend.parldata.application.port.outbound.repository.OparlSearchRepository
+import nrw.openbert.backend.parldata.application.port.model.SearchCriteria
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -12,7 +13,7 @@ class OparlEntitySearchService(
 ) : OparlEntitySearchServiceInterface {
     @Transactional(readOnly = true)
     override fun search(
-        text: String,
+        criteria: SearchCriteria,
         pageable: Pageable
-    ) = searchRepository.search(text, pageable)
+    ) = searchRepository.search(criteria, pageable)
 }

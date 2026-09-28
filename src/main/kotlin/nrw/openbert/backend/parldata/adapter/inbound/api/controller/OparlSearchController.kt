@@ -6,6 +6,7 @@ import nrw.openbert.backend.parldata.adapter.inbound.api.dto.OparlListPagination
 import nrw.openbert.backend.parldata.adapter.inbound.api.dto.OparlSearchResultListDto
 import nrw.openbert.backend.parldata.adapter.inbound.api.mapper.OparlSearchResultMapper
 import nrw.openbert.backend.parldata.application.port.inbound.OparlEntitySearchServiceInterface
+import nrw.openbert.backend.parldata.application.port.model.SearchCriteria
 import org.springframework.data.domain.PageRequest
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
@@ -31,7 +32,7 @@ class OparlSearchController(
         }
 
         val resultPage = searchService.search(
-            searchText,
+            SearchCriteria(term = searchText),
             PageRequest.of(page - 1, size),
         ).map(mapper::toDto)
 
