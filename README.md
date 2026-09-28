@@ -1,85 +1,77 @@
 # Openbert – Backend
 
-## Goal of the Openbert Project
+[![Build](https://github.com/markuspoerschke/openbert-backend/actions/workflows/test.yml/badge.svg)](https://github.com/markuspoerschke/openbert-backend/actions/workflows/test.yml)
 
-Openbert makes data from German council information systems (CIS, German translation: “[Ratsinformationssysteme (RIS)](https://de.wikipedia.org/wiki/Ratsinformationssystem)”) easier to access and use.
-Since many of these systems do not provide suitable APIs, Openbert exposes their data through the standardized [OParl API](https://oparl.org).
+Openbert makes data from German council information systems (*Ratsinformationssysteme*, RIS) accessible to citizens, council members, and political parties. It collects data through OParl and exposes it through an API and MCP tools.
 
-In the future, the same data will also be exposed through [MCP](https://de.wikipedia.org/wiki/Model_Context_Protocol), making it available to AI applications and agents.
-This can enable use cases such as identifying upcoming public tenders early, discovering planned residential development areas, or finding relevant local news and political developments.
+This is my personal project: I develop the product idea and write the code.
 
-Openbert also aims to enrich the original data where useful.
-For example, geographic information that is missing from the source system could be extracted or added to make the data easier to search, analyze, and connect with other applications.
+The longer-term goal is to connect information across municipalities. Planned enrichment, such as geographic information, would help people follow developments beyond their own city—for example, construction businesses tracking what several councils are planning.
 
-## System Architecture
+## Current status
 
-Openbert follows a simple frontend/backend architecture.
-The backend exposes all relevant data through APIs that are consumed by the frontend.
+MCP is the main entry point, with tools for listing councils and searching their data. It can be used with clients such as Claude and LM Studio. A frontend is in development; public hosting is pending authentication. There is no hosted demo yet.
 
-An additional component is the OParl Proxy.
-It provides data from council information systems through an OParl-compatible API when the source system does not offer OParl support itself.
+The OParl implementation is incomplete: refresh/deletion handling and some relationships remain unfinished, and file downloads currently return placeholders.
+
+## System overview
 
 ```mermaid
 flowchart TD
-    AI[AI Agents]
+    Clients[MCP clients]
     CIS[Council Information System]
 
     subgraph Openbert[Openbert]
-        Frontend[Frontend]
-        BE[Backend]
+        Frontend[Frontend — in development]
+        Backend[Backend]
         DB[(PostgreSQL)]
-        OParlProxy[OParl Proxy]
+        Proxy[OParl Proxy]
 
-        Frontend -->|API Endpoint| BE
-        BE --> DB
-        BE -->|OParl API| OParlProxy
+        Frontend -->|API| Backend
+        Backend --> DB
+        Backend -->|OParl API| Proxy
     end
 
-    AI -->|MCP Endpoint| BE
-
-    BE -->|OParl API| CIS
-    OParlProxy -->|HTML Crawler / Other API| CIS
+    Clients -->|MCP| Backend
+    Backend -->|OParl API| CIS
+    Proxy -->|HTML crawler / other API| CIS
 ```
 
-## Backend Architecture and Software Design Decisions
+## Implementation
 
-This project follows the principles of Domain-Driven Design and [Hexagonal Architecture (also known as Ports and Adapters)](https://en.wikipedia.org/wiki/Hexagonal_architecture_(software)).
-
-The codebase is organized into multiple sub-domains to separate different concerns. The current sub-domains are:
-- `crawl`, which fetches raw data from remote council information systems.
-- `enrich` (planned), which enriches the data (for example by adding geo-locations) and persists the enrichment in dedicated tables.
-- `resolve`, which merges raw and enriched data into resolved data that is later presented to users.
-- `oparl`, which contains data structures shared between `crawl`, `enrich`, and `resolve`.
+**Kotlin · Spring Boot 4 · Spring MVC · Spring Data JPA · PostgreSQL · Flyway · JobRunr · Spring AI MCP · Testcontainers**
 
 ```mermaid
-flowchart TD
-    C[crawl]
-    E[enrich]
-    R[resolve]
-    O[oparl shared model]
-
-    C --> O
-    E --> O
-    R --> O
-    C --> R
-    E --> R
+flowchart LR
+    Source[OParl source] --> Crawler
+    Crawler --> Raw[(Raw tables)]
+    Raw --> Resolver
+    Resolver --> Resolved[(Resolved tables)]
+    Resolved --> API[API / MCP]
 ```
 
-The architecture currently uses the following layers:
-- `domain`, which contains entities, value objects, and domain services.
-- `application`, which contains use cases and ports such as repositories.
-- `adapter`, which contains integrations with the outside world, such as repository implementations.
+Raw records allow incomplete source relationships. Resolution builds the relationships used by the API; separate tables leave room for future enrichment without overwriting source fields.
 
-```mermaid
-flowchart TD
-    Application --> Domain
-    Adapter --> Application
-    Adapter --> Domain
+Code lives under `parldata`: `domain` holds the model, `application` handles resolution and search, and `adapter` contains HTTP, MCP, crawler, and persistence integrations. Entities use JPA annotations and repository ports extend Spring Data. Crawler HTTP requests precede transactional processing; each resolver job has its own transaction.
+
+## Run locally
+
+Requires **JDK 25** and **Docker**. From the repository root:
+
+```sh
+docker compose up -d
+./gradlew bootRun
 ```
 
-## Getting Started
+After startup completes and Flyway has created the schema, run this once in another terminal to seed the Krefeld crawl:
 
-1. Clone this project.
-2. Run `docker compose up -d` in the project directory to start the database.
-3. Start the application (which will execute the migrations).
-4. Run the [fixtures query](./docs/fixtures.sql) to initialise first system.
+```sh
+docker compose exec -T postgres psql -U myuser -d mydatabase < docs/fixtures.sql
+```
+
+Data availability depends on the upstream server and background processing.
+
+- **MCP:** `http://localhost:8080/mcp` (Streamable HTTP); tools: `oparl_body_list`, `oparl_search`.
+- **API:** [OParl entry point](http://localhost:8080/oparl/v1.1/system).
+- **API documentation:** [Swagger UI](http://localhost:8080/swagger-ui.html) to browse and try the HTTP endpoints.
+- **Tests and packaging:** `./gradlew build` (Docker required for Testcontainers).
