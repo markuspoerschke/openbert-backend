@@ -1,6 +1,7 @@
 services:
   postgres:
-    image: 'postgres:latest'
+    # Keep aligned with TestcontainersConfiguration.kt.
+    image: 'postgres:18.4'
     environment:
       - 'POSTGRES_DB=mydatabase'
       - 'POSTGRES_PASSWORD=secret'

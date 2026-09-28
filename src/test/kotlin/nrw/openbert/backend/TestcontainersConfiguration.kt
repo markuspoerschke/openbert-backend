@@ -12,7 +12,8 @@ class TestcontainersConfiguration {
     @Bean
     @ServiceConnection
     fun postgresContainer(): PostgreSQLContainer {
-        return PostgreSQLContainer(DockerImageName.parse("postgres:latest"))
+        // Keep aligned with compose.yaml.
+        return PostgreSQLContainer(DockerImageName.parse("postgres:18.4"))
     }
 
 }
