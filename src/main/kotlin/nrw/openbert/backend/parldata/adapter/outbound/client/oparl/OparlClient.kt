@@ -1,12 +1,14 @@
 package nrw.openbert.backend.parldata.adapter.outbound.client.oparl
 
 import nrw.openbert.backend.parldata.adapter.outbound.client.oparl.dto.OparlResponseDto
+import org.springframework.http.MediaType
 import org.springframework.stereotype.Component
 import org.springframework.web.client.RestClient
 import tools.jackson.databind.JsonNode
 import tools.jackson.databind.ObjectMapper
 import tools.jackson.databind.node.ArrayNode
 import tools.jackson.databind.node.ObjectNode
+import java.io.InputStream
 import java.net.URI
 
 @Component
@@ -28,6 +30,60 @@ class OparlClient(
 
         return objectMapper.treeToValue(response, OparlResponseDto::class.java)
     }
+
+    fun downloadFile(url: String): ByteArray {
+        return restClient
+            .get()
+            .uri(url)
+            .retrieve()
+            .requiredBody(ByteArray::class.java)
+    }
+
+    fun downloadFileStream(url: String): InputStream {
+        return restClient
+            .get()
+            .uri(url)
+            .retrieve()
+            .body(InputStream::class.java)
+            ?: throw IllegalStateException("Failed to download file from $url")
+    }
+
+    fun getFileMetadata(url: String): FileDownloadMetadata {
+        val response = restClient
+            .get()
+            .uri(url)
+            .retrieve()
+            .toEntity(ByteArray::class.java)
+
+        val content = response.body ?: ByteArray(0)
+        val contentType = response.headers.contentType?.toString()
+            ?: MediaType.APPLICATION_OCTET_STREAM_VALUE
+        val contentLength = response.headers.contentLength ?: content.size.toLong()
+
+        return FileDownloadMetadata(
+            content = content,
+            contentType = contentType,
+            contentLength = contentLength,
+            fileName = extractFileNameFromUrl(url)
+        )
+    }
+
+    private fun extractFileNameFromUrl(url: String): String? {
+        return try {
+            val uri = URI.create(url)
+            val path = uri.path
+            path.substringAfterLast('/').ifEmpty { null }
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+    data class FileDownloadMetadata(
+        val content: ByteArray,
+        val contentType: String,
+        val contentLength: Long,
+        val fileName: String? = null
+    )
 
     private fun addMissingListTypes(response: JsonNode, url: String) {
         if (response !is ObjectNode) {

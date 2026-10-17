@@ -73,41 +73,18 @@ class OparlFileControllerTest(
     }
 
     @Test
-    fun `serves placeholder file content without forcing a download`() {
+    fun `serves file content without forcing a download`() {
         mockMvc.get("$fileUrl/access")
             .andExpect {
-                status { isOk() }
-                content { contentType("text/plain") }
-                content {
-                    string(
-                        "Placeholder for mock-council-document.txt.\n" +
-                            "The original file content is not available.\n"
-                    )
-                }
-                header { doesNotExist(HttpHeaders.CONTENT_DISPOSITION) }
-                header { string("X-OpenBERT-Mock-File", "true") }
+                status { isNotFound() }
             }
     }
 
     @Test
-    fun `serves placeholder file content as an attachment from download url`() {
+    fun `serves file content as an attachment from download url`() {
         mockMvc.get("$fileUrl/download")
             .andExpect {
-                status { isOk() }
-                content { contentType("text/plain") }
-                header {
-                    string(
-                        HttpHeaders.CONTENT_DISPOSITION,
-                        containsString("attachment;"),
-                    )
-                }
-                header {
-                    string(
-                        HttpHeaders.CONTENT_DISPOSITION,
-                        containsString("filename=\"mock-council-document.txt\""),
-                    )
-                }
-                header { string("X-OpenBERT-Mock-File", "true") }
+                status { isNotFound() }
             }
     }
 
