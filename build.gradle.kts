@@ -4,7 +4,7 @@ plugins {
     id("org.springframework.boot") version "4.1.1"
     id("io.spring.dependency-management") version "1.1.7"
     id("org.asciidoctor.jvm.convert") version "4.0.5"
-    kotlin("plugin.jpa") version "2.4.20"
+    kotlin("plugin.jpa") version "2.4.21"
 }
 
 group = "nrw.openbert"
