@@ -75,3 +75,35 @@ Data availability depends on the upstream server and background processing.
 - **API:** [OParl entry point](http://localhost:8080/oparl/v1.1/system).
 - **API documentation:** [Swagger UI](http://localhost:8080/swagger-ui.html) to browse and try the HTTP endpoints.
 - **Tests and packaging:** `./gradlew build` (Docker required for Testcontainers).
+
+## Docker image
+
+The standalone backend image is built entirely inside Docker, so the build machine does not need JDK or Gradle installed:
+
+```sh
+docker build -t openbert-backend .
+```
+
+Run the image against a PostgreSQL database by supplying the connection settings at runtime:
+
+```sh
+docker run --rm -p 8080:8080 \
+  -e SPRING_DATASOURCE_URL=jdbc:postgresql://database-host:5432/openbert \
+  -e SPRING_DATASOURCE_USERNAME=openbert \
+  -e SPRING_DATASOURCE_PASSWORD=change-me \
+  openbert-backend
+```
+
+Do not put database credentials in the image, Dockerfile, or repository. The existing `compose.yaml` continues to provide PostgreSQL only for local development; PostgreSQL is not bundled into the backend image.
+
+### Coolify
+
+Configure Coolify to build the repository's root `Dockerfile`, then set:
+
+- Container port: `8080`
+- Health-check path: `/actuator/health`
+- `SPRING_DATASOURCE_URL`: the external PostgreSQL JDBC URL, for example `jdbc:postgresql://postgres-host:5432/openbert`
+- `SPRING_DATASOURCE_USERNAME`: the PostgreSQL user
+- `SPRING_DATASOURCE_PASSWORD`: the PostgreSQL password, stored as a secret
+
+JobRunr's dashboard listens on port `8000`. Do not expose or publicly route that port unless the dashboard is separately secured.
