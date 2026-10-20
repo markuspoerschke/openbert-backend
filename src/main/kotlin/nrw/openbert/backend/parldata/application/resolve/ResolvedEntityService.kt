@@ -42,6 +42,7 @@ import java.util.UUID
 
 @Service
 class ResolvedEntityService(
+    private val locationEnricher: LocationEnricher,
     private val rawAgendaItemRepository: RawAgendaItemRepository,
     private val rawBodyRepository: RawBodyRepository,
     private val rawConsultationRepository: RawConsultationRepository,
@@ -124,6 +125,7 @@ class ResolvedEntityService(
 
         requireRelation("body", raw.resource, resolved.body.id, body.id)
         resolved.applyValuesFrom(raw)
+        locationEnricher.enrich(resolved)
         return resolvedLocationRepository.save(resolved)
     }
 
