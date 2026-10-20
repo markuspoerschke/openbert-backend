@@ -22,11 +22,11 @@ class CrawlTargetRepositoryTest(
     @Autowired private val repository: CrawlTargetRepository,
 ) {
     @Test
-    fun `only returns referenced targets that still need indexing`() {
-        val indexedTargetId = UUID.fromString("eeeeeeee-eeee-4eee-aeee-eeeeeeeeeeee")
-        val indexedTarget = repository.findById(indexedTargetId).orElseThrow()
+    fun `only returns referenced targets that still need crawling`() {
+        val unreferencedTargetId = UUID.fromString("eeeeeeee-eeee-4eee-aeee-eeeeeeeeeeee")
+        val unreferencedTarget = repository.findById(unreferencedTargetId).orElseThrow()
         val referencedTarget = CrawlTarget.create(
-            indexedTarget.resource.copy(
+            unreferencedTarget.resource.copy(
                 url = OparlUrl("https://oparl-demo.example.org/oparl/v1.1/person/pending"),
             ),
         ).increaseReferenceCounter()
@@ -35,7 +35,7 @@ class CrawlTargetRepositoryTest(
         val dueTargetIds = repository.findDue(Instant.now(), limit = 100).map(CrawlTarget::id)
 
         assertTrue(referencedTarget.id in dueTargetIds)
-        assertFalse(indexedTargetId in dueTargetIds)
+        assertFalse(unreferencedTargetId in dueTargetIds)
     }
 
     @Test
