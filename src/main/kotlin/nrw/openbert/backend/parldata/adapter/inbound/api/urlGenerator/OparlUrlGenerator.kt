@@ -98,9 +98,9 @@ class OparlUrlGenerator {
             .toString()
     }
 
-    fun paperList(bodyId: UUID): String {
+    fun paperList(bodyId: UUID, page: Int = 1): String {
         return MvcUriComponentsBuilder
-            .fromMethodName(OparlPaperController::class.java, "list", bodyId)
+            .fromMethodName(OparlPaperController::class.java, "list", bodyId, page)
             .build()
             .toString()
     }
