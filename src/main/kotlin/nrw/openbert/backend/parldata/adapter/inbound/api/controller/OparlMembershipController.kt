@@ -2,13 +2,17 @@ package nrw.openbert.backend.parldata.adapter.inbound.api.controller
 
 import nrw.openbert.backend.parldata.adapter.inbound.api.dto.OparlListDto
 import nrw.openbert.backend.parldata.adapter.inbound.api.dto.OparlMembershipDto
+import nrw.openbert.backend.parldata.adapter.inbound.api.mapper.OparlListLinksMapper
+import nrw.openbert.backend.parldata.adapter.inbound.api.mapper.OparlListPaginationMapper
 import nrw.openbert.backend.parldata.adapter.inbound.api.mapper.OparlMembershipMapper
 import nrw.openbert.backend.parldata.adapter.inbound.api.urlGenerator.OparlUrlGenerator
 import nrw.openbert.backend.parldata.application.port.outbound.repository.ResolvedBodyRepository
 import nrw.openbert.backend.parldata.application.port.outbound.repository.ResolvedMembershipRepository
+import org.springframework.data.domain.PageRequest
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.util.UUID
 
@@ -16,23 +20,34 @@ import java.util.UUID
 class OparlMembershipController(
     private val urlGenerator: OparlUrlGenerator,
     private val membershipMapper: OparlMembershipMapper,
+    private val listPaginationMapper: OparlListPaginationMapper,
+    private val listLinksMapper: OparlListLinksMapper,
     private val resolvedBodyRepository: ResolvedBodyRepository,
     private val resolvedMembershipRepository: ResolvedMembershipRepository,
 ) {
     @GetMapping("oparl/v1.1/body/{bodyId}/membership")
-    fun list(@PathVariable bodyId: UUID): ResponseEntity<OparlListDto<OparlMembershipDto>> {
+    fun list(
+        @PathVariable bodyId: UUID,
+        @RequestParam page: Int = 1,
+    ): ResponseEntity<OparlListDto<OparlMembershipDto>> {
         if (!resolvedBodyRepository.existsById(bodyId)) {
             return ResponseEntity.notFound().build()
         }
 
         val memberships = resolvedMembershipRepository
-            .findAllByBody_IdOrderById(bodyId)
+            // please note that we need to subtract 1 from the page number because oparl expects a 1-based page number
+            .findAllByBody_IdOrderById(bodyId, PageRequest.of(page - 1, PAGE_SIZE))
             .map { membershipMapper.toDto(it) }
 
         return ResponseEntity.ok(
             OparlListDto(
-                id = urlGenerator.membershipList(bodyId),
-                data = memberships,
+                id = urlGenerator.membershipList(bodyId, page),
+                data = memberships.toList(),
+                pagination = listPaginationMapper.toDto(memberships),
+                links = listLinksMapper.toDto(
+                    memberships,
+                    { page -> urlGenerator.membershipList(bodyId, page) }
+                ),
             )
         )
     }
@@ -49,5 +64,9 @@ class OparlMembershipController(
         }
 
         return ResponseEntity.ok(membershipMapper.toDto(membership.get()))
+    }
+
+    companion object {
+        private const val PAGE_SIZE = 25
     }
 }

@@ -41,7 +41,7 @@ class OparlPaperController(
 
         return ResponseEntity.ok(
             OparlListDto(
-                id = urlGenerator.paperList(bodyId),
+                id = urlGenerator.paperList(bodyId, page),
                 data = papers.toList(),
                 pagination = listPaginationMapper.toDto(papers),
                 links = listLinksMapper.toDto(

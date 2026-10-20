@@ -2,13 +2,17 @@ package nrw.openbert.backend.parldata.adapter.inbound.api.controller
 
 import nrw.openbert.backend.parldata.adapter.inbound.api.dto.OparlListDto
 import nrw.openbert.backend.parldata.adapter.inbound.api.dto.OparlPersonDto
+import nrw.openbert.backend.parldata.adapter.inbound.api.mapper.OparlListLinksMapper
+import nrw.openbert.backend.parldata.adapter.inbound.api.mapper.OparlListPaginationMapper
 import nrw.openbert.backend.parldata.adapter.inbound.api.mapper.OparlPersonMapper
 import nrw.openbert.backend.parldata.adapter.inbound.api.urlGenerator.OparlUrlGenerator
 import nrw.openbert.backend.parldata.application.port.outbound.repository.ResolvedBodyRepository
 import nrw.openbert.backend.parldata.application.port.outbound.repository.ResolvedPersonRepository
+import org.springframework.data.domain.PageRequest
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.util.UUID
 
@@ -16,23 +20,34 @@ import java.util.UUID
 class OparlPersonController(
     private val urlGenerator: OparlUrlGenerator,
     private val personMapper: OparlPersonMapper,
+    private val listPaginationMapper: OparlListPaginationMapper,
+    private val listLinksMapper: OparlListLinksMapper,
     private val resolvedBodyRepository: ResolvedBodyRepository,
     private val resolvedPersonRepository: ResolvedPersonRepository,
 ) {
     @GetMapping("oparl/v1.1/body/{bodyId}/person")
-    fun list(@PathVariable bodyId: UUID): ResponseEntity<OparlListDto<OparlPersonDto>> {
+    fun list(
+        @PathVariable bodyId: UUID,
+        @RequestParam page: Int = 1,
+    ): ResponseEntity<OparlListDto<OparlPersonDto>> {
         if (!resolvedBodyRepository.existsById(bodyId)) {
             return ResponseEntity.notFound().build()
         }
 
         val persons = resolvedPersonRepository
-            .findAllByBody_IdOrderById(bodyId)
+            // please note that we need to subtract 1 from the page number because oparl expects a 1-based page number
+            .findAllByBody_IdOrderById(bodyId, PageRequest.of(page - 1, PAGE_SIZE))
             .map(personMapper::toDto)
 
         return ResponseEntity.ok(
             OparlListDto(
-                id = urlGenerator.personList(bodyId),
-                data = persons,
+                id = urlGenerator.personList(bodyId, page),
+                data = persons.toList(),
+                pagination = listPaginationMapper.toDto(persons),
+                links = listLinksMapper.toDto(
+                    persons,
+                    { page -> urlGenerator.personList(bodyId, page) }
+                ),
             )
         )
     }
@@ -49,5 +64,9 @@ class OparlPersonController(
         }
 
         return ResponseEntity.ok(personMapper.toDto(person.get()))
+    }
+
+    companion object {
+        private const val PAGE_SIZE = 25
     }
 }

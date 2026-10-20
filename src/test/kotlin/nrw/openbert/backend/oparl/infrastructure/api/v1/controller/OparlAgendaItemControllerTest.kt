@@ -28,7 +28,7 @@ class OparlAgendaItemControllerTest(
         mockMvc.get("$bodyUrl/agendaitem")
             .andExpect {
                 status { isOk() }
-                jsonPath("$.id") { value("$bodyUrl/agendaitem") }
+                jsonPath("$.id") { value("$bodyUrl/agendaitem?page=1") }
                 jsonPath("$.type") { value("https://schema.oparl.org/1.1/List") }
                 jsonPath("$.data.length()") { value(2) }
                 jsonPath("$.data[1].id") { value(agendaItemUrl) }
@@ -60,6 +60,34 @@ class OparlAgendaItemControllerTest(
                             "sitzungen/finanzausschuss-4/top-10-1"
                     )
                 }
+                jsonPath("$.pagination.currentPage") { value(1) }
+                jsonPath("$.pagination.elementsPerPage") { value(25) }
+                jsonPath("$.pagination.totalElements") { value(2) }
+                jsonPath("$.pagination.totalPages") { value(1) }
+                jsonPath("$.links.first") { value("$bodyUrl/agendaitem?page=1") }
+                jsonPath("$.links.self") { value("$bodyUrl/agendaitem?page=1") }
+                jsonPath("$.links.last") { value("$bodyUrl/agendaitem?page=1") }
+                jsonPath("$.links.prev") { doesNotExist() }
+                jsonPath("$.links.next") { doesNotExist() }
+            }
+    }
+
+    @Test
+    fun `paginates agenda items and returns empty page when out of range`() {
+        mockMvc.get("$bodyUrl/agendaitem?page=2")
+            .andExpect {
+                status { isOk() }
+                jsonPath("$.id") { value("$bodyUrl/agendaitem?page=2") }
+                jsonPath("$.data.length()") { value(0) }
+                jsonPath("$.pagination.currentPage") { value(2) }
+                jsonPath("$.pagination.elementsPerPage") { value(25) }
+                jsonPath("$.pagination.totalElements") { value(2) }
+                jsonPath("$.pagination.totalPages") { value(1) }
+                jsonPath("$.links.first") { value("$bodyUrl/agendaitem?page=1") }
+                jsonPath("$.links.self") { value("$bodyUrl/agendaitem?page=2") }
+                jsonPath("$.links.prev") { value("$bodyUrl/agendaitem?page=1") }
+                jsonPath("$.links.last") { value("$bodyUrl/agendaitem?page=1") }
+                jsonPath("$.links.next") { doesNotExist() }
             }
     }
 

@@ -18,9 +18,9 @@ import kotlin.jvm.java
 
 @Component
 class OparlUrlGenerator {
-    fun bodyList(): String {
+    fun bodyList(page: Int = 1): String {
         return MvcUriComponentsBuilder
-            .fromMethodName(OparlBodyController::class.java, "list")
+            .fromMethodName(OparlBodyController::class.java, "list", page)
             .build()
             .toString()
     }
@@ -32,9 +32,9 @@ class OparlUrlGenerator {
             .toString()
     }
 
-    fun organizationList(bodyId: UUID): String {
+    fun organizationList(bodyId: UUID, page: Int = 1): String {
         return MvcUriComponentsBuilder
-            .fromMethodName(OparlOrganizationController::class.java, "list", bodyId)
+            .fromMethodName(OparlOrganizationController::class.java, "list", bodyId, page)
             .build()
             .toString()
     }
@@ -46,33 +46,35 @@ class OparlUrlGenerator {
             .toString()
     }
 
-    fun organizationMeetingList(bodyId: UUID, organizationId: UUID): String {
+    fun organizationMeetingList(bodyId: UUID, organizationId: UUID, page: Int = 1): String {
         return MvcUriComponentsBuilder
             .fromMethodName(
                 OparlOrganizationController::class.java,
                 "listMeetings",
                 bodyId,
                 organizationId,
+                page,
             )
             .build()
             .toString()
     }
 
-    fun organizationConsultationList(bodyId: UUID, organizationId: UUID): String {
+    fun organizationConsultationList(bodyId: UUID, organizationId: UUID, page: Int = 1): String {
         return MvcUriComponentsBuilder
             .fromMethodName(
                 OparlOrganizationController::class.java,
                 "listConsultations",
                 bodyId,
                 organizationId,
+                page,
             )
             .build()
             .toString()
     }
 
-    fun personList(bodyId: UUID): String {
+    fun personList(bodyId: UUID, page: Int = 1): String {
         return MvcUriComponentsBuilder
-            .fromMethodName(OparlPersonController::class.java, "list", bodyId)
+            .fromMethodName(OparlPersonController::class.java, "list", bodyId, page)
             .build()
             .toString()
     }
@@ -84,9 +86,9 @@ class OparlUrlGenerator {
             .toString()
     }
 
-    fun meetingList(bodyId: UUID): String {
+    fun meetingList(bodyId: UUID, page: Int = 1): String {
         return MvcUriComponentsBuilder
-            .fromMethodName(OparlMeetingController::class.java, "list", bodyId)
+            .fromMethodName(OparlMeetingController::class.java, "list", bodyId, page)
             .build()
             .toString()
     }
@@ -112,9 +114,9 @@ class OparlUrlGenerator {
             .toString()
     }
 
-    fun agendaItemList(bodyId: UUID): String {
+    fun agendaItemList(bodyId: UUID, page: Int = 1): String {
         return MvcUriComponentsBuilder
-            .fromMethodName(OparlAgendaItemController::class.java, "list", bodyId)
+            .fromMethodName(OparlAgendaItemController::class.java, "list", bodyId, page)
             .build()
             .toString()
     }
@@ -126,9 +128,9 @@ class OparlUrlGenerator {
             .toString()
     }
 
-    fun consultationList(bodyId: UUID): String {
+    fun consultationList(bodyId: UUID, page: Int = 1): String {
         return MvcUriComponentsBuilder
-            .fromMethodName(OparlConsultationController::class.java, "list", bodyId)
+            .fromMethodName(OparlConsultationController::class.java, "list", bodyId, page)
             .build()
             .toString()
     }
@@ -145,9 +147,9 @@ class OparlUrlGenerator {
             .toString()
     }
 
-    fun fileList(bodyId: UUID): String {
+    fun fileList(bodyId: UUID, page: Int = 1): String {
         return MvcUriComponentsBuilder
-            .fromMethodName(OparlFileController::class.java, "list", bodyId)
+            .fromMethodName(OparlFileController::class.java, "list", bodyId, page)
             .build()
             .toString()
     }
@@ -173,9 +175,9 @@ class OparlUrlGenerator {
             .toString()
     }
 
-    fun legislativeTermList(bodyId: UUID): String {
+    fun legislativeTermList(bodyId: UUID, page: Int = 1): String {
         return MvcUriComponentsBuilder
-            .fromMethodName(OparlLegislativeTermController::class.java, "list", bodyId)
+            .fromMethodName(OparlLegislativeTermController::class.java, "list", bodyId, page)
             .build()
             .toString()
     }
@@ -192,9 +194,9 @@ class OparlUrlGenerator {
             .toString()
     }
 
-    fun membershipList(bodyId: UUID): String {
+    fun membershipList(bodyId: UUID, page: Int = 1): String {
         return MvcUriComponentsBuilder
-            .fromMethodName(OparlMembershipController::class.java, "list", bodyId)
+            .fromMethodName(OparlMembershipController::class.java, "list", bodyId, page)
             .build()
             .toString()
     }
@@ -206,9 +208,9 @@ class OparlUrlGenerator {
             .toString()
     }
 
-    fun locationList(bodyId: UUID): String {
+    fun locationList(bodyId: UUID, page: Int = 1): String {
         return MvcUriComponentsBuilder
-            .fromMethodName(OparlLocationController::class.java, "list", bodyId)
+            .fromMethodName(OparlLocationController::class.java, "list", bodyId, page)
             .build()
             .toString()
     }

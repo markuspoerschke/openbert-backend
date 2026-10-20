@@ -26,7 +26,7 @@ class OparlOrganizationControllerTest(
                 jsonPath("$.id") {
                     value(
                         "https://example.org:8443/oparl/v1.1/body/" +
-                            "903c26aa-dc8f-4d34-afd6-afdc5040dbd3/organization"
+                            "903c26aa-dc8f-4d34-afd6-afdc5040dbd3/organization?page=1"
                     )
                 }
                 jsonPath("$.type") { value("https://schema.oparl.org/1.1/List") }
@@ -65,16 +65,87 @@ class OparlOrganizationControllerTest(
                     value(
                         "https://example.org:8443/oparl/v1.1/body/" +
                             "903c26aa-dc8f-4d34-afd6-afdc5040dbd3/organization/" +
-                            "9f7d37f9-cd93-4b11-a868-19a6c1e39318/meeting"
+                            "9f7d37f9-cd93-4b11-a868-19a6c1e39318/meeting?page=1"
                     )
                 }
                 jsonPath("$.data[0].consultation") {
                     value(
                         "https://example.org:8443/oparl/v1.1/body/" +
                             "903c26aa-dc8f-4d34-afd6-afdc5040dbd3/organization/" +
-                            "9f7d37f9-cd93-4b11-a868-19a6c1e39318/consultation"
+                            "9f7d37f9-cd93-4b11-a868-19a6c1e39318/consultation?page=1"
                     )
                 }
+                jsonPath("$.pagination.currentPage") { value(1) }
+                jsonPath("$.pagination.elementsPerPage") { value(25) }
+                jsonPath("$.pagination.totalElements") { value(2) }
+                jsonPath("$.pagination.totalPages") { value(1) }
+                jsonPath("$.links.first") {
+                    value(
+                        "https://example.org:8443/oparl/v1.1/body/" +
+                            "903c26aa-dc8f-4d34-afd6-afdc5040dbd3/organization?page=1"
+                    )
+                }
+                jsonPath("$.links.self") {
+                    value(
+                        "https://example.org:8443/oparl/v1.1/body/" +
+                            "903c26aa-dc8f-4d34-afd6-afdc5040dbd3/organization?page=1"
+                    )
+                }
+                jsonPath("$.links.last") {
+                    value(
+                        "https://example.org:8443/oparl/v1.1/body/" +
+                            "903c26aa-dc8f-4d34-afd6-afdc5040dbd3/organization?page=1"
+                    )
+                }
+                jsonPath("$.links.prev") { doesNotExist() }
+                jsonPath("$.links.next") { doesNotExist() }
+            }
+    }
+
+    @Test
+    fun `paginates organizations and returns empty page when out of range`() {
+        mockMvc.get(
+            "https://example.org:8443/oparl/v1.1/body/" +
+                "903c26aa-dc8f-4d34-afd6-afdc5040dbd3/organization?page=2"
+        )
+            .andExpect {
+                status { isOk() }
+                jsonPath("$.id") {
+                    value(
+                        "https://example.org:8443/oparl/v1.1/body/" +
+                            "903c26aa-dc8f-4d34-afd6-afdc5040dbd3/organization?page=2"
+                    )
+                }
+                jsonPath("$.data.length()") { value(0) }
+                jsonPath("$.pagination.currentPage") { value(2) }
+                jsonPath("$.pagination.elementsPerPage") { value(25) }
+                jsonPath("$.pagination.totalElements") { value(2) }
+                jsonPath("$.pagination.totalPages") { value(1) }
+                jsonPath("$.links.first") {
+                    value(
+                        "https://example.org:8443/oparl/v1.1/body/" +
+                            "903c26aa-dc8f-4d34-afd6-afdc5040dbd3/organization?page=1"
+                    )
+                }
+                jsonPath("$.links.self") {
+                    value(
+                        "https://example.org:8443/oparl/v1.1/body/" +
+                            "903c26aa-dc8f-4d34-afd6-afdc5040dbd3/organization?page=2"
+                    )
+                }
+                jsonPath("$.links.prev") {
+                    value(
+                        "https://example.org:8443/oparl/v1.1/body/" +
+                            "903c26aa-dc8f-4d34-afd6-afdc5040dbd3/organization?page=1"
+                    )
+                }
+                jsonPath("$.links.last") {
+                    value(
+                        "https://example.org:8443/oparl/v1.1/body/" +
+                            "903c26aa-dc8f-4d34-afd6-afdc5040dbd3/organization?page=1"
+                    )
+                }
+                jsonPath("$.links.next") { doesNotExist() }
             }
     }
 
@@ -107,14 +178,14 @@ class OparlOrganizationControllerTest(
                     value(
                         "https://example.org:8443/oparl/v1.1/body/" +
                             "903c26aa-dc8f-4d34-afd6-afdc5040dbd3/organization/" +
-                            "9f7d37f9-cd93-4b11-a868-19a6c1e39318/meeting"
+                            "9f7d37f9-cd93-4b11-a868-19a6c1e39318/meeting?page=1"
                     )
                 }
                 jsonPath("$.consultation") {
                     value(
                         "https://example.org:8443/oparl/v1.1/body/" +
                             "903c26aa-dc8f-4d34-afd6-afdc5040dbd3/organization/" +
-                            "9f7d37f9-cd93-4b11-a868-19a6c1e39318/consultation"
+                            "9f7d37f9-cd93-4b11-a868-19a6c1e39318/consultation?page=1"
                     )
                 }
             }

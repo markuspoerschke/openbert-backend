@@ -30,7 +30,7 @@ class OparlConsultationControllerTest(
         mockMvc.get("$bodyUrl/consultation")
             .andExpect {
                 status { isOk() }
-                jsonPath("$.id") { value("$bodyUrl/consultation") }
+                jsonPath("$.id") { value("$bodyUrl/consultation?page=1") }
                 jsonPath("$.type") { value("https://schema.oparl.org/1.1/List") }
                 jsonPath("$.data.length()") { value(1) }
                 jsonPath("$.data[0].id") { value(consultationUrl) }
@@ -49,6 +49,34 @@ class OparlConsultationControllerTest(
                 jsonPath("$.data[0].web") {
                     value("https://neuoffenstadt.example.com/beratungen/47594")
                 }
+                jsonPath("$.pagination.currentPage") { value(1) }
+                jsonPath("$.pagination.elementsPerPage") { value(25) }
+                jsonPath("$.pagination.totalElements") { value(1) }
+                jsonPath("$.pagination.totalPages") { value(1) }
+                jsonPath("$.links.first") { value("$bodyUrl/consultation?page=1") }
+                jsonPath("$.links.self") { value("$bodyUrl/consultation?page=1") }
+                jsonPath("$.links.last") { value("$bodyUrl/consultation?page=1") }
+                jsonPath("$.links.prev") { doesNotExist() }
+                jsonPath("$.links.next") { doesNotExist() }
+            }
+    }
+
+    @Test
+    fun `paginates consultations and returns empty page when out of range`() {
+        mockMvc.get("$bodyUrl/consultation?page=2")
+            .andExpect {
+                status { isOk() }
+                jsonPath("$.id") { value("$bodyUrl/consultation?page=2") }
+                jsonPath("$.data.length()") { value(0) }
+                jsonPath("$.pagination.currentPage") { value(2) }
+                jsonPath("$.pagination.elementsPerPage") { value(25) }
+                jsonPath("$.pagination.totalElements") { value(1) }
+                jsonPath("$.pagination.totalPages") { value(1) }
+                jsonPath("$.links.first") { value("$bodyUrl/consultation?page=1") }
+                jsonPath("$.links.self") { value("$bodyUrl/consultation?page=2") }
+                jsonPath("$.links.prev") { value("$bodyUrl/consultation?page=1") }
+                jsonPath("$.links.last") { value("$bodyUrl/consultation?page=1") }
+                jsonPath("$.links.next") { doesNotExist() }
             }
     }
 
