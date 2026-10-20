@@ -1,10 +1,15 @@
 package nrw.openbert.backend.parldata.adapter.inbound.api.controller
 
+import jakarta.validation.Valid
 import nrw.openbert.backend.parldata.adapter.inbound.api.dto.OparlBodyDto
 import nrw.openbert.backend.parldata.adapter.inbound.api.dto.OparlListDto
+import nrw.openbert.backend.parldata.adapter.inbound.api.dto.OparlPaginationRequestDto
 import nrw.openbert.backend.parldata.adapter.inbound.api.mapper.OparlBodyMapper
+import nrw.openbert.backend.parldata.adapter.inbound.api.mapper.OparlListLinksMapper
+import nrw.openbert.backend.parldata.adapter.inbound.api.mapper.OparlListPaginationMapper
 import nrw.openbert.backend.parldata.adapter.inbound.api.urlGenerator.OparlUrlGenerator
 import nrw.openbert.backend.parldata.application.port.outbound.repository.ResolvedBodyRepository
+import org.springdoc.core.annotations.ParameterObject
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -15,16 +20,27 @@ import java.util.UUID
 class OparlBodyController(
     private val urlGenerator: OparlUrlGenerator,
     private val bodyMapper: OparlBodyMapper,
+    private val listPaginationMapper: OparlListPaginationMapper,
+    private val listLinksMapper: OparlListLinksMapper,
     private val resolvedBodyRepository: ResolvedBodyRepository,
 ) {
     @GetMapping("oparl/v1.1/body")
-    fun list(): ResponseEntity<OparlListDto<OparlBodyDto>> {
-        val bodies = resolvedBodyRepository.findAllByOrderById().map(bodyMapper::toDto)
+    fun list(
+        @ParameterObject @Valid pagination: OparlPaginationRequestDto,
+    ): ResponseEntity<OparlListDto<OparlBodyDto>> {
+        val bodies = resolvedBodyRepository
+            .findAllByOrderById(pagination.toPageable())
+            .map(bodyMapper::toDto)
 
         return ResponseEntity.ok(
             OparlListDto(
-                urlGenerator.bodyList(),
-                bodies,
+                id = urlGenerator.bodyList(pagination.page),
+                data = bodies.toList(),
+                pagination = listPaginationMapper.toDto(bodies),
+                links = listLinksMapper.toDto(
+                    bodies,
+                    { page -> urlGenerator.bodyList(page) }
+                ),
             )
         )
     }

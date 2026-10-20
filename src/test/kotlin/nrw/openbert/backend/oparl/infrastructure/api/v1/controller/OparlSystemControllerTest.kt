@@ -21,7 +21,7 @@ class OparlSystemControllerTest(
             .andExpect {
                 status { isOk() }
                 jsonPath("$.id") { value("https://example.org:8443/oparl/v1.1/system") }
-                jsonPath("$.body") { value("https://example.org:8443/oparl/v1.1/body") }
+                jsonPath("$.body") { value("https://example.org:8443/oparl/v1.1/body?page=1") }
                 jsonPath("$.type") { value("https://schema.oparl.org/1.1/System") }
             }
     }

@@ -26,7 +26,7 @@ class OparlLegislativeTermControllerTest(
                 jsonPath("$.id") {
                     value(
                         "https://example.org:8443/oparl/v1.1/body/" +
-                            "903c26aa-dc8f-4d34-afd6-afdc5040dbd3/legislativeterm"
+                            "903c26aa-dc8f-4d34-afd6-afdc5040dbd3/legislativeterm?page=1"
                     )
                 }
                 jsonPath("$.type") { value("https://schema.oparl.org/1.1/List") }
@@ -55,6 +55,96 @@ class OparlLegislativeTermControllerTest(
                 jsonPath("$.data[0].web") {
                     value("https://neuoffenstadt.example.com/rat/wahlperioden/21")
                 }
+                jsonPath("$.pagination.currentPage") { value(1) }
+                jsonPath("$.pagination.elementsPerPage") { value(25) }
+                jsonPath("$.pagination.totalElements") { value(1) }
+                jsonPath("$.pagination.totalPages") { value(1) }
+                jsonPath("$.links.first") {
+                    value(
+                        "https://example.org:8443/oparl/v1.1/body/" +
+                            "903c26aa-dc8f-4d34-afd6-afdc5040dbd3/legislativeterm?page=1"
+                    )
+                }
+                jsonPath("$.links.self") {
+                    value(
+                        "https://example.org:8443/oparl/v1.1/body/" +
+                            "903c26aa-dc8f-4d34-afd6-afdc5040dbd3/legislativeterm?page=1"
+                    )
+                }
+                jsonPath("$.links.last") {
+                    value(
+                        "https://example.org:8443/oparl/v1.1/body/" +
+                            "903c26aa-dc8f-4d34-afd6-afdc5040dbd3/legislativeterm?page=1"
+                    )
+                }
+                jsonPath("$.links.prev") { doesNotExist() }
+                jsonPath("$.links.next") { doesNotExist() }
+            }
+    }
+
+    @Test
+    fun `paginates legislative terms and returns empty page when out of range`() {
+        mockMvc.get(
+            "https://example.org:8443/oparl/v1.1/body/" +
+                "903c26aa-dc8f-4d34-afd6-afdc5040dbd3/legislativeterm?page=2"
+        )
+            .andExpect {
+                status { isOk() }
+                jsonPath("$.id") {
+                    value(
+                        "https://example.org:8443/oparl/v1.1/body/" +
+                            "903c26aa-dc8f-4d34-afd6-afdc5040dbd3/legislativeterm?page=2"
+                    )
+                }
+                jsonPath("$.data.length()") { value(0) }
+                jsonPath("$.pagination.currentPage") { value(2) }
+                jsonPath("$.pagination.elementsPerPage") { value(25) }
+                jsonPath("$.pagination.totalElements") { value(1) }
+                jsonPath("$.pagination.totalPages") { value(1) }
+                jsonPath("$.links.first") {
+                    value(
+                        "https://example.org:8443/oparl/v1.1/body/" +
+                            "903c26aa-dc8f-4d34-afd6-afdc5040dbd3/legislativeterm?page=1"
+                    )
+                }
+                jsonPath("$.links.self") {
+                    value(
+                        "https://example.org:8443/oparl/v1.1/body/" +
+                            "903c26aa-dc8f-4d34-afd6-afdc5040dbd3/legislativeterm?page=2"
+                    )
+                }
+                jsonPath("$.links.prev") {
+                    value(
+                        "https://example.org:8443/oparl/v1.1/body/" +
+                            "903c26aa-dc8f-4d34-afd6-afdc5040dbd3/legislativeterm?page=1"
+                    )
+                }
+                jsonPath("$.links.last") {
+                    value(
+                        "https://example.org:8443/oparl/v1.1/body/" +
+                            "903c26aa-dc8f-4d34-afd6-afdc5040dbd3/legislativeterm?page=1"
+                    )
+                }
+                jsonPath("$.links.next") { doesNotExist() }
+            }
+    }
+
+    @Test
+    fun `returns bad request when page number is less than 1`() {
+        mockMvc.get(
+            "https://example.org:8443/oparl/v1.1/body/" +
+                "903c26aa-dc8f-4d34-afd6-afdc5040dbd3/legislativeterm?page=0"
+        )
+            .andExpect {
+                status { isBadRequest() }
+            }
+
+        mockMvc.get(
+            "https://example.org:8443/oparl/v1.1/body/" +
+                "903c26aa-dc8f-4d34-afd6-afdc5040dbd3/legislativeterm?page=-1"
+        )
+            .andExpect {
+                status { isBadRequest() }
             }
     }
 

@@ -31,12 +31,40 @@ class OparlOrganizationExternalListControllerTest(
         mockMvc.get("$organizationUrl/meeting")
             .andExpect {
                 status { isOk() }
-                jsonPath("$.id") { value("$organizationUrl/meeting") }
+                jsonPath("$.id") { value("$organizationUrl/meeting?page=1") }
                 jsonPath("$.type") { value("https://schema.oparl.org/1.1/List") }
                 jsonPath("$.data.length()") { value(1) }
                 jsonPath("$.data[0].id") { value(meetingUrl) }
                 jsonPath("$.data[0].organization.length()") { value(1) }
                 jsonPath("$.data[0].organization[0]") { value(organizationUrl) }
+                jsonPath("$.pagination.currentPage") { value(1) }
+                jsonPath("$.pagination.elementsPerPage") { value(25) }
+                jsonPath("$.pagination.totalElements") { value(1) }
+                jsonPath("$.pagination.totalPages") { value(1) }
+                jsonPath("$.links.first") { value("$organizationUrl/meeting?page=1") }
+                jsonPath("$.links.self") { value("$organizationUrl/meeting?page=1") }
+                jsonPath("$.links.last") { value("$organizationUrl/meeting?page=1") }
+                jsonPath("$.links.prev") { doesNotExist() }
+                jsonPath("$.links.next") { doesNotExist() }
+            }
+    }
+
+    @Test
+    fun `paginates organization meetings and returns empty page when out of range`() {
+        mockMvc.get("$organizationUrl/meeting?page=2")
+            .andExpect {
+                status { isOk() }
+                jsonPath("$.id") { value("$organizationUrl/meeting?page=2") }
+                jsonPath("$.data.length()") { value(0) }
+                jsonPath("$.pagination.currentPage") { value(2) }
+                jsonPath("$.pagination.elementsPerPage") { value(25) }
+                jsonPath("$.pagination.totalElements") { value(1) }
+                jsonPath("$.pagination.totalPages") { value(1) }
+                jsonPath("$.links.first") { value("$organizationUrl/meeting?page=1") }
+                jsonPath("$.links.self") { value("$organizationUrl/meeting?page=2") }
+                jsonPath("$.links.prev") { value("$organizationUrl/meeting?page=1") }
+                jsonPath("$.links.last") { value("$organizationUrl/meeting?page=1") }
+                jsonPath("$.links.next") { doesNotExist() }
             }
     }
 
@@ -48,8 +76,17 @@ class OparlOrganizationExternalListControllerTest(
         mockMvc.get("$organizationWithoutMeetings/meeting")
             .andExpect {
                 status { isOk() }
-                jsonPath("$.id") { value("$organizationWithoutMeetings/meeting") }
+                jsonPath("$.id") { value("$organizationWithoutMeetings/meeting?page=1") }
                 jsonPath("$.data.length()") { value(0) }
+                jsonPath("$.pagination.currentPage") { value(1) }
+                jsonPath("$.pagination.elementsPerPage") { value(25) }
+                jsonPath("$.pagination.totalElements") { value(0) }
+                jsonPath("$.pagination.totalPages") { value(0) }
+                jsonPath("$.links.first") { value("$organizationWithoutMeetings/meeting?page=1") }
+                jsonPath("$.links.self") { value("$organizationWithoutMeetings/meeting?page=1") }
+                jsonPath("$.links.last") { value("$organizationWithoutMeetings/meeting?page=1") }
+                jsonPath("$.links.prev") { doesNotExist() }
+                jsonPath("$.links.next") { doesNotExist() }
             }
     }
 
@@ -85,12 +122,40 @@ class OparlOrganizationExternalListControllerTest(
         mockMvc.get("$organizationUrl/consultation")
             .andExpect {
                 status { isOk() }
-                jsonPath("$.id") { value("$organizationUrl/consultation") }
+                jsonPath("$.id") { value("$organizationUrl/consultation?page=1") }
                 jsonPath("$.type") { value("https://schema.oparl.org/1.1/List") }
                 jsonPath("$.data.length()") { value(1) }
                 jsonPath("$.data[0].id") { value(consultationUrl) }
                 jsonPath("$.data[0].organization.length()") { value(1) }
                 jsonPath("$.data[0].organization[0]") { value(organizationUrl) }
+                jsonPath("$.pagination.currentPage") { value(1) }
+                jsonPath("$.pagination.elementsPerPage") { value(25) }
+                jsonPath("$.pagination.totalElements") { value(1) }
+                jsonPath("$.pagination.totalPages") { value(1) }
+                jsonPath("$.links.first") { value("$organizationUrl/consultation?page=1") }
+                jsonPath("$.links.self") { value("$organizationUrl/consultation?page=1") }
+                jsonPath("$.links.last") { value("$organizationUrl/consultation?page=1") }
+                jsonPath("$.links.prev") { doesNotExist() }
+                jsonPath("$.links.next") { doesNotExist() }
+            }
+    }
+
+    @Test
+    fun `paginates organization consultations and returns empty page when out of range`() {
+        mockMvc.get("$organizationUrl/consultation?page=2")
+            .andExpect {
+                status { isOk() }
+                jsonPath("$.id") { value("$organizationUrl/consultation?page=2") }
+                jsonPath("$.data.length()") { value(0) }
+                jsonPath("$.pagination.currentPage") { value(2) }
+                jsonPath("$.pagination.elementsPerPage") { value(25) }
+                jsonPath("$.pagination.totalElements") { value(1) }
+                jsonPath("$.pagination.totalPages") { value(1) }
+                jsonPath("$.links.first") { value("$organizationUrl/consultation?page=1") }
+                jsonPath("$.links.self") { value("$organizationUrl/consultation?page=2") }
+                jsonPath("$.links.prev") { value("$organizationUrl/consultation?page=1") }
+                jsonPath("$.links.last") { value("$organizationUrl/consultation?page=1") }
+                jsonPath("$.links.next") { doesNotExist() }
             }
     }
 
@@ -102,8 +167,43 @@ class OparlOrganizationExternalListControllerTest(
         mockMvc.get("$organizationWithoutConsultations/consultation")
             .andExpect {
                 status { isOk() }
-                jsonPath("$.id") { value("$organizationWithoutConsultations/consultation") }
+                jsonPath("$.id") { value("$organizationWithoutConsultations/consultation?page=1") }
                 jsonPath("$.data.length()") { value(0) }
+                jsonPath("$.pagination.currentPage") { value(1) }
+                jsonPath("$.pagination.elementsPerPage") { value(25) }
+                jsonPath("$.pagination.totalElements") { value(0) }
+                jsonPath("$.pagination.totalPages") { value(0) }
+                jsonPath("$.links.first") { value("$organizationWithoutConsultations/consultation?page=1") }
+                jsonPath("$.links.self") { value("$organizationWithoutConsultations/consultation?page=1") }
+                jsonPath("$.links.last") { value("$organizationWithoutConsultations/consultation?page=1") }
+                jsonPath("$.links.prev") { doesNotExist() }
+                jsonPath("$.links.next") { doesNotExist() }
+            }
+    }
+
+    @Test
+    fun `returns bad request when page number is less than 1 for organization meetings`() {
+        mockMvc.get("$organizationUrl/meeting?page=0")
+            .andExpect {
+                status { isBadRequest() }
+            }
+
+        mockMvc.get("$organizationUrl/meeting?page=-1")
+            .andExpect {
+                status { isBadRequest() }
+            }
+    }
+
+    @Test
+    fun `returns bad request when page number is less than 1 for organization consultations`() {
+        mockMvc.get("$organizationUrl/consultation?page=0")
+            .andExpect {
+                status { isBadRequest() }
+            }
+
+        mockMvc.get("$organizationUrl/consultation?page=-1")
+            .andExpect {
+                status { isBadRequest() }
             }
     }
 

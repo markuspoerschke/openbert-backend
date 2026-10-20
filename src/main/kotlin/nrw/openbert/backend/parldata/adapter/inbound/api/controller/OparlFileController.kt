@@ -1,8 +1,12 @@
 package nrw.openbert.backend.parldata.adapter.inbound.api.controller
 
+import jakarta.validation.Valid
 import nrw.openbert.backend.parldata.adapter.inbound.api.dto.OparlFileDto
 import nrw.openbert.backend.parldata.adapter.inbound.api.dto.OparlListDto
+import nrw.openbert.backend.parldata.adapter.inbound.api.dto.OparlPaginationRequestDto
 import nrw.openbert.backend.parldata.adapter.inbound.api.mapper.OparlFileMapper
+import nrw.openbert.backend.parldata.adapter.inbound.api.mapper.OparlListLinksMapper
+import nrw.openbert.backend.parldata.adapter.inbound.api.mapper.OparlListPaginationMapper
 import nrw.openbert.backend.parldata.adapter.inbound.api.urlGenerator.OparlUrlGenerator
 import nrw.openbert.backend.parldata.domain.entity.resolved.ResolvedFile
 import nrw.openbert.backend.parldata.application.port.outbound.repository.ResolvedBodyRepository
@@ -10,6 +14,7 @@ import nrw.openbert.backend.parldata.application.port.outbound.repository.Resolv
 import org.springframework.http.ContentDisposition
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
+import org.springdoc.core.annotations.ParameterObject
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -21,23 +26,33 @@ import java.util.UUID
 class OparlFileController(
     private val urlGenerator: OparlUrlGenerator,
     private val fileMapper: OparlFileMapper,
+    private val listPaginationMapper: OparlListPaginationMapper,
+    private val listLinksMapper: OparlListLinksMapper,
     private val resolvedBodyRepository: ResolvedBodyRepository,
     private val resolvedFileRepository: ResolvedFileRepository,
 ) {
     @GetMapping("oparl/v1.1/body/{bodyId}/file")
-    fun list(@PathVariable bodyId: UUID): ResponseEntity<OparlListDto<OparlFileDto>> {
+    fun list(
+        @PathVariable bodyId: UUID,
+        @ParameterObject @Valid pagination: OparlPaginationRequestDto,
+    ): ResponseEntity<OparlListDto<OparlFileDto>> {
         if (!resolvedBodyRepository.existsById(bodyId)) {
             return ResponseEntity.notFound().build()
         }
 
         val files = resolvedFileRepository
-            .findAllByBody_IdOrderById(bodyId)
+            .findAllByBody_IdOrderById(bodyId, pagination.toPageable())
             .map(fileMapper::toDto)
 
         return ResponseEntity.ok(
             OparlListDto(
-                id = urlGenerator.fileList(bodyId),
-                data = files,
+                id = urlGenerator.fileList(bodyId, pagination.page),
+                data = files.toList(),
+                pagination = listPaginationMapper.toDto(files),
+                links = listLinksMapper.toDto(
+                    files,
+                    { page -> urlGenerator.fileList(bodyId, page) }
+                ),
             )
         )
     }

@@ -26,7 +26,7 @@ class OparlPaperControllerTest(
         mockMvc.get("$bodyUrl/paper")
             .andExpect {
                 status { isOk() }
-                jsonPath("$.id") { value("$bodyUrl/paper") }
+                jsonPath("$.id") { value("$bodyUrl/paper?page=1") }
                 jsonPath("$.type") { value("https://schema.oparl.org/1.1/List") }
                 jsonPath("$.data.length()") { value(1) }
                 jsonPath("$.data[0].id") { value(paperUrl) }
@@ -48,6 +48,47 @@ class OparlPaperControllerTest(
                 jsonPath("$.data[0].web") {
                     value("https://neuoffenstadt.example.com/drucksachen/V-2026-42")
                 }
+                jsonPath("$.pagination.currentPage") { value(1) }
+                jsonPath("$.pagination.elementsPerPage") { value(25) }
+                jsonPath("$.pagination.totalElements") { value(1) }
+                jsonPath("$.pagination.totalPages") { value(1) }
+                jsonPath("$.links.first") { value("$bodyUrl/paper?page=1") }
+                jsonPath("$.links.self") { value("$bodyUrl/paper?page=1") }
+                jsonPath("$.links.last") { value("$bodyUrl/paper?page=1") }
+                jsonPath("$.links.prev") { doesNotExist() }
+                jsonPath("$.links.next") { doesNotExist() }
+            }
+    }
+
+    @Test
+    fun `paginates papers and returns empty page when out of range`() {
+        mockMvc.get("$bodyUrl/paper?page=2")
+            .andExpect {
+                status { isOk() }
+                jsonPath("$.id") { value("$bodyUrl/paper?page=2") }
+                jsonPath("$.data.length()") { value(0) }
+                jsonPath("$.pagination.currentPage") { value(2) }
+                jsonPath("$.pagination.elementsPerPage") { value(25) }
+                jsonPath("$.pagination.totalElements") { value(1) }
+                jsonPath("$.pagination.totalPages") { value(1) }
+                jsonPath("$.links.first") { value("$bodyUrl/paper?page=1") }
+                jsonPath("$.links.self") { value("$bodyUrl/paper?page=2") }
+                jsonPath("$.links.prev") { value("$bodyUrl/paper?page=1") }
+                jsonPath("$.links.last") { value("$bodyUrl/paper?page=1") }
+                jsonPath("$.links.next") { doesNotExist() }
+            }
+    }
+
+    @Test
+    fun `returns bad request when page number is less than 1`() {
+        mockMvc.get("$bodyUrl/paper?page=0")
+            .andExpect {
+                status { isBadRequest() }
+            }
+
+        mockMvc.get("$bodyUrl/paper?page=-1")
+            .andExpect {
+                status { isBadRequest() }
             }
     }
 
