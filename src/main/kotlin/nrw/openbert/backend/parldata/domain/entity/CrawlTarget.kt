@@ -59,6 +59,13 @@ class CrawlTarget(
         lastCrawledAt = modifiedAt
     }
 
+    fun markAsIndexed() = apply {
+        increaseReferenceCounter()
+        lastIndexedAt = modifiedAt
+        // List and inline representations can omit fields from the resource response.
+        lastCrawledAt = null
+    }
+
     fun markAsScheduled(jobId: UUID) = apply {
         scheduledAt = null
         this.jobId = jobId

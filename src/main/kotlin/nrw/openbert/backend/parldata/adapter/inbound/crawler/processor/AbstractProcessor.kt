@@ -31,7 +31,7 @@ abstract class AbstractProcessor<D : OparlObjectDto, E : AbstractOparlEntity>(
         val savedEntity = saveEntity(entity)
 
         resolveTargetEnqueuer.enqueue(savedEntity)
-        crawlTargetEnqueuer.markAsCrawled(resource)
+        crawlTargetEnqueuer.markAsIndexed(resource, savedEntity.getType())
 
         return savedEntity
     }

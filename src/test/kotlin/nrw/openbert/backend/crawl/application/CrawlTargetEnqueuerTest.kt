@@ -40,7 +40,36 @@ class CrawlTargetEnqueuerTest {
     }
 
     @Test
-    fun `marks a processed target as crawled and indexed`() {
+    fun `queues a newly indexed resource for its own crawl`() {
+        val resource = resource("https://oparl.example.org/person/1")
+
+        enqueuer.markAsIndexed(resource, OparlType.PERSON)
+
+        val target = captureSavedTarget()
+        assertEquals(resource, target.resource)
+        assertEquals(OparlType.PERSON, target.entityType)
+        assertNotNull(target.lastIndexedAt)
+        assertNull(target.lastCrawledAt)
+        assertEquals(1, target.referenceCount)
+    }
+
+    @Test
+    fun `indexing an already crawled resource makes it due again`() {
+        val resource = resource("https://oparl.example.org/person/1")
+        val target = CrawlTarget(resource = resource).markAsCrawled()
+        `when`(repository.findByResource(resource)).thenReturn(target)
+
+        enqueuer.markAsIndexed(resource, OparlType.PERSON)
+
+        assertNotNull(target.lastIndexedAt)
+        assertNull(target.lastCrawledAt)
+        assertEquals(1, target.referenceCount)
+        assertEquals(OparlType.PERSON, target.entityType)
+        verify(repository).save(target)
+    }
+
+    @Test
+    fun `indexing preserves an already scheduled resource crawl`() {
         val resource = resource("https://oparl.example.org/location/1")
         val target = CrawlTarget(
             resource = resource,
@@ -51,13 +80,16 @@ class CrawlTargetEnqueuerTest {
         `when`(repository.findByResource(resource))
             .thenReturn(target)
 
-        enqueuer.markAsCrawled(resource)
+        val scheduledAt = target.scheduledAt
+        val jobId = target.jobId
+
+        enqueuer.markAsIndexed(resource, OparlType.LOCATION)
 
         assertNotNull(target.lastIndexedAt)
-        assertNotNull(target.lastCrawledAt)
-        assertEquals(0, target.referenceCount)
-        assertNull(target.scheduledAt)
-        assertNull(target.jobId)
+        assertNull(target.lastCrawledAt)
+        assertEquals(5, target.referenceCount)
+        assertEquals(scheduledAt, target.scheduledAt)
+        assertEquals(jobId, target.jobId)
         verify(repository).save(target)
     }
 

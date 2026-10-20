@@ -39,6 +39,12 @@ VALUES ('30000000-0000-4000-8000-000000000001', '9352fa21-68c6-4f4e-8832-08a0454
         'https://oparl-demo.example.org/oparl/v1.1/membership/due', 'MEMBERSHIP',
         '2026-07-22 14:30:55.000000', '2026-07-22 14:30:55.000000', 100);
 
+-- Source list used to verify that every listed resource receives its own crawl.
+INSERT INTO crawl_target (id, system_id, url, created_at, modified_at, reference_count)
+VALUES ('40000000-0000-4000-8000-000000000001', '9352fa21-68c6-4f4e-8832-08a0454ff179',
+        'https://oparl-demo.example.org/oparl/v1.1/crawl-regression',
+        '2026-07-22 14:30:55.000000', '2026-07-22 14:30:55.000000', 1);
+
 -- OParl body
 INSERT INTO public.oparl_resolved_body (id, short_name, name, website, license, license_valid_since, oparl_since, ags,
                                         rgs, equivalent, contact_email, contact_name, classification, keyword, web,

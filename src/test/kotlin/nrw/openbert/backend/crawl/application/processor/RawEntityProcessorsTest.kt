@@ -89,7 +89,7 @@ class RawEntityProcessorsTest {
         assertEquals(listOf("budget"), entity.keyword)
         assertEquals("https://example.org/agenda-item", entity.web)
         verify(repository).save(entity)
-        verify(crawlTargetEnqueuer).markAsCrawled(entity.resource)
+        verify(crawlTargetEnqueuer).markAsIndexed(entity.resource, entity.getType())
     }
 
     @Test
@@ -112,7 +112,7 @@ class RawEntityProcessorsTest {
         assertEquals(listOf("budget"), entity.keyword)
         assertEquals("https://example.org/consultation", entity.web)
         verify(repository).save(entity)
-        verify(crawlTargetEnqueuer).markAsCrawled(entity.resource)
+        verify(crawlTargetEnqueuer).markAsIndexed(entity.resource, entity.getType())
     }
 
     @Test
@@ -155,7 +155,7 @@ class RawEntityProcessorsTest {
         assertEquals(listOf("budget"), entity.keyword)
         assertEquals("https://example.org/file", entity.web)
         verify(repository).save(entity)
-        verify(crawlTargetEnqueuer).markAsCrawled(entity.resource)
+        verify(crawlTargetEnqueuer).markAsIndexed(entity.resource, entity.getType())
     }
 
     @Test
@@ -182,7 +182,7 @@ class RawEntityProcessorsTest {
         assertEquals(listOf("term"), entity.keyword)
         assertEquals("https://example.org/legislative-term", entity.web)
         verify(repository).save(entity)
-        verify(crawlTargetEnqueuer).markAsCrawled(entity.resource)
+        verify(crawlTargetEnqueuer).markAsIndexed(entity.resource, entity.getType())
     }
 
     @Test
@@ -216,7 +216,7 @@ class RawEntityProcessorsTest {
         assertEquals(listOf("city hall"), entity.keyword)
         assertEquals("https://example.org/location", entity.web)
         verify(repository).save(entity)
-        verify(crawlTargetEnqueuer).markAsCrawled(entity.resource)
+        verify(crawlTargetEnqueuer).markAsIndexed(entity.resource, entity.getType())
     }
 
     @Test
@@ -252,7 +252,7 @@ class RawEntityProcessorsTest {
         assertEquals(listOf("council"), entity.keyword)
         assertEquals("https://example.org/meeting", entity.web)
         verify(repository).save(entity)
-        verify(crawlTargetEnqueuer).markAsCrawled(entity.resource)
+        verify(crawlTargetEnqueuer).markAsIndexed(entity.resource, entity.getType())
     }
 
     @Test
@@ -279,7 +279,7 @@ class RawEntityProcessorsTest {
         assertEquals(listOf("chair"), entity.keyword)
         assertEquals("https://example.org/membership", entity.web)
         verify(repository).save(entity)
-        verify(crawlTargetEnqueuer).markAsCrawled(entity.resource)
+        verify(crawlTargetEnqueuer).markAsIndexed(entity.resource, entity.getType())
     }
 
     @Test
@@ -316,7 +316,7 @@ class RawEntityProcessorsTest {
         assertEquals(listOf("finance"), entity.keyword)
         assertEquals("https://example.org/organization", entity.web)
         verify(repository).save(entity)
-        verify(crawlTargetEnqueuer).markAsCrawled(entity.resource)
+        verify(crawlTargetEnqueuer).markAsIndexed(entity.resource, entity.getType())
     }
 
     @Test
@@ -352,7 +352,7 @@ class RawEntityProcessorsTest {
         assertEquals(listOf("budget"), entity.keyword)
         assertEquals("https://example.org/paper", entity.web)
         verify(repository).save(entity)
-        verify(crawlTargetEnqueuer).markAsCrawled(entity.resource)
+        verify(crawlTargetEnqueuer).markAsIndexed(entity.resource, entity.getType())
     }
 
     @Test
@@ -403,7 +403,7 @@ class RawEntityProcessorsTest {
         assertEquals(listOf("councillor"), entity.keyword)
         assertEquals("https://example.org/person", entity.web)
         verify(repository).save(entity)
-        verify(crawlTargetEnqueuer).markAsCrawled(entity.resource)
+        verify(crawlTargetEnqueuer).markAsIndexed(entity.resource, entity.getType())
     }
 
     @Test
@@ -436,7 +436,7 @@ class RawEntityProcessorsTest {
         assertEquals("https://product.example.org", entity.product?.value)
         assertEquals("https://example.org/system", entity.web)
         verify(repository).save(entity)
-        verify(crawlTargetEnqueuer).markAsCrawled(entity.resource)
+        verify(crawlTargetEnqueuer).markAsIndexed(entity.resource, entity.getType())
         verify(resolveTargetEnqueuer).enqueue(entity)
     }
 

@@ -23,9 +23,10 @@ class CrawlTargetEnqueuer(
         repository.save(crawlTarget)
     }
 
-    fun markAsCrawled(resource: OparlResource) {
-        val crawlTarget = findOrCreate(resource)
-        crawlTarget.markAsCrawled()
+    fun markAsIndexed(resource: OparlResource, entityType: OparlType) {
+        val crawlTarget = findOrCreate(resource, entityType)
+        crawlTarget.assignEntityType(entityType)
+        crawlTarget.markAsIndexed()
 
         repository.save(crawlTarget)
     }
