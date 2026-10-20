@@ -28,7 +28,6 @@ class CrawlTarget(
     var entityType: OparlType? = null,
     val createdAt: Instant = Instant.now(),
     var lastCrawledAt: Instant? = null,
-    var lastIndexedAt: Instant? = null,
     var modifiedAt: Instant = Instant.now(),
     var referenceCount: Int = 0,
     var scheduledAt: Instant? = null,
@@ -52,7 +51,6 @@ class CrawlTarget(
 
     fun markAsCrawled() = apply {
         modifiedAt = Instant.now()
-        lastIndexedAt = modifiedAt
         referenceCount = 0
         scheduledAt = null
         jobId = null
