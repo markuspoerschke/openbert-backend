@@ -132,4 +132,17 @@ class OparlBodyControllerTest(
                 jsonPath("$.links.next") { doesNotExist() }
             }
     }
+
+    @Test
+    fun `returns bad request when page number is less than 1`() {
+        mockMvc.get("https://example.org:8443/oparl/v1.1/body?page=0")
+            .andExpect {
+                status { isBadRequest() }
+            }
+
+        mockMvc.get("https://example.org:8443/oparl/v1.1/body?page=-1")
+            .andExpect {
+                status { isBadRequest() }
+            }
+    }
 }

@@ -25,6 +25,10 @@ class OparlBodyController(
 ) {
     @GetMapping("oparl/v1.1/body")
     fun list(@RequestParam page: Int = 1): ResponseEntity<OparlListDto<OparlBodyDto>> {
+        if (page < 1) {
+            return ResponseEntity.badRequest().build()
+        }
+
         val bodies = resolvedBodyRepository
             // please note that we need to subtract 1 from the page number because oparl expects a 1-based page number
             .findAllByOrderById(PageRequest.of(page - 1, PAGE_SIZE))

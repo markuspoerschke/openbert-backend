@@ -30,6 +30,10 @@ class OparlLegislativeTermController(
         @PathVariable bodyId: UUID,
         @RequestParam page: Int = 1,
     ): ResponseEntity<OparlListDto<OparlLegislativeTermDto>> {
+        if (page < 1) {
+            return ResponseEntity.badRequest().build()
+        }
+
         if (!resolvedBodyRepository.existsById(bodyId)) {
             return ResponseEntity.notFound().build()
         }

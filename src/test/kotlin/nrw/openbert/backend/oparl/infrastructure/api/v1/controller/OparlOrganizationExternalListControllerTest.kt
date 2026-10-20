@@ -84,7 +84,7 @@ class OparlOrganizationExternalListControllerTest(
                 jsonPath("$.pagination.totalPages") { value(0) }
                 jsonPath("$.links.first") { value("$organizationWithoutMeetings/meeting?page=1") }
                 jsonPath("$.links.self") { value("$organizationWithoutMeetings/meeting?page=1") }
-                jsonPath("$.links.last") { value("$organizationWithoutMeetings/meeting?page=0") }
+                jsonPath("$.links.last") { value("$organizationWithoutMeetings/meeting?page=1") }
                 jsonPath("$.links.prev") { doesNotExist() }
                 jsonPath("$.links.next") { doesNotExist() }
             }
@@ -175,9 +175,35 @@ class OparlOrganizationExternalListControllerTest(
                 jsonPath("$.pagination.totalPages") { value(0) }
                 jsonPath("$.links.first") { value("$organizationWithoutConsultations/consultation?page=1") }
                 jsonPath("$.links.self") { value("$organizationWithoutConsultations/consultation?page=1") }
-                jsonPath("$.links.last") { value("$organizationWithoutConsultations/consultation?page=0") }
+                jsonPath("$.links.last") { value("$organizationWithoutConsultations/consultation?page=1") }
                 jsonPath("$.links.prev") { doesNotExist() }
                 jsonPath("$.links.next") { doesNotExist() }
+            }
+    }
+
+    @Test
+    fun `returns bad request when page number is less than 1 for organization meetings`() {
+        mockMvc.get("$organizationUrl/meeting?page=0")
+            .andExpect {
+                status { isBadRequest() }
+            }
+
+        mockMvc.get("$organizationUrl/meeting?page=-1")
+            .andExpect {
+                status { isBadRequest() }
+            }
+    }
+
+    @Test
+    fun `returns bad request when page number is less than 1 for organization consultations`() {
+        mockMvc.get("$organizationUrl/consultation?page=0")
+            .andExpect {
+                status { isBadRequest() }
+            }
+
+        mockMvc.get("$organizationUrl/consultation?page=-1")
+            .andExpect {
+                status { isBadRequest() }
             }
     }
 

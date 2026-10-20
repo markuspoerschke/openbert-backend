@@ -44,6 +44,6 @@ class OparlListLinksMapper {
     }
 
     private fun last(page: Page<*>, listUrlGenerator: (page: Int) -> String): String {
-        return listUrlGenerator(page.totalPages)
+        return listUrlGenerator(page.totalPages.coerceAtLeast(1))
     }
 }

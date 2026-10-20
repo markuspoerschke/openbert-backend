@@ -89,6 +89,19 @@ class OparlFileControllerTest(
     }
 
     @Test
+    fun `returns bad request when page number is less than 1`() {
+        mockMvc.get("$bodyUrl/file?page=0")
+            .andExpect {
+                status { isBadRequest() }
+            }
+
+        mockMvc.get("$bodyUrl/file?page=-1")
+            .andExpect {
+                status { isBadRequest() }
+            }
+    }
+
+    @Test
     fun `returns a single resolved file`() {
         mockMvc.get(fileUrl)
             .andExpect {

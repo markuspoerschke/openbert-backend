@@ -145,6 +145,25 @@ class OparlPersonControllerTest(
     }
 
     @Test
+    fun `returns bad request when page number is less than 1`() {
+        mockMvc.get(
+            "https://example.org:8443/oparl/v1.1/body/" +
+                "903c26aa-dc8f-4d34-afd6-afdc5040dbd3/person?page=0"
+        )
+            .andExpect {
+                status { isBadRequest() }
+            }
+
+        mockMvc.get(
+            "https://example.org:8443/oparl/v1.1/body/" +
+                "903c26aa-dc8f-4d34-afd6-afdc5040dbd3/person?page=-1"
+        )
+            .andExpect {
+                status { isBadRequest() }
+            }
+    }
+
+    @Test
     fun `returns a single resolved person`() {
         mockMvc.get(
             "https://example.org:8443/oparl/v1.1/body/" +

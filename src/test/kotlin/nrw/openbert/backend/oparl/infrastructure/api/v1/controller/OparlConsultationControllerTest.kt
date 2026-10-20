@@ -81,6 +81,19 @@ class OparlConsultationControllerTest(
     }
 
     @Test
+    fun `returns bad request when page number is less than 1`() {
+        mockMvc.get("$bodyUrl/consultation?page=0")
+            .andExpect {
+                status { isBadRequest() }
+            }
+
+        mockMvc.get("$bodyUrl/consultation?page=-1")
+            .andExpect {
+                status { isBadRequest() }
+            }
+    }
+
+    @Test
     fun `returns a single resolved consultation`() {
         mockMvc.get(consultationUrl)
             .andExpect {

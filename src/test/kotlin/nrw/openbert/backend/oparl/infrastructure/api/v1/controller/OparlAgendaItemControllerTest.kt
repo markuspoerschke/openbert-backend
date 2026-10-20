@@ -92,6 +92,19 @@ class OparlAgendaItemControllerTest(
     }
 
     @Test
+    fun `returns bad request when page number is less than 1`() {
+        mockMvc.get("$bodyUrl/agendaitem?page=0")
+            .andExpect {
+                status { isBadRequest() }
+            }
+
+        mockMvc.get("$bodyUrl/agendaitem?page=-1")
+            .andExpect {
+                status { isBadRequest() }
+            }
+    }
+
+    @Test
     fun `returns a single resolved agenda item with its mandatory order`() {
         mockMvc.get(agendaItemUrl)
             .andExpect {

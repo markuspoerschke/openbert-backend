@@ -40,6 +40,10 @@ class OparlOrganizationController(
         @PathVariable bodyId: UUID,
         @RequestParam page: Int = 1,
     ): ResponseEntity<OparlListDto<OparlOrganizationDto>> {
+        if (page < 1) {
+            return ResponseEntity.badRequest().build()
+        }
+
         if (!resolvedBodyRepository.existsById(bodyId)) {
             return ResponseEntity.notFound().build()
         }
@@ -82,6 +86,10 @@ class OparlOrganizationController(
         @PathVariable organizationId: UUID,
         @RequestParam page: Int = 1,
     ): ResponseEntity<OparlListDto<OparlMeetingDto>> {
+        if (page < 1) {
+            return ResponseEntity.badRequest().build()
+        }
+
         if (!resolvedOrganizationRepository.findByIdAndBody_Id(organizationId, bodyId).isPresent) {
             return ResponseEntity.notFound().build()
         }
@@ -114,6 +122,10 @@ class OparlOrganizationController(
         @PathVariable organizationId: UUID,
         @RequestParam page: Int = 1,
     ): ResponseEntity<OparlListDto<OparlConsultationDto>> {
+        if (page < 1) {
+            return ResponseEntity.badRequest().build()
+        }
+
         if (!resolvedOrganizationRepository.findByIdAndBody_Id(organizationId, bodyId).isPresent) {
             return ResponseEntity.notFound().build()
         }

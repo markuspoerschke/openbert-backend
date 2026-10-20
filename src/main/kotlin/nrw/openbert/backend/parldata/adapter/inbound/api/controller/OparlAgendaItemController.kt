@@ -30,6 +30,10 @@ class OparlAgendaItemController(
         @PathVariable bodyId: UUID,
         @RequestParam page: Int = 1,
     ): ResponseEntity<OparlListDto<OparlAgendaItemDto>> {
+        if (page < 1) {
+            return ResponseEntity.badRequest().build()
+        }
+
         if (!resolvedBodyRepository.existsById(bodyId)) {
             return ResponseEntity.notFound().build()
         }

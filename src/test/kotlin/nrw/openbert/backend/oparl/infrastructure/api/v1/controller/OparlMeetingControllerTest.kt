@@ -88,6 +88,19 @@ class OparlMeetingControllerTest(
     }
 
     @Test
+    fun `returns bad request when page number is less than 1`() {
+        mockMvc.get("$bodyUrl/meeting?page=0")
+            .andExpect {
+                status { isBadRequest() }
+            }
+
+        mockMvc.get("$bodyUrl/meeting?page=-1")
+            .andExpect {
+                status { isBadRequest() }
+            }
+    }
+
+    @Test
     fun `returns a single resolved meeting`() {
         mockMvc.get(meetingUrl)
             .andExpect {

@@ -80,6 +80,19 @@ class OparlPaperControllerTest(
     }
 
     @Test
+    fun `returns bad request when page number is less than 1`() {
+        mockMvc.get("$bodyUrl/paper?page=0")
+            .andExpect {
+                status { isBadRequest() }
+            }
+
+        mockMvc.get("$bodyUrl/paper?page=-1")
+            .andExpect {
+                status { isBadRequest() }
+            }
+    }
+
+    @Test
     fun `returns a single resolved paper`() {
         mockMvc.get(paperUrl)
             .andExpect {
