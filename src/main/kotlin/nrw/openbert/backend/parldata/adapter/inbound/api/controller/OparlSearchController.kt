@@ -4,7 +4,7 @@ import io.swagger.v3.oas.annotations.Parameter
 import nrw.openbert.backend.parldata.adapter.inbound.api.dto.OparlListLinksDto
 import nrw.openbert.backend.parldata.adapter.inbound.api.dto.OparlListPaginationDto
 import nrw.openbert.backend.parldata.adapter.inbound.api.dto.OparlSearchResultListDto
-import nrw.openbert.backend.parldata.adapter.inbound.api.mapper.OparlSearchResultMapper
+import nrw.openbert.backend.parldata.adapter.inbound.api.mapper.OparlResourceMapper
 import nrw.openbert.backend.parldata.application.port.inbound.OparlEntitySearchServiceInterface
 import nrw.openbert.backend.parldata.application.port.model.SearchCriteria
 import org.springframework.data.domain.PageRequest
@@ -17,7 +17,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder
 @RestController
 class OparlSearchController(
     private val searchService: OparlEntitySearchServiceInterface,
-    private val mapper: OparlSearchResultMapper,
+    private val mapper: OparlResourceMapper,
 ) {
     @GetMapping("oparl/v1.1/search")
     fun search(
@@ -34,7 +34,7 @@ class OparlSearchController(
         val resultPage = searchService.search(
             SearchCriteria(term = searchText),
             PageRequest.of(page - 1, size),
-        ).map(mapper::toDto)
+        ).map { mapper.toDto(it) }
 
         val baseUrl = ServletUriComponentsBuilder
             .fromCurrentRequestUri()

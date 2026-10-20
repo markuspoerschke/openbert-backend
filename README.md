@@ -10,7 +10,7 @@ The longer-term goal is to connect information across municipalities. Planned en
 
 ## Current status
 
-MCP is the main entry point, with tools for listing councils and searching their data. It can be used with clients such as Claude and LM Studio. A frontend is in development; public hosting is pending authentication. There is no hosted demo yet.
+MCP is the main entry point, with tools for listing councils, searching their data, and retrieving individual resources. It can be used with clients such as Claude and LM Studio. A frontend is in development; public hosting is pending authentication. There is no hosted demo yet.
 
 The OParl implementation is incomplete: refresh/deletion handling and some relationships remain unfinished, and file downloads currently return placeholders.
 
@@ -71,10 +71,17 @@ docker compose exec -T postgres psql -U myuser -d mydatabase < docs/fixtures.sql
 
 Data availability depends on the upstream server and background processing.
 
-- **MCP:** `http://localhost:8080/mcp` (Streamable HTTP); tools: `oparl_body_list`, `oparl_search`.
+- **MCP:** `http://localhost:8080/mcp` (Streamable HTTP); tools: `oparl_body_list`, `oparl_search`, `oparl_get_resource`.
 - **API:** [OParl entry point](http://localhost:8080/oparl/v1.1/system).
 - **API documentation:** [Swagger UI](http://localhost:8080/swagger-ui.html) to browse and try the HTTP endpoints.
 - **Tests and packaging:** `./gradlew build` (Docker required for Testcontainers).
+
+To retrieve a resource over MCP, pass its full `id` URL from `oparl_search` or `oparl_body_list`
+unchanged to `oparl_get_resource` as `{"id": "<returned id>"}`. The tool determines
+the resource type and body from that single ID and returns the same OParl representation as
+the API. Individual relationship IDs can be followed the same way, including IDs of embedded
+objects. Collection URLs and file access/download URLs are not resource IDs. Malformed,
+unsupported, missing, or incorrectly scoped IDs produce MCP tool errors.
 
 ## Docker image
 
