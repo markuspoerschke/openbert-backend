@@ -11,6 +11,7 @@ import nrw.openbert.backend.parldata.adapter.inbound.api.controller.OparlMembers
 import nrw.openbert.backend.parldata.adapter.inbound.api.controller.OparlOrganizationController
 import nrw.openbert.backend.parldata.adapter.inbound.api.controller.OparlPaperController
 import nrw.openbert.backend.parldata.adapter.inbound.api.controller.OparlPersonController
+import nrw.openbert.backend.parldata.adapter.inbound.api.dto.OparlPaginationRequestDto
 import org.springframework.stereotype.Component
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder
 import java.util.UUID
@@ -19,10 +20,7 @@ import kotlin.jvm.java
 @Component
 class OparlUrlGenerator {
     fun bodyList(page: Int = 1): String {
-        return MvcUriComponentsBuilder
-            .fromMethodName(OparlBodyController::class.java, "list", page)
-            .build()
-            .toString()
+        return paginatedList(OparlBodyController::class.java, "list", page)
     }
 
     fun body(bodyId: UUID): String {
@@ -33,10 +31,7 @@ class OparlUrlGenerator {
     }
 
     fun organizationList(bodyId: UUID, page: Int = 1): String {
-        return MvcUriComponentsBuilder
-            .fromMethodName(OparlOrganizationController::class.java, "list", bodyId, page)
-            .build()
-            .toString()
+        return paginatedList(OparlOrganizationController::class.java, "list", page, bodyId)
     }
 
     fun organization(bodyId: UUID, organizationId: UUID): String {
@@ -47,36 +42,27 @@ class OparlUrlGenerator {
     }
 
     fun organizationMeetingList(bodyId: UUID, organizationId: UUID, page: Int = 1): String {
-        return MvcUriComponentsBuilder
-            .fromMethodName(
-                OparlOrganizationController::class.java,
-                "listMeetings",
-                bodyId,
-                organizationId,
-                page,
-            )
-            .build()
-            .toString()
+        return paginatedList(
+            OparlOrganizationController::class.java,
+            "listMeetings",
+            page,
+            bodyId,
+            organizationId,
+        )
     }
 
     fun organizationConsultationList(bodyId: UUID, organizationId: UUID, page: Int = 1): String {
-        return MvcUriComponentsBuilder
-            .fromMethodName(
-                OparlOrganizationController::class.java,
-                "listConsultations",
-                bodyId,
-                organizationId,
-                page,
-            )
-            .build()
-            .toString()
+        return paginatedList(
+            OparlOrganizationController::class.java,
+            "listConsultations",
+            page,
+            bodyId,
+            organizationId,
+        )
     }
 
     fun personList(bodyId: UUID, page: Int = 1): String {
-        return MvcUriComponentsBuilder
-            .fromMethodName(OparlPersonController::class.java, "list", bodyId, page)
-            .build()
-            .toString()
+        return paginatedList(OparlPersonController::class.java, "list", page, bodyId)
     }
 
     fun person(bodyId: UUID, personId: UUID): String {
@@ -87,10 +73,7 @@ class OparlUrlGenerator {
     }
 
     fun meetingList(bodyId: UUID, page: Int = 1): String {
-        return MvcUriComponentsBuilder
-            .fromMethodName(OparlMeetingController::class.java, "list", bodyId, page)
-            .build()
-            .toString()
+        return paginatedList(OparlMeetingController::class.java, "list", page, bodyId)
     }
 
     fun meeting(bodyId: UUID, meetingId: UUID): String {
@@ -101,10 +84,7 @@ class OparlUrlGenerator {
     }
 
     fun paperList(bodyId: UUID, page: Int = 1): String {
-        return MvcUriComponentsBuilder
-            .fromMethodName(OparlPaperController::class.java, "list", bodyId, page)
-            .build()
-            .toString()
+        return paginatedList(OparlPaperController::class.java, "list", page, bodyId)
     }
 
     fun paper(bodyId: UUID, paperId: UUID): String {
@@ -115,10 +95,7 @@ class OparlUrlGenerator {
     }
 
     fun agendaItemList(bodyId: UUID, page: Int = 1): String {
-        return MvcUriComponentsBuilder
-            .fromMethodName(OparlAgendaItemController::class.java, "list", bodyId, page)
-            .build()
-            .toString()
+        return paginatedList(OparlAgendaItemController::class.java, "list", page, bodyId)
     }
 
     fun agendaItem(bodyId: UUID, agendaItemId: UUID): String {
@@ -129,10 +106,7 @@ class OparlUrlGenerator {
     }
 
     fun consultationList(bodyId: UUID, page: Int = 1): String {
-        return MvcUriComponentsBuilder
-            .fromMethodName(OparlConsultationController::class.java, "list", bodyId, page)
-            .build()
-            .toString()
+        return paginatedList(OparlConsultationController::class.java, "list", page, bodyId)
     }
 
     fun consultation(bodyId: UUID, consultationId: UUID): String {
@@ -148,10 +122,7 @@ class OparlUrlGenerator {
     }
 
     fun fileList(bodyId: UUID, page: Int = 1): String {
-        return MvcUriComponentsBuilder
-            .fromMethodName(OparlFileController::class.java, "list", bodyId, page)
-            .build()
-            .toString()
+        return paginatedList(OparlFileController::class.java, "list", page, bodyId)
     }
 
     fun file(bodyId: UUID, fileId: UUID): String {
@@ -176,10 +147,7 @@ class OparlUrlGenerator {
     }
 
     fun legislativeTermList(bodyId: UUID, page: Int = 1): String {
-        return MvcUriComponentsBuilder
-            .fromMethodName(OparlLegislativeTermController::class.java, "list", bodyId, page)
-            .build()
-            .toString()
+        return paginatedList(OparlLegislativeTermController::class.java, "list", page, bodyId)
     }
 
     fun legislativeTerm(bodyId: UUID, legislativeTermId: UUID): String {
@@ -195,10 +163,7 @@ class OparlUrlGenerator {
     }
 
     fun membershipList(bodyId: UUID, page: Int = 1): String {
-        return MvcUriComponentsBuilder
-            .fromMethodName(OparlMembershipController::class.java, "list", bodyId, page)
-            .build()
-            .toString()
+        return paginatedList(OparlMembershipController::class.java, "list", page, bodyId)
     }
 
     fun membership(bodyId: UUID, membershipId: UUID): String {
@@ -209,15 +174,29 @@ class OparlUrlGenerator {
     }
 
     fun locationList(bodyId: UUID, page: Int = 1): String {
-        return MvcUriComponentsBuilder
-            .fromMethodName(OparlLocationController::class.java, "list", bodyId, page)
-            .build()
-            .toString()
+        return paginatedList(OparlLocationController::class.java, "list", page, bodyId)
     }
 
     fun location(bodyId: UUID, locationId: UUID): String {
         return MvcUriComponentsBuilder
             .fromMethodName(OparlLocationController::class.java, "get", bodyId, locationId)
+            .build()
+            .toString()
+    }
+
+    /**
+     * [MvcUriComponentsBuilder] only renders `@PathVariable` and `@RequestParam` arguments. The pagination DTO is
+     * passed for method matching only, its `page` value has to be appended as query parameter explicitly.
+     */
+    private fun paginatedList(
+        controller: Class<*>,
+        methodName: String,
+        page: Int,
+        vararg pathVariables: Any,
+    ): String {
+        return MvcUriComponentsBuilder
+            .fromMethodName(controller, methodName, *pathVariables, OparlPaginationRequestDto(page))
+            .queryParam("page", page)
             .build()
             .toString()
     }

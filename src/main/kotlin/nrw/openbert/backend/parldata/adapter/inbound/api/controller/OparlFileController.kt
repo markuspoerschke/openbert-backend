@@ -1,7 +1,9 @@
 package nrw.openbert.backend.parldata.adapter.inbound.api.controller
 
+import jakarta.validation.Valid
 import nrw.openbert.backend.parldata.adapter.inbound.api.dto.OparlFileDto
 import nrw.openbert.backend.parldata.adapter.inbound.api.dto.OparlListDto
+import nrw.openbert.backend.parldata.adapter.inbound.api.dto.OparlPaginationRequestDto
 import nrw.openbert.backend.parldata.adapter.inbound.api.mapper.OparlFileMapper
 import nrw.openbert.backend.parldata.adapter.inbound.api.mapper.OparlListLinksMapper
 import nrw.openbert.backend.parldata.adapter.inbound.api.mapper.OparlListPaginationMapper
@@ -9,14 +11,13 @@ import nrw.openbert.backend.parldata.adapter.inbound.api.urlGenerator.OparlUrlGe
 import nrw.openbert.backend.parldata.domain.entity.resolved.ResolvedFile
 import nrw.openbert.backend.parldata.application.port.outbound.repository.ResolvedBodyRepository
 import nrw.openbert.backend.parldata.application.port.outbound.repository.ResolvedFileRepository
-import org.springframework.data.domain.PageRequest
 import org.springframework.http.ContentDisposition
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
+import org.springdoc.core.annotations.ParameterObject
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.nio.charset.StandardCharsets
 import java.util.UUID
@@ -33,24 +34,19 @@ class OparlFileController(
     @GetMapping("oparl/v1.1/body/{bodyId}/file")
     fun list(
         @PathVariable bodyId: UUID,
-        @RequestParam page: Int = 1,
+        @ParameterObject @Valid pagination: OparlPaginationRequestDto,
     ): ResponseEntity<OparlListDto<OparlFileDto>> {
-        if (page < 1) {
-            return ResponseEntity.badRequest().build()
-        }
-
         if (!resolvedBodyRepository.existsById(bodyId)) {
             return ResponseEntity.notFound().build()
         }
 
         val files = resolvedFileRepository
-            // please note that we need to subtract 1 from the page number because oparl expects a 1-based page number
-            .findAllByBody_IdOrderById(bodyId, PageRequest.of(page - 1, PAGE_SIZE))
+            .findAllByBody_IdOrderById(bodyId, pagination.toPageable())
             .map(fileMapper::toDto)
 
         return ResponseEntity.ok(
             OparlListDto(
-                id = urlGenerator.fileList(bodyId, page),
+                id = urlGenerator.fileList(bodyId, pagination.page),
                 data = files.toList(),
                 pagination = listPaginationMapper.toDto(files),
                 links = listLinksMapper.toDto(
@@ -135,7 +131,6 @@ class OparlFileController(
     }
 
     companion object {
-        private const val PAGE_SIZE = 25
         private const val MOCK_FILE_HEADER = "X-OpenBERT-Mock-File"
     }
 }
