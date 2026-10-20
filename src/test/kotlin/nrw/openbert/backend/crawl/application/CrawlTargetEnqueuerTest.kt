@@ -35,12 +35,11 @@ class CrawlTargetEnqueuerTest {
         assertEquals(resource, target.resource)
         assertEquals(OparlType.BODY, target.entityType)
         assertEquals(1, target.referenceCount)
-        assertNull(target.lastIndexedAt)
         assertNull(target.lastCrawledAt)
     }
 
     @Test
-    fun `marks a processed target as crawled and indexed`() {
+    fun `marks a processed target as crawled`() {
         val resource = resource("https://oparl.example.org/location/1")
         val target = CrawlTarget(
             resource = resource,
@@ -53,7 +52,6 @@ class CrawlTargetEnqueuerTest {
 
         enqueuer.markAsCrawled(resource)
 
-        assertNotNull(target.lastIndexedAt)
         assertNotNull(target.lastCrawledAt)
         assertEquals(0, target.referenceCount)
         assertNull(target.scheduledAt)

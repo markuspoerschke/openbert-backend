@@ -105,7 +105,6 @@ class CrawlerTest {
         verify(fixture.systemProcessor).process(fixture.resource(systemDto.id!!), systemDto)
         verify(fixture.crawlTargetEnqueuer).enqueue(fixture.resource(nextPage), OparlType.AGENDA_ITEM)
         assertNotNull(target.lastCrawledAt)
-        assertNotNull(target.lastIndexedAt)
         assertEquals(0, target.referenceCount)
         assertNull(target.scheduledAt)
         assertNull(target.jobId)
@@ -124,7 +123,6 @@ class CrawlerTest {
 
         verify(fixture.bodyProcessor).process(fixture.resource(targetUrl), body)
         assertNotNull(target.lastCrawledAt)
-        assertNotNull(target.lastIndexedAt)
         verify(fixture.crawlTargetRepository).save(target)
     }
 
@@ -145,7 +143,6 @@ class CrawlerTest {
         }
 
         assertNull(target.lastCrawledAt)
-        assertNull(target.lastIndexedAt)
         assertEquals(3, target.referenceCount)
         assertNotNull(target.scheduledAt)
         assertNotNull(target.jobId)
