@@ -15,9 +15,9 @@ data class OparlResourceId(
             }
 
             val match = RESOURCE_URL.find(trimmed) ?: return null
-            val entityName = match.groupValues[2].lowercase().let { ENTITY_NAMES[it] } ?: return null
+            val entityName = match.groupValues[1].lowercase().let { ENTITY_NAMES[it] } ?: return null
 
-            return OparlResourceId(entityName, match.groupValues[3].toUuidOrNull() ?: return null)
+            return OparlResourceId(entityName, match.groupValues[2].toUuidOrNull() ?: return null)
         }
 
         private fun String.toUuidOrNull(): UUID? = try {
