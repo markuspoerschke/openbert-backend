@@ -52,6 +52,8 @@ flowchart LR
 
 Raw records allow incomplete source relationships. Resolution builds the relationships used by the API; separate tables leave room for future enrichment without overwriting source fields.
 
+Location resolution normalizes whitespace and applies deterministic address corrections: it removes duplicate postal-code/city text from the street field, repairs recognizable room/street swaps, expands `Str.` to `Straße`, and repairs invalid German postal-code fields using organization-name and room-name checks before rejoining split locality text. Street detection requires a recognized street suffix and a house number; ambiguous values are retained. These corrections run on each resolution, including updates, and leave raw records unchanged. Existing resolved locations receive the corrections when resolved again.
+
 Code lives under `parldata`: `domain` holds the model, `application` handles resolution and search, and `adapter` contains HTTP, MCP, crawler, and persistence integrations. Entities use JPA annotations and repository ports extend Spring Data. Crawler HTTP requests precede transactional processing; each resolver job has its own transaction.
 
 ## Run locally

@@ -1,6 +1,7 @@
 package nrw.openbert.backend.parldata.application.resolve
 
 import nrw.openbert.backend.parldata.application.exception.UnresolvedRelationException
+import nrw.openbert.backend.parldata.domain.enrichment.LocationEnricher
 import nrw.openbert.backend.parldata.domain.entity.embeddable.OparlResource
 import nrw.openbert.backend.parldata.domain.entity.raw.RawAgendaItem
 import nrw.openbert.backend.parldata.domain.entity.resolved.ResolvedAgendaItem
@@ -124,6 +125,7 @@ class ResolvedEntityService(
 
         requireRelation("body", raw.resource, resolved.body.id, body.id)
         resolved.applyValuesFrom(raw)
+        LocationEnricher.enrich(resolved)
         return resolvedLocationRepository.save(resolved)
     }
 

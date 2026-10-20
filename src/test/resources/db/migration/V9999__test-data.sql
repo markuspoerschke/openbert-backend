@@ -341,3 +341,21 @@ VALUES ('10000000-0000-4000-8000-000000000006',
         'Stellvertretung', '{}', '2026-07-22 14:30:55.000000', '2026-07-22 14:30:55.000000', false,
         '9352fa21-68c6-4f4e-8832-08a0454ff179',
         'https://oparl-demo.example.org/oparl/v1.1/membership/unresolved');
+
+-- Malformed source locations from issue #84; enrichment must leave these raw values intact.
+INSERT INTO public.oparl_raw_location
+    (id, description, street_address, postal_code, locality, room, body_urls, keyword,
+     created, modified, deleted, system_id, url)
+SELECT fixture.id::uuid, fixture.description, fixture.street_address, fixture.postal_code, fixture.locality,
+       fixture.room, ARRAY['https://oparl-demo.example.org/oparl/v1.1/body/123'], '{}',
+       '2026-07-22 14:30:55.000000'::timestamp, '2026-07-22 14:30:55.000000'::timestamp, false,
+       '9352fa21-68c6-4f4e-8832-08a0454ff179'::uuid,
+       'https://oparl-demo.example.org/oparl/v1.1/location/enrichment/' || fixture.id
+FROM (VALUES
+    ('f8573c97-eac8-443f-bc5d-e61f73185777', 'Tagespflege Nitz', '42553 Velbert', '42553', 'Velbert', 'Nevigeser Str. 307'),
+    ('5f37b17f-74de-4940-b1ab-9f2dd7ab521a', 'AWO Ortsverein Velbert', null, 'AWO', 'Ortsverein Velbert', null),
+    ('028a0258-262f-47cc-8e7f-95c97c4863da', 'Technische Betriebe Velbert', null, 'Sitzungssaal', '1, Am Lindenkamp 33', null),
+    ('b64c7df8-c0be-421b-8779-84fdcf93e080', 'VHS', 'Raum 41', '42555', 'Velbert', 'Donnerstraße 13'),
+    ('3c04fe2e-d8bc-4bf9-a9fc-caacbfa8b154', 'wechselnder Sitzungsort', null, 'Den',
+     'Sitzungsort entnehmen Sie bitte der Einladung bzw. dem Newseintrag', null)
+) AS fixture(id, description, street_address, postal_code, locality, room);
