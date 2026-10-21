@@ -3,7 +3,7 @@ package nrw.openbert.backend.parldata.adapter.inbound.crawler.processor
 import nrw.openbert.backend.parldata.application.crawl.CrawlTargetEnqueuer
 import nrw.openbert.backend.parldata.domain.enums.OparlType
 import nrw.openbert.backend.parldata.adapter.outbound.client.oparl.dto.OparlSystemDto
-import nrw.openbert.backend.parldata.application.resolve.ResolveTargetEnqueuer
+import nrw.openbert.backend.parldata.application.enrich.EnrichTargetEnqueuer
 import nrw.openbert.backend.parldata.domain.entity.AbstractOparlEntity
 import nrw.openbert.backend.parldata.domain.entity.embeddable.OparlResource
 import nrw.openbert.backend.parldata.domain.entity.raw.RawSystem
@@ -14,8 +14,8 @@ import org.springframework.stereotype.Service
 class SystemProcessor(
     val rawSystemRepository: RawSystemRepository,
     crawlTargetEnqueuer: CrawlTargetEnqueuer,
-    resolveTargetEnqueuer: ResolveTargetEnqueuer,
-) : AbstractProcessor<OparlSystemDto, RawSystem>(crawlTargetEnqueuer, resolveTargetEnqueuer) {
+    enrichTargetEnqueuer: EnrichTargetEnqueuer,
+) : AbstractProcessor<OparlSystemDto, RawSystem>(crawlTargetEnqueuer, enrichTargetEnqueuer) {
     override fun findEntity(resource: OparlResource): RawSystem? = rawSystemRepository.findByResource(resource)
 
     override fun createEntity(resource: OparlResource): RawSystem = RawSystem(resource)

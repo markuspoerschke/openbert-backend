@@ -3,7 +3,7 @@ package nrw.openbert.backend.parldata.adapter.inbound.crawler.processor
 import nrw.openbert.backend.parldata.application.crawl.CrawlTargetEnqueuer
 import nrw.openbert.backend.parldata.domain.enums.OparlType
 import nrw.openbert.backend.parldata.adapter.outbound.client.oparl.dto.OparlBodyDto
-import nrw.openbert.backend.parldata.application.resolve.ResolveTargetEnqueuer
+import nrw.openbert.backend.parldata.application.enrich.EnrichTargetEnqueuer
 import nrw.openbert.backend.parldata.domain.entity.AbstractOparlEntity
 import nrw.openbert.backend.parldata.domain.entity.embeddable.OparlResource
 import nrw.openbert.backend.parldata.domain.entity.raw.RawBody
@@ -16,8 +16,8 @@ class BodyProcessor(
     crawlTargetEnqueuer: CrawlTargetEnqueuer,
     private val legislativeTermProcessor: LegislativeTermProcessor,
     private val locationProcessor: LocationProcessor,
-    resolveTargetEnqueuer: ResolveTargetEnqueuer,
-) : AbstractProcessor<OparlBodyDto, RawBody>(crawlTargetEnqueuer, resolveTargetEnqueuer) {
+    enrichTargetEnqueuer: EnrichTargetEnqueuer,
+) : AbstractProcessor<OparlBodyDto, RawBody>(crawlTargetEnqueuer, enrichTargetEnqueuer) {
     override fun findEntity(resource: OparlResource): RawBody? = rawBodyRepository.findByResource(resource)
 
     override fun createEntity(resource: OparlResource): RawBody = RawBody(resource)

@@ -3,7 +3,7 @@ package nrw.openbert.backend.parldata.adapter.inbound.crawler.processor
 import nrw.openbert.backend.parldata.application.crawl.CrawlTargetEnqueuer
 import nrw.openbert.backend.parldata.domain.enums.OparlType
 import nrw.openbert.backend.parldata.adapter.outbound.client.oparl.dto.OparlLocationDto
-import nrw.openbert.backend.parldata.application.resolve.ResolveTargetEnqueuer
+import nrw.openbert.backend.parldata.application.enrich.EnrichTargetEnqueuer
 import nrw.openbert.backend.parldata.domain.entity.embeddable.OparlResource
 import nrw.openbert.backend.parldata.domain.entity.raw.RawLocation
 import nrw.openbert.backend.parldata.application.port.outbound.repository.RawLocationRepository
@@ -13,8 +13,8 @@ import org.springframework.stereotype.Service
 class LocationProcessor(
     val rawLocationRepository: RawLocationRepository,
     crawlTargetEnqueuer: CrawlTargetEnqueuer,
-    resolveTargetEnqueuer: ResolveTargetEnqueuer,
-) : AbstractProcessor<OparlLocationDto, RawLocation>(crawlTargetEnqueuer, resolveTargetEnqueuer) {
+    enrichTargetEnqueuer: EnrichTargetEnqueuer,
+) : AbstractProcessor<OparlLocationDto, RawLocation>(crawlTargetEnqueuer, enrichTargetEnqueuer) {
     override fun findEntity(resource: OparlResource): RawLocation? = rawLocationRepository.findByResource(resource)
 
     override fun createEntity(resource: OparlResource): RawLocation = RawLocation(resource)

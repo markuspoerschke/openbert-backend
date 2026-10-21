@@ -3,7 +3,7 @@ package nrw.openbert.backend.parldata.adapter.inbound.crawler.processor
 import nrw.openbert.backend.parldata.application.crawl.CrawlTargetEnqueuer
 import nrw.openbert.backend.parldata.domain.enums.OparlType
 import nrw.openbert.backend.parldata.adapter.outbound.client.oparl.dto.OparlAgendaItemDto
-import nrw.openbert.backend.parldata.application.resolve.ResolveTargetEnqueuer
+import nrw.openbert.backend.parldata.application.enrich.EnrichTargetEnqueuer
 import nrw.openbert.backend.parldata.domain.entity.embeddable.OparlResource
 import nrw.openbert.backend.parldata.domain.entity.raw.RawAgendaItem
 import nrw.openbert.backend.parldata.application.port.outbound.repository.RawAgendaItemRepository
@@ -14,8 +14,8 @@ class AgendaItemProcessor(
     val rawAgendaItemRepository: RawAgendaItemRepository,
     crawlTargetEnqueuer: CrawlTargetEnqueuer,
     private val fileProcessor: FileProcessor,
-    resolveTargetEnqueuer: ResolveTargetEnqueuer,
-) : AbstractProcessor<OparlAgendaItemDto, RawAgendaItem>(crawlTargetEnqueuer, resolveTargetEnqueuer) {
+    enrichTargetEnqueuer: EnrichTargetEnqueuer,
+) : AbstractProcessor<OparlAgendaItemDto, RawAgendaItem>(crawlTargetEnqueuer, enrichTargetEnqueuer) {
     override fun findEntity(resource: OparlResource): RawAgendaItem? =
         rawAgendaItemRepository.findByResource(resource)
 

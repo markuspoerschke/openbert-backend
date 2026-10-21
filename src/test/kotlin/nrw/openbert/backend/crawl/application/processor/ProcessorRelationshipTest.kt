@@ -25,7 +25,7 @@ import nrw.openbert.backend.parldata.adapter.outbound.client.oparl.dto.OparlOrga
 import nrw.openbert.backend.parldata.adapter.outbound.client.oparl.dto.OparlPaperDto
 import nrw.openbert.backend.parldata.adapter.outbound.client.oparl.dto.OparlPersonDto
 import nrw.openbert.backend.parldata.adapter.outbound.client.oparl.dto.OparlSystemDto
-import nrw.openbert.backend.parldata.application.resolve.ResolveTargetEnqueuer
+import nrw.openbert.backend.parldata.application.enrich.EnrichTargetEnqueuer
 import nrw.openbert.backend.parldata.domain.entity.OparlSystem
 import nrw.openbert.backend.parldata.domain.entity.embeddable.OparlResource
 import nrw.openbert.backend.parldata.application.port.outbound.repository.RawAgendaItemRepository
@@ -51,7 +51,7 @@ import kotlin.test.assertEquals
 class ProcessorRelationshipTest {
     private val system = OparlSystem(OparlUrl("https://oparl.example.org/system"))
     private val crawlTargetEnqueuer = mock(CrawlTargetEnqueuer::class.java)
-    private val resolveTargetEnqueuer = mock(ResolveTargetEnqueuer::class.java)
+    private val enrichTargetEnqueuer = mock(EnrichTargetEnqueuer::class.java)
     private val fileProcessor = mock(FileProcessor::class.java)
     private val agendaItemProcessor = mock(AgendaItemProcessor::class.java)
     private val consultationProcessor = mock(ConsultationProcessor::class.java)
@@ -275,7 +275,7 @@ class ProcessorRelationshipTest {
         processorRepository(RawAgendaItemRepository::class.java),
         crawlTargetEnqueuer,
         fileProcessor,
-        resolveTargetEnqueuer,
+        enrichTargetEnqueuer,
     )
 
     private fun bodyProcessor() = BodyProcessor(
@@ -283,31 +283,31 @@ class ProcessorRelationshipTest {
         crawlTargetEnqueuer,
         legislativeTermProcessor,
         locationProcessor,
-        resolveTargetEnqueuer,
+        enrichTargetEnqueuer,
     )
 
     private fun consultationProcessor() = ConsultationProcessor(
         processorRepository(RawConsultationRepository::class.java),
         crawlTargetEnqueuer,
-        resolveTargetEnqueuer,
+        enrichTargetEnqueuer,
     )
 
     private fun fileProcessor() = FileProcessor(
         processorRepository(RawFileRepository::class.java),
         crawlTargetEnqueuer,
-        resolveTargetEnqueuer,
+        enrichTargetEnqueuer,
     )
 
     private fun legislativeTermProcessor() = LegislativeTermProcessor(
         processorRepository(RawLegislativeTermRepository::class.java),
         crawlTargetEnqueuer,
-        resolveTargetEnqueuer,
+        enrichTargetEnqueuer,
     )
 
     private fun locationProcessor() = LocationProcessor(
         processorRepository(RawLocationRepository::class.java),
         crawlTargetEnqueuer,
-        resolveTargetEnqueuer,
+        enrichTargetEnqueuer,
     )
 
     private fun meetingProcessor() = MeetingProcessor(
@@ -316,20 +316,20 @@ class ProcessorRelationshipTest {
         locationProcessor,
         fileProcessor,
         agendaItemProcessor,
-        resolveTargetEnqueuer,
+        enrichTargetEnqueuer,
     )
 
     private fun membershipProcessor() = MembershipProcessor(
         processorRepository(RawMembershipRepository::class.java),
         crawlTargetEnqueuer,
-        resolveTargetEnqueuer,
+        enrichTargetEnqueuer,
     )
 
     private fun organizationProcessor() = OrganizationProcessor(
         processorRepository(RawOrganizationRepository::class.java),
         crawlTargetEnqueuer,
         locationProcessor,
-        resolveTargetEnqueuer,
+        enrichTargetEnqueuer,
     )
 
     private fun paperProcessor() = PaperProcessor(
@@ -338,7 +338,7 @@ class ProcessorRelationshipTest {
         fileProcessor,
         locationProcessor,
         consultationProcessor,
-        resolveTargetEnqueuer,
+        enrichTargetEnqueuer,
     )
 
     private fun personProcessor() = PersonProcessor(
@@ -346,13 +346,13 @@ class ProcessorRelationshipTest {
         crawlTargetEnqueuer,
         locationProcessor,
         membershipProcessor,
-        resolveTargetEnqueuer,
+        enrichTargetEnqueuer,
     )
 
     private fun systemProcessor() = SystemProcessor(
         processorRepository(RawSystemRepository::class.java),
         crawlTargetEnqueuer,
-        resolveTargetEnqueuer,
+        enrichTargetEnqueuer,
     )
 
     private fun resource(pathOrUrl: String): OparlResource {

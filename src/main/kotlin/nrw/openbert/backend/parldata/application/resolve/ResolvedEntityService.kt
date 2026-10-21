@@ -1,6 +1,7 @@
 package nrw.openbert.backend.parldata.application.resolve
 
 import nrw.openbert.backend.parldata.application.exception.UnresolvedRelationException
+import nrw.openbert.backend.parldata.application.port.outbound.repository.EnrichedLocationInterface
 import nrw.openbert.backend.parldata.domain.entity.embeddable.OparlResource
 import nrw.openbert.backend.parldata.domain.entity.raw.RawAgendaItem
 import nrw.openbert.backend.parldata.domain.entity.resolved.ResolvedAgendaItem
@@ -48,6 +49,7 @@ class ResolvedEntityService(
     private val rawFileRepository: RawFileRepository,
     private val rawLegislativeTermRepository: RawLegislativeTermRepository,
     private val rawLocationRepository: RawLocationRepository,
+    private val enrichedLocationRepository: EnrichedLocationInterface,
     private val rawMeetingRepository: RawMeetingRepository,
     private val rawMembershipRepository: RawMembershipRepository,
     private val rawOrganizationRepository: RawOrganizationRepository,
@@ -124,6 +126,9 @@ class ResolvedEntityService(
 
         requireRelation("body", raw.resource, resolved.body.id, body.id)
         resolved.applyValuesFrom(raw)
+        enrichedLocationRepository.findById(raw.id).ifPresent {
+            resolved.applyOverrides(it.toLocationOverrides())
+        }
         return resolvedLocationRepository.save(resolved)
     }
 
