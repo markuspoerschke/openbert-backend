@@ -21,5 +21,8 @@ jobs:
           java-version: "25"
           cache: gradle
 
+      - name: Static analysis (detekt)
+        run: ./gradlew detekt --no-daemon
+
       - name: Build and test
         run: ./gradlew build --no-daemon

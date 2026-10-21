@@ -1,0 +1,36 @@
+# detekt configuration
+# Builds on the default rules shipped with detekt and relaxes rule sets that
+# are too noisy for this code base. Tighten the rules step by step.
+build:
+  maxIssues: 0
+
+comments:
+  # Documentation requirements are not enforced yet.
+  active: false
+
+complexity:
+  LongMethod:
+    threshold: 80
+  LongParameterList:
+    constructorThreshold: 12
+    functionThreshold: 8
+  TooManyFunctions:
+    active: false
+  LargeClass:
+    threshold: 800
+  CyclomaticComplexMethod:
+    threshold: 20
+
+style:
+  # Style rules are disabled for now; enable them rule by rule later.
+  active: false
+
+naming:
+  FunctionNaming:
+    ignoreAnnotated: ["Test"]
+
+exceptions:
+  TooGenericExceptionCaught:
+    active: false
+  TooGenericExceptionThrown:
+    active: false

@@ -4,6 +4,7 @@ plugins {
     id("org.springframework.boot") version "4.1.1"
     id("io.spring.dependency-management") version "1.1.7"
     id("org.asciidoctor.jvm.convert") version "4.0.5"
+    id("io.gitlab.arturbosch.detekt") version "1.23.7"
     kotlin("plugin.jpa") version "2.4.21"
 }
 
@@ -64,6 +65,12 @@ allOpen {
     annotation("jakarta.persistence.Entity")
     annotation("jakarta.persistence.MappedSuperclass")
     annotation("jakarta.persistence.Embeddable")
+}
+
+detekt {
+    buildUponDefaultConfig = true
+    config.setFrom(files("$rootDir/config/detekt/detekt.yml"))
+    source.setFrom("src/main/kotlin", "src/test/kotlin")
 }
 
 tasks.withType<Test> {
