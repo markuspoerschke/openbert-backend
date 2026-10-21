@@ -75,7 +75,8 @@ Data availability depends on the upstream server and background processing.
   Use `oparl_search` or `oparl_body_list` first, then pass the `id` of a result to `oparl_get_resource` to fetch that single resource.
 - **API:** [OParl entry point](http://localhost:8080/oparl/v1.1/system).
 - **API documentation:** [Swagger UI](http://localhost:8080/swagger-ui.html) to browse and try the HTTP endpoints.
-- **Tests and packaging:** `./gradlew build` (Docker required for Testcontainers).
+- **Tests, static analysis, and packaging:** `./gradlew build` (Docker required for Testcontainers). The build runs detekt through Gradle’s `check` task, both locally and in CI.
+- **Static analysis only:** `./gradlew detekt` analyzes production and test Kotlin sources without starting the application or a database. Reports are written to `build/reports/detekt/`. Findings fail the check; no baseline or failure suppression is configured.
 
 ## Docker image
 

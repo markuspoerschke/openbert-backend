@@ -5,6 +5,7 @@ plugins {
     id("io.spring.dependency-management") version "1.1.7"
     id("org.asciidoctor.jvm.convert") version "4.0.5"
     kotlin("plugin.jpa") version "2.4.21"
+    id("dev.detekt") version "2.0.0-alpha.6"
 }
 
 group = "nrw.openbert"
