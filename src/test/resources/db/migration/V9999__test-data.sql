@@ -242,6 +242,23 @@ VALUES ('38e8985b-a504-4c24-bd18-0953fb593350',
         'https://oparl-demo.example.org/oparl/v1.1/meeting/999',
         '2026-07-22 14:30:55.000000', '2026-07-22 14:30:55.000000', false);
 
+-- Providers can supply a body even when a meeting has no organizations or participants.
+INSERT INTO public.oparl_raw_meeting
+    (id, body_url, name, keyword, system_id, url, created, modified, deleted)
+VALUES ('10000000-0000-4000-8000-000000000007',
+        'https://oparl-demo.example.org/oparl/v1.1/body/123',
+        'Sitzung ohne Gremien und Teilnehmer', '{}', '9352fa21-68c6-4f4e-8832-08a0454ff179',
+        'https://oparl-demo.example.org/oparl/v1.1/meeting/body-only',
+        '2026-07-22 14:30:55.000000', '2026-07-22 14:30:55.000000', false);
+
+-- A referenced body can be crawled before it has been resolved.
+INSERT INTO public.oparl_raw_body
+    (id, name, equivalent, keyword, system_id, url, created, modified, deleted)
+VALUES ('10000000-0000-4000-8000-000000000008', 'Körperschaft für Sitzungsauflösung', '{}', '{}',
+        '9352fa21-68c6-4f4e-8832-08a0454ff179',
+        'https://oparl-demo.example.org/oparl/v1.1/body/meeting-source',
+        '2026-07-22 14:30:55.000000', '2026-07-22 14:30:55.000000', false);
+
 -- OParl organization
 INSERT INTO public.oparl_resolved_organization (id, body_id, name, short_name, post, organization_type, classification,
                                                 start_date, end_date, website, license, keyword, web, system_id, url,

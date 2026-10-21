@@ -33,6 +33,32 @@ class OparlClientTest(
     @Autowired private val mockServer: MockRestServiceServer,
 ) {
     @Test
+    fun `preserves the provider body extension on meetings`() {
+        val url = "https://oparl.example.org/meeting/1"
+        val bodyUrl = "https://oparl.example.org/body/1"
+        mockServer.expect(requestTo(url))
+            .andRespond(
+                withSuccess(
+                    """
+                    {
+                      "id": "$url",
+                      "type": "https://schema.oparl.org/1.1/Meeting",
+                      "body": "$bodyUrl",
+                      "organization": [],
+                      "participant": []
+                    }
+                    """.trimIndent(),
+                    MediaType.APPLICATION_JSON,
+                ),
+            )
+
+        val response = assertIs<OparlMeetingDto>(oparlClient.get(url))
+
+        assertEquals(bodyUrl, response.body)
+        mockServer.verify()
+    }
+
+    @Test
     fun `gets a single OParl object`() {
         val url = "https://oparl.example.org/system"
         mockServer.expect(requestTo(url))

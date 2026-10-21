@@ -3,6 +3,8 @@ package nrw.openbert.backend.parldata.adapter.outbound.client.oparl.dto
 data class OparlMeetingDto(
     override val id: String? = null,
     override val type: String? = null,
+    // Some providers expose the owning body as an extension to OParl Meeting.
+    val body: String? = null,
     val name: String? = null,
     val meetingState: String? = null,
     val cancelled: Boolean? = null,
