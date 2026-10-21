@@ -4,7 +4,9 @@ import jakarta.persistence.EntityManager
 import nrw.openbert.backend.TestcontainersConfiguration
 import nrw.openbert.backend.parldata.adapter.inbound.crawler.processor.MeetingProcessor
 import nrw.openbert.backend.parldata.adapter.outbound.client.oparl.dto.OparlMeetingDto
+import nrw.openbert.backend.parldata.application.enrich.Enricher
 import nrw.openbert.backend.parldata.application.exception.UnresolvedRelationException
+import nrw.openbert.backend.parldata.application.port.outbound.repository.EnrichTargetRepository
 import nrw.openbert.backend.parldata.application.port.outbound.repository.RawMeetingRepository
 import nrw.openbert.backend.parldata.application.port.outbound.repository.ResolveTargetRepository
 import nrw.openbert.backend.parldata.application.port.outbound.repository.ResolvedBodyRepository
@@ -39,6 +41,8 @@ class MeetingResolverPersistenceTest(
     @Autowired private val bodyRepository: ResolvedBodyRepository,
     @Autowired private val entityManager: EntityManager,
     @Autowired private val meetingProcessor: MeetingProcessor,
+    @Autowired private val enricher: Enricher,
+    @Autowired private val enrichTargetRepository: EnrichTargetRepository,
 ) {
     @Test
     fun `resolves a recrawled meeting again using its changed values and organizations`() {
@@ -51,6 +55,8 @@ class MeetingResolverPersistenceTest(
             organization = listOf("$organizationBaseUrl/34"),
         )
         val firstCrawl = meetingProcessor.process(raw.resource, originalDto)
+        val enrichTarget = assertNotNull(enrichTargetRepository.findByRawEntityIdAndEntityType(raw.id, OparlType.MEETING))
+        enricher.run(enrichTarget.id)
         val firstTarget = assertNotNull(targetRepository.findByRawEntityIdAndEntityType(raw.id, OparlType.MEETING))
         resolver.run(firstTarget.id)
         entityManager.flush()
@@ -63,6 +69,7 @@ class MeetingResolverPersistenceTest(
             organization = listOf("$organizationBaseUrl/unresolved", "$organizationBaseUrl/41"),
         )
         val secondCrawl = meetingProcessor.process(raw.resource, updatedDto)
+        enricher.run(enrichTarget.id)
         val nextTarget = assertNotNull(targetRepository.findByRawEntityIdAndEntityType(raw.id, OparlType.MEETING))
         assertEquals(firstCrawl.id, secondCrawl.id)
         assertEquals(firstTarget.id, nextTarget.id)
