@@ -69,7 +69,7 @@ class SimpleLocationEnricher(
             return result
         }
 
-        return result.withRoomOverride(room)
+        return result.withRoomOverride(normalizedRoom)
     }
 
     private fun normalizeDescription(description: String?, result: LocationOverrides): LocationOverrides {
