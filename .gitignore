@@ -38,3 +38,8 @@ out/
 
 ### Kotlin ###
 .kotlin
+
+### Vibe Agent ###
+.github/vibe-agent.lock
+.vibe/
+/tmp/vibe-*

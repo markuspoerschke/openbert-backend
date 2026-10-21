@@ -1,0 +1,107 @@
+name: 'Mistral Vibe Agent'
+description: 'Autonomous coding agent for GitHub issue resolution'
+inputs:
+  mode:
+    description: 'Execution mode (scheduled, manual, review)'
+    required: true
+    default: 'scheduled'
+  issue-number:
+    description: 'Specific issue number to work on (for manual mode)'
+    required: false
+  retry-attempt:
+    description: 'Current retry attempt number'
+    required: false
+    default: '0'
+  pr-number:
+    description: 'Pull request number for review handling'
+    required: false
+  comment-id:
+    description: 'Comment ID for review response'
+    required: false
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Set up environment
+      shell: bash
+      run: |
+        echo "VIBE_AGENT_MODE=${{ inputs.mode }}" >> $GITHUB_ENV
+        echo "VIBE_ISSUE_NUMBER=${{ inputs.issue-number }}" >> $GITHUB_ENV
+        echo "VIBE_RETRY_ATTEMPT=${{ inputs.retry-attempt }}" >> $GITHUB_ENV
+        echo "VIBE_PR_NUMBER=${{ inputs.pr-number }}" >> $GITHUB_ENV
+        echo "VIBE_COMMENT_ID=${{ inputs.comment-id }}" >> $GITHUB_ENV
+        
+        # Set defaults
+        : "${{ env.VIBE_TIMEOUT_MINUTES := 30 }}"
+        : "${{ env.MAX_RETRIES := 3 }}"
+        : "${{ env.VIBE_MODEL := 'mistral-large-latest' }}"
+        : "${{ env.VIBE_DEBUG := 'false' }}"
+        : "${{ env.DRY_RUN := 'false' }}"
+        
+        echo "VIBE_TIMEOUT_MINUTES=${VIBE_TIMEOUT_MINUTES}" >> $GITHUB_ENV
+        echo "MAX_RETRIES=${MAX_RETRIES}" >> $GITHUB_ENV
+        echo "VIBE_MODEL=${VIBE_MODEL}" >> $GITHUB_ENV
+        echo "VIBE_DEBUG=${VIBE_DEBUG}" >> $GITHUB_ENV
+        echo "DRY_RUN=${DRY_RUN}" >> $GITHUB_ENV
+
+    - name: Checkout with full history
+      uses: actions/checkout@v7
+      with:
+        fetch-depth: 0
+        token: ${{ env.GITHUB_TOKEN }}
+
+    - name: Install Mistral Vibe CLI
+      shell: bash
+      run: |
+        # Download and install Vibe CLI
+        curl -fsSL https://vibe.mistral.ai/install.sh | sh
+        echo "$(dirname $(which vibe))" >> $GITHUB_PATH
+        vibe --version
+
+    - name: Run Vibe Agent
+      shell: bash
+      id: vibe-agent
+      env:
+        VIBE_API_KEY: ${{ env.VIBE_API_KEY }}
+        GITHUB_TOKEN: ${{ env.GITHUB_TOKEN }}
+      run: |
+        # Source the lock manager
+        source ${{ github.action_path }}/lock-manager.sh
+        
+        # Acquire lock
+        if ! acquire_lock; then
+          echo "::notice::Another Vibe task is already running. Skipping."
+          exit 0
+        fi
+        
+        # Main execution based on mode
+        case "${{ inputs.mode }}" in
+          scheduled)
+            ${{ github.action_path }}/entrypoint.sh scheduled
+            ;;
+          manual)
+            ${{ github.action_path }}/entrypoint.sh manual ${{ inputs.issue-number }}
+            ;;
+          review)
+            ${{ github.action_path }}/entrypoint.sh review ${{ inputs.pr-number }} ${{ inputs.comment-id }}
+            ;;
+          *)
+            echo "::error::Unknown mode: ${{ inputs.mode }}"
+            release_lock
+            exit 1
+            ;;
+        esac
+        
+        # Release lock
+        release_lock
+
+    - name: Upload logs on failure
+      if: failure() && steps.vibe-agent.outcome == 'failure'
+      uses: actions/upload-artifact@v4
+      with:
+        name: vibe-agent-logs
+        path: |
+          /tmp/vibe-agent*.log
+          /tmp/vibe-*.log
+          *.log
+        retention-days: 7

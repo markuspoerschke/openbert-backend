@@ -1,0 +1,180 @@
+name: Vibe Agent - CI Monitor
+
+on:
+  workflow_run:
+    workflows: ["Build"]
+    types:
+      - completed
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: read
+  actions: read
+  checks: read
+
+concurrency:
+  group: vibe-agent-ci-monitor-${{ github.event.workflow_run.id }}
+  cancel-in-progress: false
+
+jobs:
+  monitor-ci:
+    runs-on: ubuntu-latest
+    if: >
+      github.event.workflow_run.conclusion != 'success' &&
+      (github.event.workflow_run.head_branch == 'main' || 
+       startsWith(github.event.workflow_run.head_branch, 'vibe/'))
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up environment
+        run: |
+          echo "VIBE_MONITOR_BRANCH=${{ github.event.workflow_run.head_branch }}" >> $GITHUB_ENV
+          echo "VIBE_AGENT_MODE=ci-monitor" >> $GITHUB_ENV
+
+      - name: Install Mistral Vibe CLI
+        run: |
+          curl -fsSL https://vibe.mistral.ai/install.sh | sh
+          echo "$(dirname $(which vibe))" >> $GITHUB_PATH
+          vibe --version
+
+      - name: Run Vibe Agent - CI Monitor
+        id: vibe-agent
+        env:
+          VIBE_API_KEY: ${{ secrets.VIBE_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VIBE_MODEL: ${{ secrets.VIBE_MODEL || 'mistral-large-latest' }}
+          MAX_RETRIES: ${{ secrets.MAX_RETRIES || '3' }}
+          VIBE_TIMEOUT_MINUTES: ${{ secrets.VIBE_TIMEOUT_MINUTES || '30' }}
+          VIBE_DEBUG: ${{ secrets.VIBE_DEBUG || 'false' }}
+        run: |
+          # Source all scripts
+          SCRIPT_DIR="${{ github.action_path || '.github/actions/vibe-agent' }}"
+          source "${SCRIPT_DIR}/common.sh"
+          source "${SCRIPT_DIR}/select-issue.sh"
+          source "${SCRIPT_DIR}/run-vibe.sh"
+          source "${SCRIPT_DIR}/create-pr.sh"
+          source "${SCRIPT_DIR}/monitor-ci.sh"
+          source "${SCRIPT_DIR}/handle-review.sh"
+          source "${SCRIPT_DIR}/lock-manager.sh"
+
+          # Initialize
+          LOGFILE="/tmp/vibe-agent-$(date +%Y%m%d-%H%M%S).log"
+          touch "$LOGFILE"
+          exec > >(tee -a "$LOGFILE") 2>&1
+
+          log_info "Starting CI monitor"
+
+          # Acquire lock
+          if ! acquire_lock; then
+            log_info "Another Vibe task is already running. Skipping."
+            exit 0
+          fi
+
+          local branch="${VIBE_MONITOR_BRANCH}"
+          log_info "Monitoring CI for branch: ${branch}"
+
+          # Check if this is a vibe branch
+          if ! is_vibe_branch "$branch"; then
+            log_info "Not a Vibe branch, skipping CI monitoring"
+            release_lock
+            exit 0
+          fi
+
+          # Extract issue number
+          local issue_number
+          issue_number=$(extract_issue_number "$branch")
+          
+          if [[ -z "$issue_number" ]]; then
+            log_info "Could not extract issue number, skipping"
+            release_lock
+            exit 0
+          fi
+
+          # Find the PR for this branch
+          local pr_number
+          pr_number=$(github_api GET "/pulls?state=open&head=${branch}" | jq -r '.[0].number')
+          
+          if [[ -z "$pr_number" || "$pr_number" == "null" ]]; then
+            log_info "No open PR found for branch: ${branch}"
+            release_lock
+            exit 0
+          fi
+
+          # Get workflow run info
+          local run_info
+          run_info=$(get_ci_failure_info "$branch")
+          
+          log_info "CI failure info: ${run_info}"
+
+          # Check retry count
+          local retry_count
+          retry_count=$(get_retry_count "$pr_number")
+          
+          local max_retries="${MAX_RETRIES:-3}"
+          
+          if [[ $retry_count -ge $max_retries ]]; then
+            log_info "Retry limit reached (${retry_count}/${max_retries}), manual intervention needed"
+            add_pr_comment "$branch" "CI failed ${retry_count} times. Manual intervention required."
+            release_lock
+            exit 0
+          fi
+
+          # Increment retry count
+          increment_retry_count "$pr_number"
+
+          # Try to fix the failure
+          if ! handle_ci_failure "$branch" "$issue_number" "$((retry_count + 1))" "$max_retries"; then
+            log_error "Failed to fix CI issues"
+            release_lock
+            exit 1
+          fi
+
+          # Commit and push fixes
+          local commit_message="vibe: Fix CI failure - retry ${retry_count}"
+          commit_changes "$issue_number" "$commit_message"
+          
+          if ! is_dry_run; then
+            git push origin "$branch" || true
+          fi
+
+          # Add comment to PR
+          add_pr_comment "$branch" "CI fix attempt #${retry_count} applied. Please check the new build."
+
+          # Release lock
+          release_lock
+
+      - name: Upload logs on failure
+        if: failure() && steps.vibe-agent.outcome == 'failure'
+        uses: actions/upload-artifact@v4
+        with:
+          name: vibe-agent-ci-logs
+          path: |
+            /tmp/vibe-agent*.log
+            /tmp/vibe-*.log
+          retention-days: 7
+
+  # Helper functions for retry tracking
+  get_retry_count:
+    runs-on: ubuntu-latest
+    outputs:
+      count: ${{ steps.get-count.outputs.count }}
+    steps:
+      - id: get-count
+        run: |
+          # This would need to be stored somewhere, using PR labels as an example
+          # In production, you might use a database or file storage
+          echo "count=0" >> $GITHUB_OUTPUT
+
+  increment_retry_count:
+    runs-on: ubuntu-latest
+    needs: get_retry_count
+    steps:
+      - run: |
+          # Increment retry count logic here
+          echo "Retry count incremented"

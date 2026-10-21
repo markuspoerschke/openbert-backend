@@ -1,0 +1,209 @@
+#!/bin/bash
+set -euo pipefail
+
+# Mistral Vibe Agent - Vibe CLI Execution
+# Runs Mistral Vibe CLI non-interactively to implement an issue
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "${SCRIPT_DIR}/common.sh"
+
+# Directory for Vibe work
+VIBE_WORK_DIR="/tmp/vibe-work-$$"
+
+run_vibe_cli() {
+    local issue_number="$1"
+    local branch_name="$2"
+    local issue_data issue_title issue_body
+    
+    # Get issue details
+    issue_data=$(get_issue_details "$issue_number")
+    issue_title=$(echo "$issue_data" | jq -r '.title')
+    issue_body=$(echo "$issue_data" | jq -r '.body')
+    
+    log_info "Processing issue #${issue_number}: ${issue_title}"
+    
+    # Prepare Vibe prompt
+    local prompt
+    prompt=$(build_vibe_prompt "$issue_number" "$issue_title" "$issue_body")
+    
+    # Store current directory
+    local repo_root
+    repo_root=$(pwd)
+    
+    # Ensure we're on the correct branch
+    git checkout "$branch_name" 2>/dev/null || git checkout -b "$branch_name"
+    
+    # Create working directory and copy repo
+    rm -rf "$VIBE_WORK_DIR"
+    mkdir -p "$VIBE_WORK_DIR"
+    
+    # Copy only the files Vibe needs (excluding .git and large files)
+    rsync -a --exclude='.git/' --exclude='.gradle/' --exclude='build/' --exclude='*.jar' \
+        --exclude='node_modules/' --exclude='.idea/' --exclude='*.iml' \
+        "${repo_root}/" "${VIBE_WORK_DIR}/"
+    
+    cd "$VIBE_WORK_DIR"
+    
+    # Create prompt file
+    echo "$prompt" > vibe-prompt.md
+    
+    # Run Vibe CLI
+    log_info "Starting Vibe CLI execution"
+    debug_log "Prompt length: ${#prompt} characters"
+    
+    local timeout_seconds=$((VIBE_TIMEOUT_MINUTES * 60))
+    
+    # Build Vibe command
+    local vibe_cmd=(
+        vibe
+        --api-key "${VIBE_API_KEY}"
+        --model "${VIBE_MODEL}"
+        --no-interactive
+        --yes
+        --timeout "${timeout_seconds}"
+        vibe-prompt.md
+    )
+    
+    if [[ -n "$VIBE_ORGANIZATION" ]]; then
+        vibe_cmd=(vibe --api-key "${VIBE_API_KEY}" --organization "${VIBE_ORGANIZATION}" --model "${VIBE_MODEL}" --no-interactive --yes --timeout "${timeout_seconds}" vibe-prompt.md)
+    fi
+    
+    debug_log "Command: ${vibe_cmd[*]}"
+    
+    # Execute Vibe with timeout and capture output
+    local exit_code=0
+    if timeout "${timeout_seconds}" "${vibe_cmd[@]}" 2>/tmp/vibe-execution.log; then
+        log_info "Vibe CLI completed successfully"
+    else
+        exit_code=$?
+        log_error "Vibe CLI execution timed out or failed (exit code: ${exit_code})"
+        
+        # Log the output
+        if [[ -f /tmp/vibe-execution.log ]]; then
+            log_error "Vibe output (last 50 lines):"
+            tail -50 /tmp/vibe-execution.log
+        fi
+        
+        # Cleanup
+        cd "${repo_root}"
+        rm -rf "$VIBE_WORK_DIR"
+        return 1
+    fi
+    
+    # Copy changes back to repo
+    log_info "Applying Vibe changes to repository"
+    
+    # Sync changes back, but preserve .git directory
+    rsync -a --delete --exclude='.git/' --exclude='vibe-prompt.md' --exclude='.vibe/' \
+        "${VIBE_WORK_DIR}/" "${repo_root}/"
+    
+    # Go back to repo root
+    cd "${repo_root}"
+    
+    # Cleanup temp directory
+    rm -rf "$VIBE_WORK_DIR"
+    
+    # Show changes
+    if ! is_dry_run; then
+        git add -A
+        git status --short
+    else
+        log_info "[DRY RUN] Changes would be:"
+        git -C "${repo_root}" diff --stat HEAD
+    fi
+    
+    return 0
+}
+
+# Build the prompt for Vibe
+build_vibe_prompt() {
+    local issue_number="$1"
+    local issue_title="$2"
+    local issue_body="$3"
+    
+    cat <<EOF
+# Issue Implementation Task
+
+## Issue Information
+- **Issue Number**: #${issue_number}
+- **Title**: ${issue_title}
+
+## Issue Description
+${issue_body}
+
+## Requirements
+1. Analyze the codebase to understand existing patterns
+2. Implement the requirements from the issue
+3. Write appropriate tests
+4. Follow all existing conventions (DDD, Hexagonal Architecture)
+
+## Codebase Context
+- **Repository**: ${GITHUB_REPO}
+- **Branch**: main
+- **Architecture**: DDD + Hexagonal (Ports & Adapters)
+- **Tech Stack**: Kotlin, Spring Boot 4, JPA, PostgreSQL, Flyway, Testcontainers
+- **Build**: `./gradlew build`
+- **Test**: Testcontainers required
+
+## Constraints
+- ONLY modify files necessary to implement this specific issue
+- Do NOT modify unrelated application code
+- Do NOT merge any PR automatically
+- Follow existing code style and patterns exactly
+- All tests must pass (run with ./gradlew build --no-daemon)
+- Keep changes minimal and focused
+- Use descriptive commit messages
+
+## Instructions
+1. Read the issue carefully and understand what needs to be done
+2. Explore the codebase to find relevant files
+3. Implement the solution following existing patterns
+4. Add tests for new functionality
+5. Verify all existing tests still pass
+6. Commit with message: "vibe: <description>\n\nImplements #${issue_number}\n\nGenerated by Mistral Vibe."
+
+## Important Notes
+- This is a Kotlin Spring Boot 4 application
+- Follow the AGENTS.md guidelines
+- See OParl-1.1.md for domain specifications
+- Use the GLOSSARY.md for terminology
+- Respect the existing architecture (domain, application, infrastructure layers)
+
+## File Structure
+```
+src/main/kotlin/nrw/openbert/backend/
+├── oparl/          # OParl entities and implementations
+│   ├── domain/     # Domain models
+│   ├── application/# Application services
+│   └── infrastructure/# Adapters (HTTP, MCP, DB)
+└── resolve/        # Resolution services
+```
+EOF
+}
+
+# Run tests
+run_tests() {
+    log_info "Running build and tests"
+    
+    if [[ -f ./gradlew ]]; then
+        if ./gradlew build --no-daemon 2>&1 | tee /tmp/build-output.log; then
+            log_info "Build and tests passed"
+            return 0
+        else
+            log_error "Build or tests failed"
+            if [[ -f /tmp/build-output.log ]]; then
+                log_error "Build output (last 100 lines):"
+                tail -100 /tmp/build-output.log
+            fi
+            return 1
+        fi
+    else
+        log_error "gradlew not found"
+        return 1
+    fi
+}
+
+# Main execution - for testing
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+    echo "Vibe run-vibe.sh - for inclusion only"
+fi
