@@ -25,6 +25,7 @@ class MeetingProcessor(
     override fun saveEntity(entity: RawMeeting) = rawMeetingRepository.save(entity)
 
     override fun process(resource: OparlResource, dto: OparlMeetingDto): RawMeeting {
+        enqueueUrls(resource, OparlType.BODY, dto.body)
         enqueueUrls(resource, OparlType.ORGANIZATION, dto.organization.orEmpty())
         enqueueUrls(resource, OparlType.PERSON, dto.participant.orEmpty())
         processInline(resource, dto.location, locationProcessor)
@@ -48,6 +49,7 @@ class MeetingProcessor(
     }
 
     override fun updateEntity(entity: RawMeeting, dto: OparlMeetingDto) {
+        entity.bodyUrl = dto.body?.toOparlUrl()
         entity.organizationUrls = dto.organization.orEmpty().toMutableList()
         entity.participantUrls = dto.participant.orEmpty().toMutableList()
         entity.name = dto.name

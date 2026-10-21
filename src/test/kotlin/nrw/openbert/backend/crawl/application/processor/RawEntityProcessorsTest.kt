@@ -26,6 +26,7 @@ import nrw.openbert.backend.parldata.adapter.outbound.client.oparl.dto.OparlSyst
 import nrw.openbert.backend.parldata.application.enrich.EnrichTargetEnqueuer
 import nrw.openbert.backend.parldata.domain.entity.OparlSystem
 import nrw.openbert.backend.parldata.domain.entity.embeddable.OparlResource
+import nrw.openbert.backend.parldata.domain.enums.OparlType
 import nrw.openbert.backend.parldata.application.port.outbound.repository.RawAgendaItemRepository
 import nrw.openbert.backend.parldata.application.port.outbound.repository.RawConsultationRepository
 import nrw.openbert.backend.parldata.application.port.outbound.repository.RawFileRepository
@@ -237,6 +238,7 @@ class RawEntityProcessorsTest {
         ).process(
             resource("meeting"),
             OparlMeetingDto(
+                body = "https://example.org/body/1",
                 name = "Council meeting",
                 meetingState = "completed",
                 cancelled = false,
@@ -248,6 +250,7 @@ class RawEntityProcessorsTest {
             ),
         )
 
+        assertEquals("https://example.org/body/1", entity.bodyUrl?.value)
         assertEquals("Council meeting", entity.name)
         assertEquals("completed", entity.meetingState)
         assertEquals(false, entity.cancelled)
@@ -256,6 +259,10 @@ class RawEntityProcessorsTest {
         assertEquals("CC0-1.0", entity.license)
         assertEquals(listOf("council"), entity.keyword)
         assertEquals("https://example.org/meeting", entity.web)
+        verify(crawlTargetEnqueuer).enqueue(
+            OparlResource(system, OparlUrl("https://example.org/body/1")),
+            OparlType.BODY,
+        )
         verify(repository).save(entity)
         verify(enrichTargetEnqueuer).enqueue(entity)
         verify(crawlTargetEnqueuer).markAsCrawled(entity.resource)

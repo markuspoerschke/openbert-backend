@@ -4,6 +4,7 @@ import nrw.openbert.backend.parldata.application.exception.UnresolvedRelationExc
 import nrw.openbert.backend.parldata.application.port.outbound.repository.EnrichedLocationInterface
 import nrw.openbert.backend.parldata.domain.entity.embeddable.OparlResource
 import nrw.openbert.backend.parldata.domain.entity.raw.RawAgendaItem
+import nrw.openbert.backend.parldata.domain.entity.raw.RawMeeting
 import nrw.openbert.backend.parldata.domain.entity.resolved.ResolvedAgendaItem
 import nrw.openbert.backend.parldata.domain.entity.resolved.ResolvedBody
 import nrw.openbert.backend.parldata.domain.entity.resolved.ResolvedConsultation
@@ -132,9 +133,12 @@ class ResolvedEntityService(
         return resolvedLocationRepository.save(resolved)
     }
 
-    fun resolveMeeting(id: UUID): ResolvedMeeting = resolveMeeting(rawMeetingRepository.findById(id).orElseThrow {
-        IllegalArgumentException("Raw meeting with id $id does not exist")
-    }.resource)
+    fun resolveMeeting(id: UUID): ResolvedMeeting {
+        val raw = rawMeetingRepository.findById(id).orElseThrow {
+            IllegalArgumentException("Raw meeting with id $id does not exist")
+        }
+        return resolveMeeting(raw)
+    }
 
     fun resolveMembership(id: UUID): ResolvedMembership {
         val raw = rawMembershipRepository.findById(id).orElseThrow {
@@ -187,9 +191,14 @@ class ResolvedEntityService(
     }
 
     private fun resolveBody(resource: OparlResource): ResolvedBody {
-        resolvedBodyRepository.findByResource(resource)?.let { return it }
-        val raw = rawBodyRepository.findByResource(resource) ?: throw notCrawled("body", resource)
-        return resolvedBodyRepository.save(ResolvedBody.fromRaw(raw))
+        val raw = rawBodyRepository.findByResource(resource)
+        if (raw == null) {
+            return resolvedBodyRepository.findByResource(resource) ?: throw notCrawled("body", resource)
+        }
+
+        val resolved = resolvedBodyRepository.findByResource(resource) ?: ResolvedBody.fromRaw(raw)
+        resolved.applyValuesFrom(raw)
+        return resolvedBodyRepository.save(resolved)
     }
 
     private fun resolveFile(resource: OparlResource, bodyHint: ResolvedBody? = null): ResolvedFile {
@@ -211,17 +220,50 @@ class ResolvedEntityService(
 
     private fun resolveMeeting(resource: OparlResource): ResolvedMeeting {
         val raw = rawMeetingRepository.findByResource(resource)
-            ?: return resolvedMeetingRepository.findByResource(resource) ?: throw notCrawled("meeting", resource)
-        val organizations = raw.organizationUrls.map { resolveOrganization(relatedResource(raw.resource, OparlUrl(it))) }
-        val participantBodies = raw.participantUrls.map { resolvePerson(relatedResource(raw.resource, OparlUrl(it))).body }
-        val body = commonBody(raw.resource, organizations.map { it.body } + participantBodies)
-        val resolved = resolvedMeetingRepository.findByResource(resource)
-            ?: ResolvedMeeting.fromRaw(raw, body, organizations)
+        if (raw == null) {
+            return resolvedMeetingRepository.findByResource(resource) ?: throw notCrawled("meeting", resource)
+        }
+
+        return resolveMeeting(raw)
+    }
+
+    private fun resolveMeeting(raw: RawMeeting): ResolvedMeeting {
+        val existing = resolvedMeetingRepository.findByResource(raw.resource)
+        val organizations = raw.organizationUrls.map { url ->
+            resolveOrganization(relatedResource(raw.resource, OparlUrl(url)))
+        }
+        val body = resolveMeetingBody(raw, organizations, existing?.body)
+        val resolved = existing ?: ResolvedMeeting(raw.resource, body)
 
         requireRelation("body", raw.resource, resolved.body.id, body.id)
+        // Reapply the latest raw snapshot on every run, including for existing meetings.
         resolved.applyValuesFrom(raw)
         resolved.applyRelationsFrom(organizations)
         return resolvedMeetingRepository.save(resolved)
+    }
+
+    private fun resolveMeetingBody(
+        raw: RawMeeting,
+        organizations: List<ResolvedOrganization>,
+        existingBody: ResolvedBody?,
+    ): ResolvedBody {
+        val candidateBodies = mutableListOf<ResolvedBody>()
+        val bodyUrl = raw.bodyUrl
+        if (bodyUrl != null) {
+            candidateBodies.add(resolveBody(relatedResource(raw.resource, bodyUrl)))
+        }
+        candidateBodies.addAll(organizations.map { it.body })
+        for (participantUrl in raw.participantUrls) {
+            val participantResource = relatedResource(raw.resource, OparlUrl(participantUrl))
+            val participant = resolvePerson(participantResource)
+            candidateBodies.add(participant.body)
+        }
+
+        // Use the known body only when the current raw snapshot provides no body information.
+        if (candidateBodies.isEmpty() && existingBody != null) {
+            return resolveBody(existingBody.resource)
+        }
+        return commonBody(raw.resource, candidateBodies)
     }
 
     private fun resolveOrganization(resource: OparlResource): ResolvedOrganization {
