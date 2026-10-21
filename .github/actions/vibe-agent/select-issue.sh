@@ -7,17 +7,14 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/common.sh"
 
-# Global flag to track if we found an active PR
-ACTIVE_PR_FOUND=false
-
 # Main function to select an issue
 select_issue() {
     local issues
-    issues=$(list_vibe_issues)
+    issues=$(list_vibe_issues) || return 1
     
     if [[ -z "$issues" ]]; then
         log_info "No issues with 'vibe' label found"
-        return 1
+        return 0
     fi
     
     debug_log "Found issues: $issues"
@@ -28,19 +25,23 @@ select_issue() {
         local issue_number
         issue_number=$(echo "$issue" | jq -r '.number')
         
-        if ! has_vibe_pr_for_issue "$issue_number"; then
-            filtered_issues+=("$issue")
-        fi
+        local pr_status=0
+        has_vibe_pr_for_issue "$issue_number" || pr_status=$?
+        case "$pr_status" in
+            0) ;; # An existing PR already implements this issue.
+            1) filtered_issues+=("$issue") ;;
+            *) return 1 ;;
+        esac
     done <<< "$issues"
     
     if [[ ${#filtered_issues[@]} -eq 0 ]]; then
         log_info "All vibe issues have active PRs"
-        return 1
+        return 0
     fi
     
     # Sort by creation date (oldest first)
     local sorted_issues
-    sorted_issues=$(echo "${filtered_issues[@]}" | tr ' ' '\n' | jq -s 'sort_by(.created_at)')
+    sorted_issues=$(printf '%s\n' "${filtered_issues[@]}" | jq -s 'sort_by(.created_at)')
     
     # Select the first one
     local selected
@@ -52,26 +53,23 @@ select_issue() {
 
 # List all open issues with 'vibe' label
 list_vibe_issues() {
-    github_api GET "/issues?state=open&labels=vibe&per_page=100" | \
-        jq -r '.[] | select(.pull_request == null or .pull_request == "") | {number, title, created_at, labels}'
+    github_api_list "/issues?state=open&labels=vibe" | \
+        jq -c '.[] | select(.pull_request == null or .pull_request == "") | {number, title, created_at, labels}'
 }
 
 # Check if there's an active PR for a vibe issue
-# Sets ACTIVE_PR_FOUND if any vibe/ branch PR exists
 has_active_vibe_pr() {
     local prs
-    prs=$(github_api GET "/pulls?state=open&per_page=100")
+    prs=$(github_api_list "/pulls?state=open") || return 2
     
     local count
-    count=$(echo "$prs" | jq -r '[.[] | select(.head.ref | startswith("vibe/"))] | length')
+    count=$(echo "$prs" | jq -r '[.[] | select(.head.ref | startswith("vibe/"))] | length') || return 2
     
     if [[ "$count" -gt 0 ]]; then
-        ACTIVE_PR_FOUND=true
         log_info "Found $count active vibe PR(s)"
         return 0
     fi
     
-    ACTIVE_PR_FOUND=false
     return 1
 }
 
@@ -80,10 +78,10 @@ has_vibe_pr_for_issue() {
     local issue_number="$1"
     local prs
     
-    prs=$(github_api GET "/pulls?state=open&per_page=100")
+    prs=$(github_api_list "/pulls?state=open") || return 2
     
     local count
-    count=$(echo "$prs" | jq -r "[.[] | select(.head.ref | startswith(\"vibe/${issue_number}-\"))] | length")
+    count=$(echo "$prs" | jq -r "[.[] | select(.head.ref | startswith(\"vibe/${issue_number}-\"))] | length") || return 2
     
     [[ "$count" -gt 0 ]]
 }

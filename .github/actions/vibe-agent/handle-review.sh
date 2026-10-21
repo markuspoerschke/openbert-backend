@@ -7,95 +7,61 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/common.sh"
 
-# Main function to handle review comments
+# Review and conversation comments have separate REST routes.
 handle_review_comment() {
-    local pr_number="$1"
-    local comment_id="$2"
-    local comment_data comment_body comment_user branch_name issue_number
-    
-    # Get comment details
+    local pr_number="$1" comment_id="$2" comment_data comment_body comment_user
+    local branch_name issue_number reply_id
     comment_data=$(get_comment_details "$pr_number" "$comment_id")
-    comment_body=$(echo "$comment_data" | jq -r '.body')
-    comment_user=$(echo "$comment_data" | jq -r '.user.login')
-    
-    log_info "Handling review comment #${comment_id} from @${comment_user}"
-    debug_log "Comment body: ${comment_body}"
-    
-    # Check if this is a vibe PR
+    comment_body=$(jq -r '.body' <<< "$comment_data")
+    comment_user=$(jq -r '.user.login' <<< "$comment_data")
+    reply_id=$(jq -r '.in_reply_to_id // .id' <<< "$comment_data")
     branch_name=$(get_pr_branch "$pr_number")
-    
     if ! is_vibe_branch "$branch_name"; then
-        log_info "Not a Vibe branch, ignoring comment"
+        log_info "Not an open, same-repository Vibe PR; skipping"
         return 0
     fi
-    
-    # Extract issue number from branch name
     issue_number=$(extract_issue_number "$branch_name")
-    
-    if [[ -z "$issue_number" ]]; then
-        log_info "Could not extract issue number from branch: ${branch_name}"
-        return 0
-    fi
-    
-    # Check if comment is actionable
     if ! is_actionable_comment "$comment_body" "$comment_user"; then
-        log_info "Comment is not actionable, ignoring"
+        log_info "Comment is not actionable; skipping"
         return 0
     fi
-    
-    log_info "Processing actionable comment on PR #${pr_number}"
-    
-    # Checkout the PR branch
-    checkout_pr_branch "$branch_name" "$pr_number"
-    
-    # Let Vibe process the comment
-    if ! process_comment_with_vibe "$comment_body" "$branch_name" "$issue_number"; then
-        log_error "Failed to process comment with Vibe"
-        add_comment_response "$pr_number" "$comment_id" "Sorry, I wasn't able to process your request. Please check the logs."
-        return 1
+    is_dry_run && { log_info "[DRY RUN] Would address comment #${comment_id} on ${branch_name}"; return 0; }
+    checkout_pr_branch "$branch_name"
+    process_comment_with_vibe "$comment_body" "$branch_name" "$issue_number"
+    if git diff --quiet && [[ -z $(git ls-files --others --exclude-standard) ]]; then
+        add_comment_response "$pr_number" "$reply_id" "The review run produced no code changes; this feedback still needs manual review."
+        return 0
     fi
-    
-    # Commit and push changes
-    local commit_message="vibe: Address review feedback from @${comment_user}"
-    commit_changes "$issue_number" "$commit_message"
-    
-    if ! is_dry_run; then
-        git push origin "$branch_name" || true
-    fi
-    
-    # Add response comment
-    add_comment_response "$pr_number" "$comment_id" "I've addressed your feedback. Please review the changes."
-    
-    log_info "Successfully processed review comment"
-    return 0
+    commit_changes "$issue_number" "vibe: Address review feedback from @${comment_user}"
+    push_branch "$branch_name"
+    trigger_ci_monitoring "$branch_name"
+    add_comment_response "$pr_number" "$reply_id" "Addressed in $(git rev-parse --short HEAD). Please review the changes and build results."
 }
 
-# Get comment details
 get_comment_details() {
-    local pr_number="$1"
     local comment_id="$2"
-    github_api GET "/repos/${GITHUB_REPO}/pulls/${pr_number}/comments/${comment_id}"
+    if [[ "${VIBE_COMMENT_KIND:-${GITHUB_EVENT_NAME:-pull_request_review_comment}}" == issue_comment ]]; then
+        github_api GET "/issues/comments/${comment_id}"
+    else
+        github_api GET "/pulls/comments/${comment_id}"
+    fi
 }
 
-# Get PR branch
 get_pr_branch() {
-    local pr_number="$1"
-    github_api GET "/repos/${GITHUB_REPO}/pulls/${pr_number}" | jq -r '.head.ref'
+    github_api GET "/pulls/$1" | jq -r --arg repo "$GITHUB_REPO" \
+        'select(.state == "open" and .head.repo.full_name == $repo) | .head.ref'
 }
 
-# Check if branch is a Vibe branch
 is_vibe_branch() {
-    local branch="$1"
-    [[ "$branch" =~ ^vibe/[0-9]+- ]]
+    [[ "$1" =~ ^vibe/[1-9][0-9]*-[a-z0-9-]+$ ]]
 }
 
-# Extract issue number from branch name
 extract_issue_number() {
     local branch="$1"
-    echo "$branch" | grep -oE '^vibe/([0-9]+)' | grep -oE '[0-9]+'
+    branch="${branch#vibe/}"
+    printf '%s\n' "${branch%%-*}"
 }
 
-# Check if comment is actionable
 is_actionable_comment() {
     local body="$1"
     local user="$2"
@@ -126,21 +92,12 @@ is_actionable_comment() {
     return 1
 }
 
-# Checkout PR branch
+# Always fetch the remote head, even if a local branch already exists.
 checkout_pr_branch() {
     local branch_name="$1"
-    local pr_number="$2"
-    
-    log_info "Checking out PR branch: ${branch_name}"
-    
-    if is_dry_run; then
-        log_info "[DRY RUN] Would checkout branch: ${branch_name}"
-        return 0
-    fi
-    
-    # Fetch the branch
-    git fetch origin "$branch_name" || true
-    git checkout "$branch_name" || git checkout -b "$branch_name" origin/"$branch_name"
+    is_vibe_branch "$branch_name" || return 1
+    git fetch origin "refs/heads/${branch_name}"
+    git checkout -B "$branch_name" FETCH_HEAD
 }
 
 # Process comment with Vibe
@@ -182,25 +139,7 @@ Analyze the feedback above and make the necessary changes to address it.
 EOF
     )
     
-    # Run Vibe
-    local timeout_seconds=$((VIBE_TIMEOUT_MINUTES * 60))
-    
-    echo "$prompt" > /tmp/vibe-review-prompt.md
-    
-    if timeout "${timeout_seconds}" vibe \
-        --api-key "${VIBE_API_KEY}" \
-        --model "${VIBE_MODEL}" \
-        --no-interactive \
-        --yes \
-        --timeout "${timeout_seconds}" \
-        /tmp/vibe-review-prompt.md 2>/tmp/vibe-review-output.log; then
-        
-        log_info "Vibe comment processing completed"
-        return 0
-    else
-        log_error "Vibe comment processing timed out"
-        return 1
-    fi
+    execute_vibe_prompt "$prompt" /tmp/vibe-review-output.log
 }
 
 # Add response to comment
@@ -217,8 +156,10 @@ add_comment_response() {
     fi
     
     local response_data
-    response_data=$(jq -n --arg body "$message" --arg in_reply_to "${comment_id}" \
-        '{body: $body, in_reply_to_id: $in_reply_to}')
-    
-    github_api POST "/repos/${GITHUB_REPO}/issues/${pr_number}/comments" "${response_data}" > /dev/null 2>&1 || true
+    response_data=$(jq -n --arg body "$message" '{body: $body}')
+    if [[ "${VIBE_COMMENT_KIND:-${GITHUB_EVENT_NAME:-pull_request_review_comment}}" == issue_comment ]]; then
+        github_api POST "/issues/${pr_number}/comments" "$response_data" > /dev/null
+    else
+        github_api POST "/pulls/${pr_number}/comments/${comment_id}/replies" "$response_data" > /dev/null
+    fi
 }

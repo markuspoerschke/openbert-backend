@@ -1,291 +1,109 @@
 #!/bin/bash
 set -euo pipefail
 
-# Mistral Vibe Agent - CI Monitoring
-# Monitors CI status and fixes failures automatically
-
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/common.sh"
 
-# Track retry attempts
-DECLARATIVE_RETRY_COUNT=0
-
-# Trigger CI monitoring workflow
+# GITHUB_TOKEN pushes do not generate push/PR workflows. workflow_dispatch does.
+# The completed Build is handled by workflow_run; no background polling process.
 trigger_ci_monitoring() {
-    local branch_name="$1"
-    local pr_url="$2"
-    local issue_number="$3"
-    
-    log_info "Triggering CI monitoring for: ${branch_name}"
-    
-    if is_dry_run; then
-        log_info "[DRY RUN] Would trigger CI monitoring"
-        return 0
-    fi
-    
-    # Get workflow ID for test workflow
-    local workflow_id
-    workflow_id=$(get_workflow_id "test.yml")
-    
-    if [[ -z "$workflow_id" ]]; then
-        log_error "Could not find test workflow"
-        return 1
-    fi
-    
-    # Trigger workflow on the branch
-    local trigger_data
-    trigger_data=$(jq -n --arg ref "${branch_name}" '{"ref": $ref}')
-    
-    local response
-    response=$(github_api POST "/actions/workflows/${workflow_id}/dispatches" "${trigger_data}")
-    
-    debug_log "CI trigger response: ${response}"
-    
-    # Store info for later monitoring
-    echo "VIBE_MONITOR_BRANCH=${branch_name}" >> $GITHUB_ENV
-    echo "VIBE_MONITOR_ISSUE=${issue_number}" >> $GITHUB_ENV
-    echo "VIBE_MONITOR_PR=${pr_url}" >> $GITHUB_ENV
-    
-    log_info "CI triggered for branch: ${branch_name}"
-    
-    # Start monitoring in background
-    monitor_ci_status "$branch_name" "$issue_number" "$pr_url" &
-    
-    return 0
+    local branch_name="$1" data
+    is_dry_run && return 0
+    data=$(jq -n --arg ref "$branch_name" '{ref: $ref}')
+    github_api POST "/actions/workflows/test.yml/dispatches" "$data" > /dev/null
+    log_info "Build dispatched for ${branch_name}"
 }
 
-# Get workflow ID by filename
-get_workflow_id() {
-    local filename="$1"
-    local workflows
-    workflows=$(github_api GET "/actions/workflows")
-    
-    echo "$workflows" | jq -r --arg name "$filename" \
-        '.workflows[] | select(.path | contains($name)) | .id'
+find_pr_number() {
+    local branch_name="$1" head
+    head=$(jq -rn --arg head "${GITHUB_REPO%%/*}:${branch_name}" '$head | @uri')
+    github_api GET "/pulls?state=open&head=${head}" | jq -r '.[0].number // empty'
 }
 
-# Monitor CI status
-monitor_ci_status() {
-    local branch_name="$1"
-    local issue_number="$2"
-    local pr_url="$3"
-    local attempt=0
-    local max_attempts="${MAX_RETRIES}"
-    
-    log_info "Starting CI monitoring for ${branch_name}"
-    
-    while [[ $attempt -lt $max_attempts ]]; do
-        attempt=$((attempt + 1))
-        log_info "CI check attempt ${attempt}/${max_attempts}"
-        
-        # Get workflow runs for this branch
-        local runs
-        runs=$(github_api GET "/actions/workflows/test.yml/runs?branch=${branch_name}&per_page=1")
-        
-        debug_log "Workflow runs: ${runs}"
-        
-        local status
-        status=$(echo "$runs" | jq -r '.workflow_runs[0].status // "queued"')
-        local conclusion
-        conclusion=$(echo "$runs" | jq -r '.workflow_runs[0].conclusion // ""')
-        
-        log_info "CI Status: ${status}, Conclusion: ${conclusion}"
-        
-        case "$status" in
-            completed)
-                if [[ "$conclusion" == "success" ]]; then
-                    log_info "CI passed successfully"
-                    return 0
-                else
-                    log_warn "CI failed with conclusion: ${conclusion}"
-                    if ! handle_ci_failure "$branch_name" "$issue_number" "$attempt" "$max_attempts"; then
-                        log_error "Failed to fix CI issues"
-                        return 1
-                    fi
-                fi
-                ;;
-            in_progress|queued)
-                log_info "CI still running, waiting..."
-                sleep 60  # Wait 1 minute before checking again
-                ;;
-            *)
-                log_info "Unknown status: ${status}, waiting..."
-                sleep 60
-                ;;
-        esac
-    done
-    
-    log_error "CI monitoring timed out after ${max_attempts} attempts"
-    return 1
+# Attempt comments persist across runners, including failed repair executions.
+# All mutating Vibe workflows share one concurrency group.
+get_retry_comments() {
+    github_api_list "/issues/$1/comments" | jq -c '[.[] |
+        select(.user.login == "github-actions[bot]" and
+            (.body | startswith("<!-- vibe-ci-attempt:")))]'
 }
 
-# Handle CI failure
-handle_ci_failure() {
-    local branch_name="$1"
-    local issue_number="$2"
-    local attempt="$3"
-    local max_attempts="$4"
-    
-    log_info "Attempting to fix CI failure (attempt ${attempt}/${max_attempts})"
-    
-    # Get failure logs
-    local failure_info
-    failure_info=$(get_ci_failure_info "$branch_name")
-    
-    debug_log "CI Failure info: ${failure_info}"
-    
-    # Check if we should retry based on failure type
-    if ! is_actionable_failure "$failure_info"; then
-        log_warn "Failure is not actionable, manual intervention needed"
-        add_pr_comment "$branch_name" "CI failed with non-actionable error: ${failure_info}"
-        return 0
-    fi
-    
-    # Let Vibe analyze and fix the issue
-    if ! fix_ci_failure "$branch_name" "$failure_info"; then
-        log_error "Vibe could not fix the issue"
-        return 1
-    fi
-    
-    # Commit the fixes
-    local fix_message="vibe: Fix CI failure - attempt ${attempt}"
-    commit_changes "$issue_number" "$fix_message"
-    
-    # Push changes
-    if ! is_dry_run; then
-        git push origin "$branch_name" || true
-    fi
-    
-    return 0
+get_retry_count() {
+    get_retry_comments "$1" | jq 'length'
 }
 
-# Get CI failure info
+increment_retry_count() {
+    local pr_number="$1" run_id="$2" attempt="$3" body
+    printf -v body '<!-- vibe-ci-attempt:%s -->\nCI repair attempt %s for Build run %s.' "$run_id" "$attempt" "$run_id"
+    github_api POST "/issues/${pr_number}/comments" "$(jq -n --arg body "$body" '{body: $body}')" > /dev/null
+}
+
 get_ci_failure_info() {
-    local branch_name="$1"
-    local runs
-    runs=$(github_api GET "/actions/workflows/test.yml/runs?branch=${branch_name}&per_page=1")
-    
-    local run_id
-    run_id=$(echo "$runs" | jq -r '.workflow_runs[0].id')
-    
-    if [[ -z "$run_id" || "$run_id" == "null" ]]; then
-        echo "No workflow run found"
-        return
-    fi
-    
-    # Get run details
-    local run_details
-    run_details=$(github_api GET "/actions/workflows/test.yml/runs/${run_id}")
-    
-    echo "$run_details" | jq -r '
-        {
-            status: .status,
-            conclusion: .conclusion,
-            failure_reason: (.failure_reason // ""),
-            test_summary: (.test_summary // "")
-        } | tostring'
+    local run_id="$1" jobs logs
+    jobs=$(github_api GET "/actions/runs/${run_id}/jobs?filter=latest&per_page=100")
+    logs=$(GH_TOKEN="$GITHUB_TOKEN" gh run view "$run_id" --repo "$GITHUB_REPO" --log-failed | tail -c 60000) || return 1
+    jq -n --argjson jobs "$jobs" --arg logs "$logs" \
+        '{jobs: [$jobs.jobs[] | {name, conclusion, steps}], logs: $logs}'
 }
 
-# Check if failure is actionable
-is_actionable_failure() {
-    local failure_info="$1"
-    
-    # Extract conclusion
-    local conclusion
-    conclusion=$(echo "$failure_info" | jq -r '.conclusion // ""')
-    
-    # Non-actionable failures
-    case "$conclusion" in
-        cancelled|timed_out|neutral)
-            return 1
-            ;;
-        *)
-            # Check for specific non-actionable patterns
-            if echo "$failure_info" | grep -qiE "(timeout|out of memory|permission|authentication|rate limit)"; then
-                return 1
-            fi
-            return 0
-            ;;
-    esac
-}
-
-# Let Vibe fix the CI failure
 fix_ci_failure() {
-    local branch_name="$1"
-    local failure_info="$2"
-    
-    log_info "Running Vibe to fix CI failure"
-    
-    # Extract error details
-    local error_details
-    error_details=$(echo "$failure_info" | jq -r '.conclusion + ": " + (.failure_reason // "")')
-    
-    # Build prompt for Vibe
-    local fix_prompt
-    fix_prompt=$(cat <<EOF
-# Fix CI Failure
-
-## Context
-CI failed with: ${error_details}
-
-## Task
-Analyze the CI failure and fix the issues in the code.
-
-## Constraints
-- Only fix the specific issue causing CI to fail
-- Do not modify unrelated code
-- Ensure all tests pass
-- Follow existing code patterns
-
-## Instructions
-1. Check the CI logs and error messages
-2. Identify the root cause
-3. Make minimal changes to fix the issue
-4. Verify the fix works
-
-## Current Branch
-${branch_name}
-EOF
-    )
-    
-    # Run Vibe with the fix prompt
-    local timeout_seconds=$((VIBE_TIMEOUT_MINUTES * 60))
-    
-    echo "$fix_prompt" > /tmp/vibe-fix-prompt.md
-    
-    if timeout "${timeout_seconds}" vibe \
-        --api-key "${VIBE_API_KEY}" \
-        --model "${VIBE_MODEL}" \
-        --no-interactive \
-        --yes \
-        --timeout "${timeout_seconds}" \
-        /tmp/vibe-fix-prompt.md 2>/tmp/vibe-fix-output.log; then
-        
-        log_info "Vibe fix completed"
-        return 0
-    else
-        log_error "Vibe fix timed out"
-        return 1
-    fi
+    local branch_name="$1" failure_info="$2" prompt
+    printf -v prompt '# Fix CI Failure\n\nBranch: %s\n\nFailed jobs and logs:\n%s\n\nAnalyze the failure, make focused changes, follow AGENTS.md, and verify with ./gradlew build --no-daemon. Leave changes uncommitted for the workflow. Do not merge PRs.' "$branch_name" "$failure_info"
+    execute_vibe_prompt "$prompt" /tmp/vibe-fix-output.log
 }
 
-# Add comment to PR
 add_pr_comment() {
-    local branch_name="$1"
-    local message="$2"
-    
-    # Find PR by branch
-    local prs
-    prs=$(github_api GET "/pulls?state=open&head=${branch_name}")
-    
-    local pr_number
-    pr_number=$(echo "$prs" | jq -r '.[0].number')
-    
-    if [[ -n "$pr_number" && "$pr_number" != "null" ]]; then
-        local comment_data
-        comment_data=$(jq -n --arg body "$message" '{body: $body}')
-        
-        github_api POST "/repos/${GITHUB_REPO}/issues/${pr_number}/comments" "${comment_data}" > /dev/null 2>&1 || true
-        log_info "Added comment to PR #${pr_number}"
+    local pr_number="$1" message="$2"
+    is_dry_run && return 0
+    github_api POST "/issues/${pr_number}/comments" "$(jq -n --arg body "$message" '{body: $body}')" > /dev/null
+}
+
+run_ci_monitor() {
+    local branch="${VIBE_MONITOR_BRANCH:-}" run_id="${VIBE_RUN_ID:-}"
+    local run pr_number comments retry_count issue_number failure_info remote_sha
+    is_vibe_branch "$branch" || { log_info "Not a Vibe branch; skipping"; return 0; }
+    require_number "Build run ID" "$run_id"
+    # Revalidate server-side data before checking out or executing branch code.
+    run=$(github_api GET "/actions/runs/${run_id}")
+    if ! jq -e --arg repo "$GITHUB_REPO" --arg branch "$branch" \
+        '.head_repository.full_name == $repo and .head_branch == $branch and
+         .path == ".github/workflows/test.yml" and .conclusion == "failure"' <<< "$run" > /dev/null; then
+        log_info "Not a failed same-repository Build; skipping"
+        return 0
     fi
+    pr_number=$(find_pr_number "$branch")
+    [[ -n "$pr_number" ]] || { log_info "No open PR; skipping"; return 0; }
+    [[ $(get_pr_branch "$pr_number") == "$branch" ]] || return 1
+    comments=$(get_retry_comments "$pr_number")
+    if jq -e --arg marker "<!-- vibe-ci-attempt:${run_id} -->" \
+        'any(.[]; .body | startswith($marker))' <<< "$comments" > /dev/null; then
+        log_info "Build already handled; skipping"
+        return 0
+    fi
+    retry_count=$(get_retry_count "$pr_number")
+    if (( retry_count >= MAX_RETRIES )); then
+        log_warn "Retry limit reached (${retry_count}/${MAX_RETRIES}); manual intervention required"
+        add_pr_comment "$pr_number" "CI repair limit reached (${retry_count}/${MAX_RETRIES}); manual intervention is required."
+        return 0
+    fi
+    is_dry_run && { log_info "[DRY RUN] Would repair Build ${run_id} on ${branch}"; return 0; }
+    git fetch origin "refs/heads/${branch}"
+    remote_sha=$(git rev-parse FETCH_HEAD)
+    if [[ "$remote_sha" != "$(jq -r '.head_sha' <<< "$run")" ]]; then
+        log_info "Build is stale: branch has advanced; skipping"
+        return 0
+    fi
+    git checkout -B "$branch" "$remote_sha"
+    issue_number=$(extract_issue_number "$branch")
+    failure_info=$(get_ci_failure_info "$run_id")
+    increment_retry_count "$pr_number" "$run_id" "$((retry_count + 1))"
+    fix_ci_failure "$branch" "$failure_info"
+    if git diff --quiet && [[ -z $(git ls-files --others --exclude-standard) ]]; then
+        add_pr_comment "$pr_number" "CI repair produced no changes; manual review is required."
+        return 0
+    fi
+    commit_changes "$issue_number" "vibe: Fix CI failure - attempt $((retry_count + 1))"
+    push_branch "$branch"
+    trigger_ci_monitoring "$branch"
+    add_pr_comment "$pr_number" "CI repair attempt $((retry_count + 1)) pushed in $(git rev-parse --short HEAD); a new Build was dispatched."
 }

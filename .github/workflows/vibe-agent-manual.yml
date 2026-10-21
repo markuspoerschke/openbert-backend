@@ -4,11 +4,11 @@ on:
   workflow_dispatch:
     inputs:
       issue-number:
-        description: 'Specific issue number to work on'
+        description: Specific issue number to work on
         required: false
         type: number
       dry-run:
-        description: 'Run in dry-run mode (no commits or PRs)'
+        description: Preview selection without invoking Vibe or publishing changes
         required: false
         type: boolean
         default: false
@@ -16,103 +16,32 @@ on:
 permissions:
   contents: write
   pull-requests: write
-  issues: read
-  actions: read
-  checks: read
+  issues: write
+  actions: write
 
+# One group across implementation, review, and CI repair workflows.
 concurrency:
-  group: vibe-agent-manual
+  group: vibe-agent-${{ github.repository }}
   cancel-in-progress: false
 
 jobs:
   implement-issue:
     runs-on: ubuntu-latest
+    env:
+      VIBE_API_KEY: ${{ secrets.VIBE_API_KEY }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      VIBE_MODEL: ${{ secrets.VIBE_MODEL || 'mistral-large-latest' }}
+      MAX_RETRIES: ${{ secrets.MAX_RETRIES || '3' }}
+      VIBE_TIMEOUT_MINUTES: ${{ secrets.VIBE_TIMEOUT_MINUTES || '30' }}
+      VIBE_DEBUG: ${{ secrets.VIBE_DEBUG || 'false' }}
+      DRY_RUN: ${{ inputs.dry-run && 'true' || 'false' }}
     steps:
-      - name: Checkout repository
+      - name: Checkout trusted agent scripts
         uses: actions/checkout@v7
         with:
           fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Set up environment
-        run: |
-          echo "VIBE_ISSUE_NUMBER=${{ inputs.issue-number }}" >> $GITHUB_ENV
-          echo "DRY_RUN=${{ inputs.dry-run || false }}" >> $GITHUB_ENV
-          echo "VIBE_AGENT_MODE=manual" >> $GITHUB_ENV
-          echo "VIBE_TIMEOUT_MINUTES=${{ secrets.VIBE_TIMEOUT_MINUTES || 30 }}" >> $GITHUB_ENV
-          echo "MAX_RETRIES=${{ secrets.MAX_RETRIES || 3 }}" >> $GITHUB_ENV
-          echo "VIBE_MODEL=${{ secrets.VIBE_MODEL || 'mistral-large-latest' }}" >> $GITHUB_ENV
-          echo "VIBE_DEBUG=${{ secrets.VIBE_DEBUG || 'false' }}" >> $GITHUB_ENV
-
-      - name: Install dependencies
-        run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y -qq jq curl git > /dev/null 2>&1
-
-      - name: Install Mistral Vibe CLI
-        run: |
-          curl -fsSL https://vibe.mistral.ai/install.sh | sh
-          echo "$(dirname $(which vibe))" >> $GITHUB_PATH
-          vibe --version
-
       - name: Run Vibe Agent
-        id: vibe-agent
-        env:
-          VIBE_API_KEY: ${{ secrets.VIBE_API_KEY }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          # Initialize logging
-          LOGFILE="/tmp/vibe-agent-$(date +%Y%m%d-%H%M%S).log"
-          touch "$LOGFILE"
-          exec > >(tee -a "$LOGFILE") 2>&1
-
-          # Source all scripts
-          SCRIPT_DIR=".github/actions/vibe-agent"
-          source "${SCRIPT_DIR}/common.sh"
-          source "${SCRIPT_DIR}/select-issue.sh"
-          source "${SCRIPT_DIR}/run-vibe.sh"
-          source "${SCRIPT_DIR}/create-pr.sh"
-          source "${SCRIPT_DIR}/monitor-ci.sh"
-          source "${SCRIPT_DIR}/handle-review.sh"
-          source "${SCRIPT_DIR}/lock-manager.sh"
-
-          log_info "Starting manual Vibe Agent run"
-
-          # Acquire lock
-          if ! acquire_lock; then
-            log_info "Another Vibe task is already running. Skipping."
-            exit 0
-          fi
-
-          local issue_number="${{ inputs.issue-number }}"
-
-          if [[ -z "$issue_number" ]]; then
-            log_info "No issue number specified, selecting one automatically"
-            issue_number=$(select_issue)
-            if [[ -z "$issue_number" ]]; then
-              log_info "No actionable issues found"
-              release_lock
-              exit 0
-            fi
-          fi
-
-          # Check if issue has vibe label
-          if ! issue_has_vibe_label "$issue_number"; then
-            log_error "Issue #${issue_number} does not have 'vibe' label"
-            release_lock
-            exit 1
-          fi
-
-          log_info "Working on issue: $issue_number"
-          implement_issue "$issue_number"
-
-          # Release lock
-          release_lock
-
-      - name: Upload logs on failure
-        if: failure() && steps.vibe-agent.outcome == 'failure'
-        uses: actions/upload-artifact@v4
+        uses: ./.github/actions/vibe-agent
         with:
-          name: vibe-agent-logs
-          path: /tmp/vibe-agent*.log
-          retention-days: 7
+          mode: manual
+          issue-number: ${{ inputs.issue-number || '' }}

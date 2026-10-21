@@ -1,9 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
-# Mistral Vibe Agent - Main Entrypoint
-# This script orchestrates the autonomous coding agent workflow
-
+# Load every function before dispatch. Sourcing this file has no side effects.
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/common.sh"
 source "${SCRIPT_DIR}/select-issue.sh"
@@ -11,145 +9,89 @@ source "${SCRIPT_DIR}/run-vibe.sh"
 source "${SCRIPT_DIR}/create-pr.sh"
 source "${SCRIPT_DIR}/monitor-ci.sh"
 source "${SCRIPT_DIR}/handle-review.sh"
-source "${SCRIPT_DIR}/lock-manager.sh"
 
-# Logging setup
-LOGFILE="/tmp/vibe-agent-$(date +%Y%m%d-%H%M%S).log"
-touch "$LOGFILE"
-exec > >(tee -a "$LOGFILE") 2>&1
-
-log_info "Starting Mistral Vibe Agent"
-log_info "Mode: ${VIBE_AGENT_MODE}"
-log_info "Issue: ${VIBE_ISSUE_NUMBER:-none}"
-log_info "PR: ${VIBE_PR_NUMBER:-none}"
-
-# Ensure we have required credentials
-validate_credentials
-
-# Load repository info
-GITHUB_REPO="${GITHUB_REPOSITORY:-$(get_repo_info)}"
-log_info "Repository: ${GITHUB_REPO}"
-
-# Main dispatch
-case "${VIBE_AGENT_MODE}" in
-    scheduled)
-        log_info "Running in scheduled mode"
-        run_scheduled_mode
-        ;;
-    manual)
-        log_info "Running in manual mode"
-        run_manual_mode "${VIBE_ISSUE_NUMBER}"
-        ;;
-    review)
-        log_info "Running in review mode"
-        run_review_mode "${VIBE_PR_NUMBER}" "${VIBE_COMMENT_ID}"
-        ;;
-    *)
-        log_error "Unknown mode: ${VIBE_AGENT_MODE}"
-        exit 1
-        ;;
-esac
-
-log_info "Vibe Agent completed successfully"
-exit 0
-
-# Functions for each mode
 run_scheduled_mode() {
-    local issue
-    
-    # Check for existing vibe branches
-    if has_active_vibe_pr; then
+    local issue pr_status=0
+    has_active_vibe_pr || pr_status=$?
+    if (( pr_status == 0 )); then
         log_info "Active vibe PR exists, skipping scheduled run"
         return 0
+    elif (( pr_status != 1 )); then
+        return 1
     fi
-    
-    # Select an issue
-    issue=$(select_issue)
+    issue=$(select_issue) || return 1
     if [[ -z "$issue" ]]; then
         log_info "No actionable issues found"
         return 0
     fi
-    
-    log_info "Selected issue: $issue"
     implement_issue "$issue"
 }
 
 run_manual_mode() {
-    local issue_number="$1"
-    
+    local issue_number="${1:-}" pr_status=0
     if [[ -z "$issue_number" ]]; then
-        log_info "No issue number specified, selecting one automatically"
-        issue_number=$(select_issue)
-        if [[ -z "$issue_number" ]]; then
-            log_info "No actionable issues found"
-            return 0
-        fi
+        issue_number=$(select_issue) || return 1
+        [[ -n "$issue_number" ]] || return 0
     fi
-    
-    # Check if issue has vibe label
+    require_number "Issue number" "$issue_number"
     if ! issue_has_vibe_label "$issue_number"; then
-        log_error "Issue #${issue_number} does not have 'vibe' label"
-        exit 1
+        log_error "Issue #${issue_number} does not have the vibe label"
+        return 1
     fi
-    
+    has_vibe_pr_for_issue "$issue_number" || pr_status=$?
+    if (( pr_status == 0 )); then
+        log_info "Issue already has an open Vibe PR"
+        return 0
+    elif (( pr_status != 1 )); then
+        return 1
+    fi
     implement_issue "$issue_number"
 }
 
-run_review_mode() {
-    local pr_number="$1"
-    local comment_id="$2"
-    
-    if [[ -z "$pr_number" || -z "$comment_id" ]]; then
-        log_error "PR number and comment ID are required for review mode"
-        exit 1
-    fi
-    
-    handle_review_comment "$pr_number" "$comment_id"
-}
-
-# Core implementation function
 implement_issue() {
-    local issue_number="$1"
-    local issue_data branch_name pr_url
-    
-    # Get issue details
+    local issue_number="$1" issue_data slug branch_name pr_url
     issue_data=$(get_issue_details "$issue_number")
-    log_info "Issue data: $issue_data"
-    
-    # Create branch name
-    local slug=$(create_slug "$issue_data")
-    branch_name="vibe/${issue_number}-${slug}"
-    
-    # Create working branch
-    log_info "Creating branch: ${branch_name}"
-    create_working_branch "$branch_name" "$issue_number"
-    
-    # Run Vibe to implement the issue
-    log_info "Running Vibe CLI for issue #${issue_number}"
-    if ! run_vibe_cli "$issue_number" "$branch_name"; then
-        log_error "Vibe CLI execution failed"
-        # Attempt cleanup
-        git checkout main || true
-        git branch -D "$branch_name" || true
-        exit 1
+    slug=$(create_slug "$issue_data")
+    branch_name="vibe/${issue_number}-${slug:-issue}"
+    if is_dry_run; then
+        log_info "[DRY RUN] Would implement #${issue_number} on ${branch_name} and create a draft PR"
+        return 0
     fi
-    
-    # Run tests
-    log_info "Running tests"
+    create_working_branch "$branch_name"
+    run_vibe_cli "$issue_number" "$branch_name"
     if ! run_tests; then
-        log_warn "Tests failed, will attempt to fix in CI monitoring"
+        log_warn "Tests failed; publishing a draft for CI and manual review"
     fi
-    
-    # Create PR
-    log_info "Creating draft PR"
+    commit_changes "$issue_number" "vibe: $(jq -r '.title' <<< "$issue_data")"
+    push_branch "$branch_name"
     pr_url=$(create_draft_pr "$branch_name" "$issue_number")
     log_info "Draft PR created: ${pr_url}"
-    
-    # Store PR info for CI monitoring
-    echo "VIBE_BRANCH=${branch_name}" >> $GITHUB_ENV
-    echo "VIBE_PR_URL=${pr_url}" >> $GITHUB_ENV
-    
-    # Monitor CI (async - will be handled by separate workflow)
-    log_info "Triggering CI monitoring workflow"
-    trigger_ci_monitoring "$branch_name" "$pr_url" "$issue_number"
+    trigger_ci_monitoring "$branch_name"
 }
+
+main() {
+    local mode="${1:-${VIBE_AGENT_MODE:-scheduled}}"
+    LOGFILE="${LOGFILE:-/tmp/vibe-agent.log}"
+    export GITHUB_REPO="${GITHUB_REPOSITORY:-$(get_repo_info)}"
+    validate_credentials
+    require_number "VIBE_TIMEOUT_MINUTES" "$VIBE_TIMEOUT_MINUTES"
+    [[ "$MAX_RETRIES" =~ ^(0|[1-9][0-9]*)$ ]] || { log_error "MAX_RETRIES must be a nonnegative integer"; return 1; }
+    git config user.name 'github-actions[bot]'
+    git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+    log_info "Starting Mistral Vibe Agent: ${mode}"
+    case "$mode" in
+        scheduled) run_scheduled_mode ;;
+        manual) run_manual_mode "${2:-${VIBE_ISSUE_NUMBER:-}}" ;;
+        review)
+            require_number "PR number" "${VIBE_PR_NUMBER:-${2:-}}"
+            require_number "Comment ID" "${VIBE_COMMENT_ID:-${3:-}}"
+            handle_review_comment "${VIBE_PR_NUMBER:-$2}" "${VIBE_COMMENT_ID:-$3}"
+            ;;
+        ci-monitor) run_ci_monitor ;;
+        *) log_error "Unknown mode: ${mode}"; return 1 ;;
+    esac
+}
+
+if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
+    main "$@"
+fi

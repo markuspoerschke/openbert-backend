@@ -3,19 +3,22 @@
 # Mistral Vibe Agent - Common Functions
 # Shared utilities for all scripts
 
+LOGFILE="${LOGFILE:-/tmp/vibe-agent.log}"
+
+# Keep diagnostics off stdout: callers capture JSON, issue numbers and URLs.
 # Logging functions
 log_info() {
-    echo "::info::[VIBE] $1"
+    echo "[VIBE] $1" >&2
     echo "[INFO] $(date '+%Y-%m-%d %H:%M:%S') - $1" >> "$LOGFILE"
 }
 
 log_warn() {
-    echo "::warning::[VIBE] $1"
+    echo "::warning::[VIBE] $1" >&2
     echo "[WARN] $(date '+%Y-%m-%d %H:%M:%S') - $1" >> "$LOGFILE"
 }
 
 log_error() {
-    echo "::error::[VIBE] $1"
+    echo "::error::[VIBE] $1" >&2
     echo "[ERROR] $(date '+%Y-%m-%d %H:%M:%S') - $1" >> "$LOGFILE"
 }
 
@@ -23,21 +26,19 @@ log_error() {
 VIBE_API_KEY="${VIBE_API_KEY:-}"
 GITHUB_TOKEN="${GITHUB_TOKEN:-}"
 VIBE_MODEL="${VIBE_MODEL:-mistral-large-latest}"
-VIBE_ORGANIZATION="${VIBE_ORGANIZATION:-}"
-VIBE_PROJECT="${VIBE_PROJECT:-}"
 MAX_RETRIES="${MAX_RETRIES:-3}"
 VIBE_TIMEOUT_MINUTES="${VIBE_TIMEOUT_MINUTES:-30}"
 VIBE_DEBUG="${VIBE_DEBUG:-false}"
 DRY_RUN="${DRY_RUN:-false}"
 
 # GitHub API helpers
-GITHUB_API="https://api.github.com"
+GITHUB_API="${GITHUB_API_URL:-https://api.github.com}"
 GITHUB_REPO="${GITHUB_REPOSITORY:-}"
 
 github_api() {
     local method="$1"
     local endpoint="$2"
-    local data="$3"
+    local data="${3:-}"
     
     local url="${GITHUB_API}/repos/${GITHUB_REPO}${endpoint}"
     
@@ -47,16 +48,16 @@ github_api() {
     )
     
     if [[ "$method" == "GET" ]]; then
-        curl -sSL "${headers[@]}" "$url" 2>/dev/null || echo "{}"
+        curl --fail-with-body -sS "${headers[@]}" "$url"
     else
         headers+=("-H" "Content-Type: application/json")
-        curl -sSL -X "$method" "${headers[@]}" -d "$data" "$url" 2>/dev/null || echo "{}"
+        curl --fail-with-body -sS -X "$method" "${headers[@]}" -d "$data" "$url"
     fi
 }
 
 # Get repository info
 get_repo_info() {
-    if [[ -n "$GITHUB_REPOSITORY" ]]; then
+    if [[ -n "${GITHUB_REPOSITORY:-}" ]]; then
         echo "$GITHUB_REPOSITORY"
     elif [[ -d .git ]]; then
         git config --get remote.origin.url | sed 's/.*github.com[:/]//;s/\.git$//'
@@ -78,7 +79,7 @@ validate_credentials() {
     fi
     
     # Test GitHub token
-    if ! github_api GET "" | grep -q "rate"; then
+    if ! github_api GET "" > /dev/null; then
         log_error "GitHub token is invalid or expired"
         exit 1
     fi
@@ -92,7 +93,28 @@ is_dry_run() {
 # Debug logging
 debug_log() {
     if [[ "$VIBE_DEBUG" == "true" ]]; then
-        echo "[DEBUG] $1"
+        echo "[DEBUG] $1" >&2
         echo "[DEBUG] $(date '+%Y-%m-%d %H:%M:%S') - $1" >> "$LOGFILE"
     fi
+}
+
+# Fetch array endpoints across all pages without corrupting JSON strings.
+github_api_list() {
+    local endpoint="$1" page=1 response separator='?'
+    [[ "$endpoint" != *'?'* ]] || separator='&'
+    while :; do
+        response=$(github_api GET "${endpoint}${separator}per_page=100&page=${page}") || return 1
+        jq -c '.[]' <<< "$response"
+        [[ $(jq 'length' <<< "$response") -eq 100 ]] || break
+        page=$((page + 1))
+    done | jq -s '.'
+}
+
+require_number() {
+    [[ "$2" =~ ^[1-9][0-9]*$ ]] || { log_error "$1 must be a positive integer"; return 1; }
+}
+
+push_branch() {
+    is_dry_run && return 0
+    git push origin "HEAD:refs/heads/$1"
 }

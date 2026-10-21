@@ -9,100 +9,38 @@ on:
 permissions:
   contents: write
   pull-requests: write
-  issues: read
-  actions: read
-  checks: read
+  issues: write
+  actions: write
 
+# One group across implementation, review, and CI repair workflows.
 concurrency:
-  group: vibe-agent-review-${{ github.event.comment.id || github.event.pull_request.number }}
+  group: vibe-agent-${{ github.repository }}
   cancel-in-progress: false
 
 jobs:
   handle-review:
     runs-on: ubuntu-latest
-    if: >
-      (github.event_name == 'issue_comment' && 
-       github.event.issue.pull_request && 
-       (contains(github.event.comment.body, 'please') || 
-        contains(github.event.comment.body, 'can you') ||
-        contains(github.event.comment.body, 'could you') ||
-        contains(github.event.comment.body, 'fix') ||
-        contains(github.event.comment.body, 'update') ||
-        contains(github.event.comment.body, 'change'))) ||
-      (github.event_name == 'pull_request_review_comment')
-    
+    if: >-
+      (github.event_name == 'pull_request_review_comment' || github.event.issue.pull_request) &&
+      (contains(fromJSON('["OWNER", "MEMBER", "COLLABORATOR"]'), github.event.comment.author_association) ||
+       github.event.comment.user.login == 'chatgpt-codex-connector[bot]')
+    env:
+      VIBE_API_KEY: ${{ secrets.VIBE_API_KEY }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      VIBE_MODEL: ${{ secrets.VIBE_MODEL || 'mistral-large-latest' }}
+      MAX_RETRIES: ${{ secrets.MAX_RETRIES || '3' }}
+      VIBE_TIMEOUT_MINUTES: ${{ secrets.VIBE_TIMEOUT_MINUTES || '30' }}
+      VIBE_DEBUG: ${{ secrets.VIBE_DEBUG || 'false' }}
     steps:
-      - name: Checkout repository
+      - name: Checkout trusted agent scripts
         uses: actions/checkout@v7
         with:
+          ref: ${{ github.event.repository.default_branch }}
           fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Set up environment
-        run: |
-          if [ "${{ github.event_name }}" = "pull_request_review_comment" ]; then
-            echo "VIBE_PR_NUMBER=${{ github.event.pull_request.number }}" >> $GITHUB_ENV
-            echo "VIBE_COMMENT_ID=${{ github.event.comment.id }}" >> $GITHUB_ENV
-            echo "VIBE_AGENT_MODE=review" >> $GITHUB_ENV
-          else
-            # issue_comment on a PR
-            echo "VIBE_PR_NUMBER=${{ github.event.issue.number }}" >> $GITHUB_ENV
-            echo "VIBE_COMMENT_ID=${{ github.event.comment.id }}" >> $GITHUB_ENV
-            echo "VIBE_AGENT_MODE=review" >> $GITHUB_ENV
-          fi
-
-      - name: Install Mistral Vibe CLI
-        run: |
-          curl -fsSL https://vibe.mistral.ai/install.sh | sh
-          echo "$(dirname $(which vibe))" >> $GITHUB_PATH
-          vibe --version
-
-      - name: Run Vibe Agent - Review Handler
-        id: vibe-agent
-        env:
-          VIBE_API_KEY: ${{ secrets.VIBE_API_KEY }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          VIBE_MODEL: ${{ secrets.VIBE_MODEL || 'mistral-large-latest' }}
-          MAX_RETRIES: ${{ secrets.MAX_RETRIES || '3' }}
-          VIBE_TIMEOUT_MINUTES: ${{ secrets.VIBE_TIMEOUT_MINUTES || '30' }}
-          VIBE_DEBUG: ${{ secrets.VIBE_DEBUG || 'false' }}
-          DRY_RUN: ${{ secrets.DRY_RUN || 'false' }}
-        run: |
-          # Source all scripts
-          SCRIPT_DIR="${{ github.action_path || '.github/actions/vibe-agent' }}"
-          source "${SCRIPT_DIR}/common.sh"
-          source "${SCRIPT_DIR}/select-issue.sh"
-          source "${SCRIPT_DIR}/run-vibe.sh"
-          source "${SCRIPT_DIR}/create-pr.sh"
-          source "${SCRIPT_DIR}/monitor-ci.sh"
-          source "${SCRIPT_DIR}/handle-review.sh"
-          source "${SCRIPT_DIR}/lock-manager.sh"
-
-          # Initialize
-          LOGFILE="/tmp/vibe-agent-$(date +%Y%m%d-%H%M%S).log"
-          touch "$LOGFILE"
-          exec > >(tee -a "$LOGFILE") 2>&1
-
-          log_info "Starting review handler"
-
-          # Acquire lock
-          if ! acquire_lock; then
-            log_info "Another Vibe task is already running. Skipping."
-            exit 0
-          fi
-
-          # Handle the review comment
-          handle_review_comment "${VIBE_PR_NUMBER}" "${VIBE_COMMENT_ID}"
-
-          # Release lock
-          release_lock
-
-      - name: Upload logs on failure
-        if: failure() && steps.vibe-agent.outcome == 'failure'
-        uses: actions/upload-artifact@v4
+      - name: Run Vibe Agent
+        uses: ./.github/actions/vibe-agent
         with:
-          name: vibe-agent-review-logs
-          path: |
-            /tmp/vibe-agent*.log
-            /tmp/vibe-*.log
-          retention-days: 7
+          mode: review
+          pr-number: ${{ github.event.pull_request.number || github.event.issue.number }}
+          comment-id: ${{ github.event.comment.id }}
+          comment-kind: ${{ github.event_name }}
