@@ -2,6 +2,7 @@ package nrw.openbert.backend.parldata.application.enrich
 
 import nrw.openbert.backend.parldata.application.port.outbound.repository.EnrichedLocationInterface
 import nrw.openbert.backend.parldata.application.port.outbound.repository.RawLocationRepository
+import nrw.openbert.backend.parldata.domain.enrich.enricher.LocationOverrides
 import nrw.openbert.backend.parldata.domain.enrich.enricher.SimpleLocationEnricher
 import nrw.openbert.backend.parldata.domain.entity.enriched.EnrichedLocation
 import nrw.openbert.backend.parldata.domain.entity.raw.RawLocation
@@ -24,7 +25,7 @@ class LocationEnricher(
         }
 
         val enrichedLocation = findOrCreateEnrichedEntity(rawLocation)
-        val overrides = simpleEnricher.enrich(rawLocation, enrichedLocation.toLocationOverrides())
+        val overrides = simpleEnricher.enrich(rawLocation, LocationOverrides())
 
         enrichedLocation.applyValuesFrom(overrides)
         enrichedLocationRepository.save(enrichedLocation)
