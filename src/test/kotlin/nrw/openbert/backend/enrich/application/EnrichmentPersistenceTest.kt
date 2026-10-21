@@ -98,7 +98,11 @@ class EnrichmentPersistenceTest(
 
         resolver.run(resolveTarget.id)
         entityManager.flush()
-        assertNotNull(resolvedLocationRepository.findByResource(raw.resource))
+        entityManager.clear()
+        val resolved = resolvedLocationRepository.findByResource(raw.resource)
+        assertNotNull(resolved)
+        assertEquals("Rathausplatz 1", resolved.streetAddress)
+        assertEquals("12345", resolved.postalCode)
     }
 
     @Test
@@ -144,6 +148,11 @@ class EnrichmentPersistenceTest(
         assertEquals(target.id, targetRepository.findByRawEntityIdAndEntityType(rawId, OparlType.LOCATION)?.id)
         assertEquals(1, resolveTargetRepository.findById(resolveTarget.id).orElseThrow().referenceCount)
         assertCompleted(target.id)
+
+        resolver.run(resolveTarget.id)
+        entityManager.flush()
+        entityManager.clear()
+        assertEquals("54321", resolvedLocationRepository.findByResource(raw.resource)?.postalCode)
     }
 
     @Test
