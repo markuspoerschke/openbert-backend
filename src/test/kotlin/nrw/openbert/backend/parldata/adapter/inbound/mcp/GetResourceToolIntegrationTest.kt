@@ -10,11 +10,13 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.annotation.Import
 import org.springframework.mock.web.MockHttpServletRequest
+import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.context.request.ServletRequestAttributes
 
 @Import(TestcontainersConfiguration::class)
 @SpringBootTest
+@Transactional
 class GetResourceToolIntegrationTest(
     @Autowired private val tool: GetResourceTool,
 ) {
