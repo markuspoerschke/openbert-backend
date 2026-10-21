@@ -71,7 +71,8 @@ docker compose exec -T postgres psql -U myuser -d mydatabase < docs/fixtures.sql
 
 Data availability depends on the upstream server and background processing.
 
-- **MCP:** `http://localhost:8080/mcp` (Streamable HTTP); tools: `oparl_body_list`, `oparl_search`.
+- **MCP:** `http://localhost:8080/mcp` (Streamable HTTP); tools: `oparl_body_list`, `oparl_search`, `oparl_get_resource`.
+  Use `oparl_search` or `oparl_body_list` first, then pass the `id` of a result to `oparl_get_resource` to fetch that single resource.
 - **API:** [OParl entry point](http://localhost:8080/oparl/v1.1/system).
 - **API documentation:** [Swagger UI](http://localhost:8080/swagger-ui.html) to browse and try the HTTP endpoints.
 - **Tests and packaging:** `./gradlew build` (Docker required for Testcontainers).
