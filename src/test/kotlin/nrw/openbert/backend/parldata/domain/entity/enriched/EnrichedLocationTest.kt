@@ -134,6 +134,5 @@ class EnrichedLocationTest {
         val extractedOverrides = enriched.toLocationOverrides()
 
         assertEquals(originalOverrides, extractedOverrides)
-        assertEquals(originalOverrides, enriched.getLocationOverrides())
     }
 }

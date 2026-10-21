@@ -31,6 +31,8 @@ class LocationEnricher(
     }
 
     private fun findOrCreateEnrichedEntity(rawLocation: RawLocation): EnrichedLocation {
-        return EnrichedLocation.fromRaw(rawLocation)
+        return enrichedLocationRepository.findById(rawLocation.id).orElseGet {
+            EnrichedLocation.fromRaw(rawLocation)
+        }
     }
 }

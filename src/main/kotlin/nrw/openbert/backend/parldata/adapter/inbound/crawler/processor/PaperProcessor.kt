@@ -3,7 +3,7 @@ package nrw.openbert.backend.parldata.adapter.inbound.crawler.processor
 import nrw.openbert.backend.parldata.application.crawl.CrawlTargetEnqueuer
 import nrw.openbert.backend.parldata.domain.enums.OparlType
 import nrw.openbert.backend.parldata.adapter.outbound.client.oparl.dto.OparlPaperDto
-import nrw.openbert.backend.parldata.application.resolve.ResolveTargetEnqueuer
+import nrw.openbert.backend.parldata.application.enrich.EnrichTargetEnqueuer
 import nrw.openbert.backend.parldata.domain.entity.embeddable.OparlResource
 import nrw.openbert.backend.parldata.domain.entity.raw.RawPaper
 import nrw.openbert.backend.parldata.application.port.outbound.repository.RawPaperRepository
@@ -16,8 +16,8 @@ class PaperProcessor(
     private val fileProcessor: FileProcessor,
     private val locationProcessor: LocationProcessor,
     private val consultationProcessor: ConsultationProcessor,
-    resolveTargetEnqueuer: ResolveTargetEnqueuer,
-) : AbstractProcessor<OparlPaperDto, RawPaper>(crawlTargetEnqueuer, resolveTargetEnqueuer) {
+    enrichTargetEnqueuer: EnrichTargetEnqueuer,
+) : AbstractProcessor<OparlPaperDto, RawPaper>(crawlTargetEnqueuer, enrichTargetEnqueuer) {
     override fun findEntity(resource: OparlResource): RawPaper? = rawPaperRepository.findByResource(resource)
 
     override fun createEntity(resource: OparlResource): RawPaper = RawPaper(resource)

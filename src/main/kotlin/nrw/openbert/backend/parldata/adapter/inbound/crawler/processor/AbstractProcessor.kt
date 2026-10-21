@@ -3,7 +3,7 @@ package nrw.openbert.backend.parldata.adapter.inbound.crawler.processor
 import nrw.openbert.backend.parldata.application.crawl.CrawlTargetEnqueuer
 import nrw.openbert.backend.parldata.domain.enums.OparlType
 import nrw.openbert.backend.parldata.adapter.outbound.client.oparl.dto.OparlObjectDto
-import nrw.openbert.backend.parldata.application.resolve.ResolveTargetEnqueuer
+import nrw.openbert.backend.parldata.application.enrich.EnrichTargetEnqueuer
 import nrw.openbert.backend.parldata.domain.entity.AbstractOparlEntity
 import nrw.openbert.backend.parldata.domain.entity.embeddable.OparlResource
 import nrw.openbert.backend.parldata.domain.valueObject.OparlUrl
@@ -12,7 +12,7 @@ import org.springframework.transaction.annotation.Transactional
 
 abstract class AbstractProcessor<D : OparlObjectDto, E : AbstractOparlEntity>(
     private val crawlTargetEnqueuer: CrawlTargetEnqueuer,
-    private val resolveTargetEnqueuer: ResolveTargetEnqueuer,
+    private val enrichTargetEnqueuer: EnrichTargetEnqueuer,
 ) {
     private val logger = LoggerFactory.getLogger(javaClass)
 
@@ -30,7 +30,7 @@ abstract class AbstractProcessor<D : OparlObjectDto, E : AbstractOparlEntity>(
         updateEntity(entity, dto)
         val savedEntity = saveEntity(entity)
 
-        resolveTargetEnqueuer.enqueue(savedEntity)
+        enrichTargetEnqueuer.enqueue(savedEntity)
         crawlTargetEnqueuer.markAsCrawled(resource)
 
         return savedEntity

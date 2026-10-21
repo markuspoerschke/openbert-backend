@@ -21,7 +21,7 @@ class EnrichedLocation(
 
     @Id
     @Column(nullable = false, updatable = false)
-    val id: UUID = UUID.randomUUID(),
+    val id: UUID? = null,
 ) {
     val rawLocation: RawLocation
         get() = raw

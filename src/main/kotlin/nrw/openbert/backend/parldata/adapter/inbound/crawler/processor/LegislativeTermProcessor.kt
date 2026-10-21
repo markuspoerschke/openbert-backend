@@ -3,7 +3,7 @@ package nrw.openbert.backend.parldata.adapter.inbound.crawler.processor
 import nrw.openbert.backend.parldata.application.crawl.CrawlTargetEnqueuer
 import nrw.openbert.backend.parldata.domain.enums.OparlType
 import nrw.openbert.backend.parldata.adapter.outbound.client.oparl.dto.OparlLegislativeTermDto
-import nrw.openbert.backend.parldata.application.resolve.ResolveTargetEnqueuer
+import nrw.openbert.backend.parldata.application.enrich.EnrichTargetEnqueuer
 import nrw.openbert.backend.parldata.domain.entity.embeddable.OparlResource
 import nrw.openbert.backend.parldata.domain.entity.raw.RawLegislativeTerm
 import nrw.openbert.backend.parldata.application.port.outbound.repository.RawLegislativeTermRepository
@@ -13,8 +13,8 @@ import org.springframework.stereotype.Service
 class LegislativeTermProcessor(
     val rawLegislativeTermRepository: RawLegislativeTermRepository,
     crawlTargetEnqueuer: CrawlTargetEnqueuer,
-    resolveTargetEnqueuer: ResolveTargetEnqueuer,
-) : AbstractProcessor<OparlLegislativeTermDto, RawLegislativeTerm>(crawlTargetEnqueuer, resolveTargetEnqueuer) {
+    enrichTargetEnqueuer: EnrichTargetEnqueuer,
+) : AbstractProcessor<OparlLegislativeTermDto, RawLegislativeTerm>(crawlTargetEnqueuer, enrichTargetEnqueuer) {
     override fun findEntity(resource: OparlResource): RawLegislativeTerm? =
         rawLegislativeTermRepository.findByResource(resource)
 

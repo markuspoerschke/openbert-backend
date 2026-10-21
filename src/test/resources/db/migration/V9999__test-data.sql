@@ -341,3 +341,21 @@ VALUES ('10000000-0000-4000-8000-000000000006',
         'Stellvertretung', '{}', '2026-07-22 14:30:55.000000', '2026-07-22 14:30:55.000000', false,
         '9352fa21-68c6-4f4e-8832-08a0454ff179',
         'https://oparl-demo.example.org/oparl/v1.1/membership/unresolved');
+
+-- Completed enrichment targets remain available for re-enrichment after another crawl
+INSERT INTO enrich_target
+    (id, raw_entity_id, entity_type, created_at, last_enriched_at, modified_at, reference_count)
+VALUES ('40000000-0000-4000-8000-000000000001', '10000000-0000-4000-8000-000000000001', 'LEGISLATIVE_TERM',
+        '2026-07-22 14:30:55.000000', '2026-07-22 14:30:55.000000', '2026-07-22 14:30:55.000000', 0);
+
+-- A location awaiting enrichment retains its original, unnormalized raw values
+UPDATE oparl_raw_location
+SET street_address = '  Rathausplatz 1  ', postal_code = '  12345  '
+WHERE id = '10000000-0000-4000-8000-000000000005';
+
+-- An existing enrichment can be updated without replacing its original creation timestamp
+INSERT INTO oparl_enriched_location
+    (id, override_street_address, street_address, override_postal_code, postal_code, override_room, room,
+     override_description, description, override_locality, locality, created, modified)
+VALUES ('10000000-0000-4000-8000-000000000005', true, 'Rathausplatz 1', true, '12345', false, null,
+        false, null, false, null, '2026-07-22 14:30:55.000000', '2026-07-22 14:30:55.000000');
