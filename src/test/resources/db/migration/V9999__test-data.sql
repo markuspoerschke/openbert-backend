@@ -273,6 +273,26 @@ VALUES ('0b30e64f-a824-4856-903f-63a81448fb70',
         'https://oparl-demo.example.org/oparl/v1.1/agendaitem/999',
         '2026-07-22 14:30:55.000000', '2026-07-22 14:30:55.000000', false);
 
+-- Files can infer their body through an agenda item that also references the file.
+INSERT INTO public.oparl_raw_agenda_item
+    (id, meeting_url, resolution_file_url, auxiliary_file_urls, name, keyword,
+     system_id, url, created, modified, deleted)
+VALUES ('70000000-0000-4000-8000-000000000001',
+        'https://oparl-demo.example.org/oparl/v1.1/meeting/999',
+        'https://oparl-demo.example.org/oparl/v1.1/file/agenda-back-reference',
+        '{"https://oparl-demo.example.org/oparl/v1.1/file/agenda-back-reference"}',
+        'Agenda item referencing its file', '{}', '9352fa21-68c6-4f4e-8832-08a0454ff179',
+        'https://oparl-demo.example.org/oparl/v1.1/agendaitem/file-back-reference',
+        '2026-07-22 14:30:55.000000', '2026-07-22 14:30:55.000000', false);
+
+INSERT INTO public.oparl_raw_file
+    (id, agenda_item_urls, name, keyword, system_id, url, created, modified, deleted)
+VALUES ('70000000-0000-4000-8000-000000000002',
+        '{"https://oparl-demo.example.org/oparl/v1.1/agendaitem/file-back-reference"}',
+        'File referencing its agenda item', '{}', '9352fa21-68c6-4f4e-8832-08a0454ff179',
+        'https://oparl-demo.example.org/oparl/v1.1/file/agenda-back-reference',
+        '2026-07-22 14:30:55.000000', '2026-07-22 14:30:55.000000', false);
+
 -- An unresolved meeting must not be exposed by the public API
 INSERT INTO public.oparl_raw_meeting (id, organization_urls, name, meeting_state, cancelled, start, "end", license,
                                       keyword, web, system_id, url, created, modified, deleted)

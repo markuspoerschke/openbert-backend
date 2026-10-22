@@ -32,6 +32,7 @@ import org.springframework.transaction.annotation.Transactional
 import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 
 @Import(TestcontainersConfiguration::class)
 @SpringBootTest
@@ -80,6 +81,42 @@ class RemainingResolversPersistenceTest(
 
         val resolvedConsultation = assertNotNull(consultationRepository.findByResource(consultation.resource))
         assertEquals(1, resolvedConsultation.organizations.size)
+    }
+
+    @Test
+    fun `resolves an agenda item whose raw file references it back`() {
+        val raw = resolve(RawAgendaItem::class.java, "70000000-0000-4000-8000-000000000001")
+        entityManager.flush()
+        entityManager.clear()
+
+        val resolved = assertNotNull(agendaItemRepository.findByResource(raw.resource))
+        val file = assertNotNull(resolved.resolutionFile)
+        assertEquals("File referencing its agenda item", file.name)
+        assertEquals(resolved.body.id, file.body.id)
+        assertEquals(listOf(file.id), resolved.auxiliaryFiles.map { it.id })
+    }
+
+    @Test
+    fun `infers a file body from an unresolved agenda item and reuses the file when resolving that item`() {
+        val raw = resolve(RawFile::class.java, "70000000-0000-4000-8000-000000000002")
+        entityManager.flush()
+        entityManager.clear()
+
+        val file = assertNotNull(fileRepository.findByResource(raw.resource))
+        assertEquals(UUID.fromString("903c26aa-dc8f-4d34-afd6-afdc5040dbd3"), file.body.id)
+        val rawAgendaItem = entityManager.find(
+            RawAgendaItem::class.java,
+            UUID.fromString("70000000-0000-4000-8000-000000000001"),
+        )
+        assertNull(agendaItemRepository.findByResource(rawAgendaItem.resource))
+
+        resolve(RawAgendaItem::class.java, rawAgendaItem.id.toString())
+        entityManager.flush()
+        entityManager.clear()
+
+        val resolved = assertNotNull(agendaItemRepository.findByResource(rawAgendaItem.resource))
+        assertEquals(file.id, resolved.resolutionFile?.id)
+        assertEquals(listOf(file.id), resolved.auxiliaryFiles.map { it.id })
     }
 
     private fun <T : AbstractOparlEntity> resolve(type: Class<T>, id: String): T {
