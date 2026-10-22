@@ -7,23 +7,22 @@ source "${SCRIPT_DIR}/common.sh"
 # GITHUB_TOKEN pushes do not generate push/PR workflows. workflow_dispatch does.
 # The completed Build is handled by workflow_run; no background polling process.
 trigger_ci_monitoring() {
-    local branch_name="$1" data
+    local branch_name="$1"
     is_dry_run && return 0
-    data=$(jq -n --arg ref "$branch_name" '{ref: $ref}')
-    github_api POST "/actions/workflows/test.yml/dispatches" "$data" > /dev/null
+    gh workflow run test.yml --repo "$GITHUB_REPO" --ref "$branch_name"
     log_info "Build dispatched for ${branch_name}"
 }
 
 find_pr_number() {
     local branch_name="$1" head
     head=$(jq -rn --arg head "${GITHUB_REPO%%/*}:${branch_name}" '$head | @uri')
-    github_api GET "/pulls?state=open&head=${head}" | jq -r '.[0].number // empty'
+    gh api "repos/${GITHUB_REPO}/pulls?state=open&head=${head}" | jq -r '.[0].number // empty'
 }
 
 # Attempt comments persist across runners, including failed repair executions.
 # All mutating Vibe workflows share one concurrency group.
 get_retry_comments() {
-    github_api_list "/issues/$1/comments" | jq -c '[.[] |
+    gh api --paginate "repos/${GITHUB_REPO}/issues/$1/comments?per_page=100" | jq -sc '[.[][] |
         select(.user.login == "github-actions[bot]" and
             (.body | startswith("<!-- vibe-ci-attempt:")))]'
 }
@@ -35,13 +34,13 @@ get_retry_count() {
 increment_retry_count() {
     local pr_number="$1" run_id="$2" attempt="$3" body
     printf -v body '<!-- vibe-ci-attempt:%s -->\nCI repair attempt %s for Build run %s.' "$run_id" "$attempt" "$run_id"
-    github_api POST "/issues/${pr_number}/comments" "$(jq -n --arg body "$body" '{body: $body}')" > /dev/null
+    add_pr_comment "$pr_number" "$body"
 }
 
 get_ci_failure_info() {
     local run_id="$1" jobs logs
-    jobs=$(github_api GET "/actions/runs/${run_id}/jobs?filter=latest&per_page=100")
-    logs=$(GH_TOKEN="$GITHUB_TOKEN" gh run view "$run_id" --repo "$GITHUB_REPO" --log-failed | tail -c 60000) || return 1
+    jobs=$(gh run view "$run_id" --repo "$GITHUB_REPO" --json jobs)
+    logs=$(gh run view "$run_id" --repo "$GITHUB_REPO" --log-failed | tail -c 60000) || return 1
     jq -n --argjson jobs "$jobs" --arg logs "$logs" \
         '{jobs: [$jobs.jobs[] | {name, conclusion, steps}], logs: $logs}'
 }
@@ -55,7 +54,7 @@ fix_ci_failure() {
 add_pr_comment() {
     local pr_number="$1" message="$2"
     is_dry_run && return 0
-    github_api POST "/issues/${pr_number}/comments" "$(jq -n --arg body "$message" '{body: $body}')" > /dev/null
+    gh pr comment "$pr_number" --repo "$GITHUB_REPO" --body-file - <<< "$message" > /dev/null
 }
 
 run_ci_monitor() {
@@ -64,7 +63,7 @@ run_ci_monitor() {
     is_vibe_branch "$branch" || { log_info "Not a Vibe branch; skipping"; return 0; }
     require_number "Build run ID" "$run_id"
     # Revalidate server-side data before checking out or executing branch code.
-    run=$(github_api GET "/actions/runs/${run_id}")
+    run=$(gh api "repos/${GITHUB_REPO}/actions/runs/${run_id}")
     if ! jq -e --arg repo "$GITHUB_REPO" --arg branch "$branch" \
         '.head_repository.full_name == $repo and .head_branch == $branch and
          .path == ".github/workflows/test.yml" and .conclusion == "failure"' <<< "$run" > /dev/null; then

@@ -59,46 +59,19 @@ create_draft_pr() {
     local pr_title
     pr_title="vibe: ${issue_title}"
     
-    # Create PR via GitHub API
-    local pr_data
-    pr_data=$(jq -n \
-        --arg title "$pr_title" \
-        --arg body "$pr_body" \
-        --arg head "$branch_name" \
-        --arg base "main" \
-        --argjson draft true \
-        '{
-            title: $title,
-            body: $body,
-            head: $head,
-            base: $base,
-            draft: $draft
-        }')
-    
-    debug_log "PR data: ${pr_data}"
-    
-    local response
-    response=$(github_api POST "/pulls" "${pr_data}") || return 1
-    
-    debug_log "PR response: ${response}"
-    
     local pr_url
-    pr_url=$(echo "$response" | jq -r '.html_url')
-    
-    if [[ -z "$pr_url" || "$pr_url" == "null" ]]; then
-        log_error "Failed to create PR"
-        log_error "Response: ${response}"
-        return 1
-    fi
-    
+    pr_url=$(gh pr create --repo "$GITHUB_REPO" --head "$branch_name" \
+        --base main --draft --title "$pr_title" --body-file - <<< "$pr_body") || return 1
+    [[ -n "$pr_url" ]] || { log_error "Failed to create PR"; return 1; }
+
     log_info "Draft PR created: ${pr_url}"
     
     # Add comment to original issue
     local comment_body
     printf -v comment_body "I've created a draft PR to implement this issue: %s\n\nPlease review and let me know if any changes are needed." "$pr_url"
     
-    github_api POST "/issues/${issue_number}/comments" \
-        "$(jq -n --arg body "$comment_body" '{body: $body}')" > /dev/null 2>&1 || true
+    gh issue comment "$issue_number" --repo "$GITHUB_REPO" --body-file - \
+        <<< "$comment_body" > /dev/null || log_warn "Could not comment on issue #${issue_number}"
     
     echo "$pr_url"
     return 0

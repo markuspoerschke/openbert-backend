@@ -53,14 +53,19 @@ select_issue() {
 
 # List all open issues with 'vibe' label
 list_vibe_issues() {
-    github_api_list "/issues?state=open&labels=vibe" | \
-        jq -c '.[] | select(.pull_request == null or .pull_request == "") | {number, title, created_at, labels}'
+    gh api --paginate "repos/${GITHUB_REPO}/issues?state=open&labels=vibe&per_page=100" | \
+        jq -c '.[] | select(.pull_request == null) | {number, title, created_at, labels}'
+}
+
+# gh issue/pr list impose result limits; API pagination exhausts the collection.
+list_open_prs() {
+    gh api --paginate "repos/${GITHUB_REPO}/pulls?state=open&per_page=100" | jq -s 'add'
 }
 
 # Check if there's an active PR for a vibe issue
 has_active_vibe_pr() {
     local prs
-    prs=$(github_api_list "/pulls?state=open") || return 2
+    prs=$(list_open_prs) || return 2
     
     local count
     count=$(echo "$prs" | jq -r '[.[] | select(.head.ref | startswith("vibe/"))] | length') || return 2
@@ -78,7 +83,7 @@ has_vibe_pr_for_issue() {
     local issue_number="$1"
     local prs
     
-    prs=$(github_api_list "/pulls?state=open") || return 2
+    prs=$(list_open_prs) || return 2
     
     local count
     count=$(echo "$prs" | jq -r "[.[] | select(.head.ref | startswith(\"vibe/${issue_number}-\"))] | length") || return 2
@@ -91,7 +96,7 @@ issue_has_vibe_label() {
     local issue_number="$1"
     local issue
     
-    issue=$(github_api GET "/issues/${issue_number}")
+    issue=$(gh issue view "$issue_number" --repo "$GITHUB_REPO" --json labels)
     
     echo "$issue" | jq -e '.labels[]?.name | select(. == "vibe")' > /dev/null 2>&1
 }
@@ -99,15 +104,9 @@ issue_has_vibe_label() {
 # Get issue details
 get_issue_details() {
     local issue_number="$1"
-    github_api GET "/issues/${issue_number}" | jq -c '. |
-        {
-            number: .number,
-            title: .title,
-            body: .body,
-            labels: [.labels[].name],
-            created_at: .created_at,
-            updated_at: .updated_at
-        }'
+    gh issue view "$issue_number" --repo "$GITHUB_REPO" \
+        --json number,title,body,labels,createdAt,updatedAt \
+        --jq '{number, title, body, labels: [.labels[].name], created_at: .createdAt, updated_at: .updatedAt}'
 }
 
 # Create a slug from issue title

@@ -31,7 +31,12 @@ Configure these under **Settings → Secrets and variables → Actions**:
 `contents: write`, `pull-requests: write`, `issues: write`, and `actions: write`.
 Issues write permission is needed for issue/PR conversation comments and retry
 tracking. Actions write permission is needed to dispatch Build explicitly.
-No PAT or GitHub App installation is required by these workflows.
+No PAT or GitHub App installation is required by these workflows. The preinstalled
+GitHub CLI (`gh`) handles repository access, issue and PR operations, comments,
+workflow dispatch, and build inspection. `gh api --paginate` retrieves complete
+collections, and `gh api` handles inline review endpoints. Custom HTTP request
+and pagination helpers are not needed. Locally, `GH_TOKEN` can be supplied instead
+of `GITHUB_TOKEN` and takes precedence when both are present.
 
 `VIBE_API_KEY` is exposed to Vibe as `MISTRAL_API_KEY`. The selected model is
 configured through a temporary `VIBE_HOME/config.toml`; credentials are not

@@ -41,6 +41,7 @@ runs:
     - name: Install dependencies and Mistral Vibe CLI
       shell: bash
       run: |
+        gh --version
         sudo apt-get update -qq
         sudo apt-get install -y -qq jq rsync
         python -m pip install 'mistral-vibe==3.0.1'

@@ -31,29 +31,10 @@ VIBE_TIMEOUT_MINUTES="${VIBE_TIMEOUT_MINUTES:-30}"
 VIBE_DEBUG="${VIBE_DEBUG:-false}"
 DRY_RUN="${DRY_RUN:-false}"
 
-# GitHub API helpers
-GITHUB_API="${GITHUB_API_URL:-https://api.github.com}"
+# GitHub CLI handles authentication, request errors, and API pagination.
+# Keep the Actions-provided token as the fallback for local GH_TOKEN users.
+export GH_TOKEN="${GH_TOKEN:-$GITHUB_TOKEN}"
 GITHUB_REPO="${GITHUB_REPOSITORY:-}"
-
-github_api() {
-    local method="$1"
-    local endpoint="$2"
-    local data="${3:-}"
-    
-    local url="${GITHUB_API}/repos/${GITHUB_REPO}${endpoint}"
-    
-    local headers=(
-        "-H" "Authorization: token ${GITHUB_TOKEN}"
-        "-H" "Accept: application/vnd.github.v3+json"
-    )
-    
-    if [[ "$method" == "GET" ]]; then
-        curl --fail-with-body -sS "${headers[@]}" "$url"
-    else
-        headers+=("-H" "Content-Type: application/json")
-        curl --fail-with-body -sS -X "$method" "${headers[@]}" -d "$data" "$url"
-    fi
-}
 
 # Get repository info
 get_repo_info() {
@@ -73,14 +54,14 @@ validate_credentials() {
         exit 1
     fi
     
-    if [[ -z "$GITHUB_TOKEN" ]]; then
-        log_error "GITHUB_TOKEN is not set"
+    if [[ -z "$GH_TOKEN" ]]; then
+        log_error "GH_TOKEN or GITHUB_TOKEN must be set"
         exit 1
     fi
     
     # Test GitHub token
-    if ! github_api GET "" > /dev/null; then
-        log_error "GitHub token is invalid or expired"
+    if ! gh repo view "$GITHUB_REPO" --json nameWithOwner > /dev/null; then
+        log_error "GitHub repository access failed"
         exit 1
     fi
 }
@@ -96,18 +77,6 @@ debug_log() {
         echo "[DEBUG] $1" >&2
         echo "[DEBUG] $(date '+%Y-%m-%d %H:%M:%S') - $1" >> "$LOGFILE"
     fi
-}
-
-# Fetch array endpoints across all pages without corrupting JSON strings.
-github_api_list() {
-    local endpoint="$1" page=1 response separator='?'
-    [[ "$endpoint" != *'?'* ]] || separator='&'
-    while :; do
-        response=$(github_api GET "${endpoint}${separator}per_page=100&page=${page}") || return 1
-        jq -c '.[]' <<< "$response"
-        [[ $(jq 'length' <<< "$response") -eq 100 ]] || break
-        page=$((page + 1))
-    done | jq -s '.'
 }
 
 require_number() {

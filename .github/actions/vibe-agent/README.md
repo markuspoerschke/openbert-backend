@@ -28,6 +28,12 @@ commits them, pushes the branch, then creates a draft PR or posts a response.
 Build is explicitly dispatched because pushes made with `GITHUB_TOKEN` do not
 trigger ordinary push/PR workflows.
 
+GitHub operations use the runner's preinstalled `gh`: issue/PR views, draft PR
+creation, comments, workflow dispatch, and build logs use native commands.
+Inline review endpoints, run provenance, and collection listings use `gh api`;
+`--paginate` exhausts collections without the list commands' default result limit.
+`GH_TOKEN` takes precedence, with the Actions `GITHUB_TOKEN` as its fallback.
+
 ## Configuration
 
 | Environment variable | Default |
@@ -55,7 +61,7 @@ accept repository owners, members, collaborators, and the configured Codex revie
 
 ## Validation
 
-On Linux with Bash, Python 3.12+, Git, curl, jq, and rsync:
+On Linux with Bash, Python 3.12+, Git, GitHub CLI (`gh`), jq, and rsync:
 
 ```bash
 python3 -m unittest discover -s .github/actions/vibe-agent/tests -v
@@ -64,5 +70,7 @@ actionlint .github/workflows/vibe-agent-*.yml .github/workflows/test.yml
 ```
 
 Tests use a local HTTP server, temporary Git repositories and a fake Vibe CLI.
+Native GitHub CLI commands use fixtures; `gh api` uses the installed CLI against
+that local server, including pagination and HTTP errors.
 They do not call Mistral or write to GitHub. The Build workflow runs the regression
 suite alongside the application build.

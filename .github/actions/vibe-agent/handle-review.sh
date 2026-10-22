@@ -41,15 +41,15 @@ handle_review_comment() {
 get_comment_details() {
     local comment_id="$2"
     if [[ "${VIBE_COMMENT_KIND:-${GITHUB_EVENT_NAME:-pull_request_review_comment}}" == issue_comment ]]; then
-        github_api GET "/issues/comments/${comment_id}"
+        gh api "repos/${GITHUB_REPO}/issues/comments/${comment_id}"
     else
-        github_api GET "/pulls/comments/${comment_id}"
+        gh api "repos/${GITHUB_REPO}/pulls/comments/${comment_id}"
     fi
 }
 
 get_pr_branch() {
-    github_api GET "/pulls/$1" | jq -r --arg repo "$GITHUB_REPO" \
-        'select(.state == "open" and .head.repo.full_name == $repo) | .head.ref'
+    gh pr view "$1" --repo "$GITHUB_REPO" --json state,headRefName,isCrossRepository \
+        --jq 'select(.state == "OPEN" and .isCrossRepository == false) | .headRefName'
 }
 
 is_vibe_branch() {
@@ -155,11 +155,10 @@ add_comment_response() {
         return 0
     fi
     
-    local response_data
-    response_data=$(jq -n --arg body "$message" '{body: $body}')
     if [[ "${VIBE_COMMENT_KIND:-${GITHUB_EVENT_NAME:-pull_request_review_comment}}" == issue_comment ]]; then
-        github_api POST "/issues/${pr_number}/comments" "$response_data" > /dev/null
+        gh pr comment "$pr_number" --repo "$GITHUB_REPO" --body-file - <<< "$message" > /dev/null
     else
-        github_api POST "/pulls/${pr_number}/comments/${comment_id}/replies" "$response_data" > /dev/null
+        gh api --method POST "repos/${GITHUB_REPO}/pulls/${pr_number}/comments/${comment_id}/replies" \
+            --raw-field "body=$message" > /dev/null
     fi
 }
