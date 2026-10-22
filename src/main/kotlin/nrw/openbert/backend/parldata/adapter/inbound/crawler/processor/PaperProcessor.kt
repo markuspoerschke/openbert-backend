@@ -24,7 +24,7 @@ class PaperProcessor(
 
     override fun saveEntity(entity: RawPaper) = rawPaperRepository.save(entity)
 
-    override fun process(resource: OparlResource, dto: OparlPaperDto): RawPaper {
+    override fun processRelationships(resource: OparlResource, dto: OparlPaperDto) {
         enqueueUrls(resource, OparlType.BODY, dto.body)
         enqueueUrls(resource, OparlType.PAPER, dto.relatedPaper.orEmpty())
         enqueueUrls(resource, OparlType.PAPER, dto.superordinatedPaper.orEmpty())
@@ -32,17 +32,10 @@ class PaperProcessor(
         enqueueUrls(resource, OparlType.PERSON, dto.originatorPerson.orEmpty())
         enqueueUrls(resource, OparlType.ORGANIZATION, dto.underDirectionOf.orEmpty())
         enqueueUrls(resource, OparlType.ORGANIZATION, dto.originatorOrganization.orEmpty())
-        processInline(resource, dto.mainFile, fileProcessor)
-            ?.paperUrls
-            ?.addUrl(resource.url)
-        processInline(resource, dto.auxiliaryFile, fileProcessor)
-            .forEach { it.paperUrls.addUrl(resource.url) }
-        processInline(resource, dto.location, locationProcessor)
-            .forEach { it.paperUrls.addUrl(resource.url) }
-        processInline(resource, dto.consultation, consultationProcessor)
-            .forEach { it.paperUrl = resource.url }
-
-        return super.process(resource, dto)
+        processInline(resource, dto.mainFile, fileProcessor) { it.paperUrls.addUrl(resource.url) }
+        processInline(resource, dto.auxiliaryFile, fileProcessor) { it.paperUrls.addUrl(resource.url) }
+        processInline(resource, dto.location, locationProcessor) { it.paperUrls.addUrl(resource.url) }
+        processInline(resource, dto.consultation, consultationProcessor) { it.paperUrl = resource.url }
     }
 
     override fun updateEntity(entity: RawPaper, dto: OparlPaperDto) {

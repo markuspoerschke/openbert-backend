@@ -21,17 +21,39 @@ abstract class AbstractProcessor<D : OparlObjectDto, E : AbstractOparlEntity>(
     protected abstract fun updateEntity(entity: E, dto: D)
 
     protected abstract fun saveEntity(entity: E): E
+    protected abstract fun processRelationships(resource: OparlResource, dto: D)
 
     @Transactional
     open fun process(resource: OparlResource, dto: D): E {
         logger.info("Processing OParl resource {}", resource.url.value)
 
         val entity = findOrCreate(resource)
+        processRelationships(resource, dto)
         updateEntity(entity, dto)
         val savedEntity = saveEntity(entity)
 
         enrichTargetEnqueuer.enqueue(savedEntity)
         crawlTargetEnqueuer.markAsCrawled(resource)
+
+        return savedEntity
+    }
+
+    /**
+     * List representations may omit fields, including references to their parent.
+     * Use them only to seed new entities; only fetching the entity URL completes a crawl.
+     */
+    @Transactional
+    open fun processEmbedded(resource: OparlResource, dto: D, initialize: (E) -> Unit = {}): E {
+        findEntity(resource)?.let { return it }
+
+        val entity = createEntity(resource)
+        processRelationships(resource, dto)
+        updateEntity(entity, dto)
+        initialize(entity)
+        val savedEntity = saveEntity(entity)
+
+        enrichTargetEnqueuer.enqueue(savedEntity)
+        crawlTargetEnqueuer.enqueue(resource, savedEntity.getType())
 
         return savedEntity
     }
@@ -61,13 +83,14 @@ abstract class AbstractProcessor<D : OparlObjectDto, E : AbstractOparlEntity>(
         source: OparlResource,
         dto: EmbeddedDto?,
         processor: AbstractProcessor<EmbeddedDto, EmbeddedEntity>,
+        initialize: (EmbeddedEntity) -> Unit,
     ): EmbeddedEntity? {
         if (dto == null) {
             return null
         }
 
         val url = requireNotNull(dto.id) { "Inline OParl object has no id" }
-        return processor.process(source.withUrl(url), dto)
+        return processor.processEmbedded(source.withUrl(url), dto, initialize)
     }
 
     protected fun <
@@ -77,7 +100,8 @@ abstract class AbstractProcessor<D : OparlObjectDto, E : AbstractOparlEntity>(
         source: OparlResource,
         dtos: Iterable<EmbeddedDto>?,
         processor: AbstractProcessor<EmbeddedDto, EmbeddedEntity>,
-    ): List<EmbeddedEntity> = dtos?.mapNotNull { processInline(source, it, processor) }.orEmpty()
+        initialize: (EmbeddedEntity) -> Unit,
+    ): List<EmbeddedEntity> = dtos?.mapNotNull { processInline(source, it, processor, initialize) }.orEmpty()
 
     protected fun MutableList<String>.addUrl(url: OparlUrl) {
         if (url.value !in this) add(url.value)

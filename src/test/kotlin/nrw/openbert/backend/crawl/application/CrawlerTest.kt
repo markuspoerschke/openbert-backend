@@ -28,6 +28,7 @@ import nrw.openbert.backend.parldata.adapter.outbound.client.oparl.dto.OparlList
 import nrw.openbert.backend.parldata.adapter.outbound.client.oparl.dto.OparlLocationDto
 import nrw.openbert.backend.parldata.adapter.outbound.client.oparl.dto.OparlMeetingDto
 import nrw.openbert.backend.parldata.adapter.outbound.client.oparl.dto.OparlMembershipDto
+import nrw.openbert.backend.parldata.adapter.outbound.client.oparl.dto.OparlObjectDto
 import nrw.openbert.backend.parldata.adapter.outbound.client.oparl.dto.OparlOrganizationDto
 import nrw.openbert.backend.parldata.adapter.outbound.client.oparl.dto.OparlPaperDto
 import nrw.openbert.backend.parldata.adapter.outbound.client.oparl.dto.OparlPersonDto
@@ -39,6 +40,7 @@ import nrw.openbert.backend.parldata.domain.valueObject.OparlUrl
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.doThrow
 import org.mockito.Mockito.mock
+import org.mockito.Mockito.mockingDetails
 import org.mockito.Mockito.never
 import org.mockito.Mockito.verify
 import java.time.Instant
@@ -51,7 +53,7 @@ import kotlin.test.assertNull
 
 class CrawlerTest {
     @Test
-    fun `dispatches every object in an OParl list and marks the target as crawled`() {
+    fun `dispatches every list item as embedded and marks only the list as crawled`() {
         val fixture = Fixture()
         val target = fixture.target("https://oparl.example.org/objects")
         val targetUrl = target.resource.url.value
@@ -91,18 +93,18 @@ class CrawlerTest {
 
         fixture.crawler.run(target.id)
 
-        verify(fixture.agendaItemProcessor).process(fixture.resource(agendaItem.id!!), agendaItem)
-        verify(fixture.bodyProcessor).process(fixture.resource(body.id!!), body)
-        verify(fixture.consultationProcessor).process(fixture.resource(consultation.id!!), consultation)
-        verify(fixture.fileProcessor).process(fixture.resource(file.id!!), file)
-        verify(fixture.legislativeTermProcessor).process(fixture.resource(legislativeTerm.id!!), legislativeTerm)
-        verify(fixture.locationProcessor).process(fixture.resource(location.id!!), location)
-        verify(fixture.meetingProcessor).process(fixture.resource(meeting.id!!), meeting)
-        verify(fixture.membershipProcessor).process(fixture.resource(membership.id!!), membership)
-        verify(fixture.organizationProcessor).process(fixture.resource(organization.id!!), organization)
-        verify(fixture.paperProcessor).process(fixture.resource(paper.id!!), paper)
-        verify(fixture.personProcessor).process(fixture.resource(person.id!!), person)
-        verify(fixture.systemProcessor).process(fixture.resource(systemDto.id!!), systemDto)
+        verifyEmbedded(fixture.agendaItemProcessor, fixture.resource(agendaItem.id!!), agendaItem)
+        verifyEmbedded(fixture.bodyProcessor, fixture.resource(body.id!!), body)
+        verifyEmbedded(fixture.consultationProcessor, fixture.resource(consultation.id!!), consultation)
+        verifyEmbedded(fixture.fileProcessor, fixture.resource(file.id!!), file)
+        verifyEmbedded(fixture.legislativeTermProcessor, fixture.resource(legislativeTerm.id!!), legislativeTerm)
+        verifyEmbedded(fixture.locationProcessor, fixture.resource(location.id!!), location)
+        verifyEmbedded(fixture.meetingProcessor, fixture.resource(meeting.id!!), meeting)
+        verifyEmbedded(fixture.membershipProcessor, fixture.resource(membership.id!!), membership)
+        verifyEmbedded(fixture.organizationProcessor, fixture.resource(organization.id!!), organization)
+        verifyEmbedded(fixture.paperProcessor, fixture.resource(paper.id!!), paper)
+        verifyEmbedded(fixture.personProcessor, fixture.resource(person.id!!), person)
+        verifyEmbedded(fixture.systemProcessor, fixture.resource(systemDto.id!!), systemDto)
         verify(fixture.crawlTargetEnqueuer).enqueue(fixture.resource(nextPage), OparlType.AGENDA_ITEM)
         assertNotNull(target.lastCrawledAt)
         assertEquals(0, target.referenceCount)
@@ -147,6 +149,14 @@ class CrawlerTest {
         assertNotNull(target.scheduledAt)
         assertNotNull(target.jobId)
         verify(fixture.crawlTargetRepository, never()).save(target)
+    }
+
+    private fun verifyEmbedded(processor: Any, resource: OparlResource, dto: OparlObjectDto) {
+        val invocations = mockingDetails(processor).invocations
+        assertEquals(1, invocations.count {
+            it.method.name == "processEmbedded" && it.arguments[0] == resource && it.arguments[1] == dto
+        })
+        assertEquals(0, invocations.count { it.method.name == "process" })
     }
 
     private class Fixture {

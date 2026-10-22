@@ -22,10 +22,8 @@ class LegislativeTermProcessor(
 
     override fun saveEntity(entity: RawLegislativeTerm) = rawLegislativeTermRepository.save(entity)
 
-    override fun process(resource: OparlResource, dto: OparlLegislativeTermDto): RawLegislativeTerm {
+    override fun processRelationships(resource: OparlResource, dto: OparlLegislativeTermDto) {
         enqueueUrls(resource, OparlType.BODY, dto.body)
-
-        return super.process(resource, dto)
     }
 
     override fun updateEntity(entity: RawLegislativeTerm, dto: OparlLegislativeTermDto) {

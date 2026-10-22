@@ -22,11 +22,9 @@ class MembershipProcessor(
 
     override fun saveEntity(entity: RawMembership) = rawMembershipRepository.save(entity)
 
-    override fun process(resource: OparlResource, dto: OparlMembershipDto): RawMembership {
+    override fun processRelationships(resource: OparlResource, dto: OparlMembershipDto) {
         enqueueUrls(resource, OparlType.PERSON, dto.person)
         enqueueUrls(resource, OparlType.ORGANIZATION, dto.organization, dto.onBehalfOf)
-
-        return super.process(resource, dto)
     }
 
     override fun updateEntity(entity: RawMembership, dto: OparlMembershipDto) {

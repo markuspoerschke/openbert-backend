@@ -23,17 +23,13 @@ class OrganizationProcessor(
 
     override fun saveEntity(entity: RawOrganization) = rawOrganizationRepository.save(entity)
 
-    override fun process(resource: OparlResource, dto: OparlOrganizationDto): RawOrganization {
+    override fun processRelationships(resource: OparlResource, dto: OparlOrganizationDto) {
         enqueueUrls(resource, OparlType.BODY, dto.body, dto.externalBody)
         enqueueUrls(resource, OparlType.MEETING, dto.meeting)
         enqueueUrls(resource, OparlType.CONSULTATION, dto.consultation)
         enqueueUrls(resource, OparlType.ORGANIZATION, dto.subOrganizationOf)
         enqueueUrls(resource, OparlType.MEMBERSHIP, dto.membership.orEmpty())
-        processInline(resource, dto.location, locationProcessor)
-            ?.organizationUrls
-            ?.addUrl(resource.url)
-
-        return super.process(resource, dto)
+        processInline(resource, dto.location, locationProcessor) { it.organizationUrls.addUrl(resource.url) }
     }
 
     override fun updateEntity(entity: RawOrganization, dto: OparlOrganizationDto) {

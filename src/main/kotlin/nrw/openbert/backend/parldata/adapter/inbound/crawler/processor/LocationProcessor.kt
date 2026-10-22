@@ -21,14 +21,12 @@ class LocationProcessor(
 
     override fun saveEntity(entity: RawLocation) = rawLocationRepository.save(entity)
 
-    override fun process(resource: OparlResource, dto: OparlLocationDto): RawLocation {
+    override fun processRelationships(resource: OparlResource, dto: OparlLocationDto) {
         enqueueUrls(resource, OparlType.BODY, dto.bodies.orEmpty())
         enqueueUrls(resource, OparlType.ORGANIZATION, dto.organizations.orEmpty())
         enqueueUrls(resource, OparlType.PERSON, dto.persons.orEmpty())
         enqueueUrls(resource, OparlType.MEETING, dto.meetings.orEmpty())
         enqueueUrls(resource, OparlType.PAPER, dto.papers.orEmpty())
-
-        return super.process(resource, dto)
     }
 
     override fun updateEntity(entity: RawLocation, dto: OparlLocationDto) {

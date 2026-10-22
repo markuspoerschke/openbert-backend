@@ -23,16 +23,11 @@ class AgendaItemProcessor(
 
     override fun saveEntity(entity: RawAgendaItem) = rawAgendaItemRepository.save(entity)
 
-    override fun process(resource: OparlResource, dto: OparlAgendaItemDto): RawAgendaItem {
+    override fun processRelationships(resource: OparlResource, dto: OparlAgendaItemDto) {
         enqueueUrls(resource, OparlType.MEETING, dto.meeting)
         enqueueUrls(resource, OparlType.CONSULTATION, dto.consultation)
-        processInline(resource, dto.resolutionFile, fileProcessor)
-            ?.agendaItemUrls
-            ?.addUrl(resource.url)
-        processInline(resource, dto.auxiliaryFile, fileProcessor)
-            .forEach { it.agendaItemUrls.addUrl(resource.url) }
-
-        return super.process(resource, dto)
+        processInline(resource, dto.resolutionFile, fileProcessor) { it.agendaItemUrls.addUrl(resource.url) }
+        processInline(resource, dto.auxiliaryFile, fileProcessor) { it.agendaItemUrls.addUrl(resource.url) }
     }
 
     override fun updateEntity(entity: RawAgendaItem, dto: OparlAgendaItemDto) {
