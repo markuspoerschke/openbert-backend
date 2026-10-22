@@ -22,5 +22,10 @@ jobs:
           java-version: "21"
           cache: gradle
 
+      - name: Verify Java version
+        run: java -version && echo "JAVA_HOME=$JAVA_HOME"
+
       - name: Build and test
         run: ./gradlew build --no-daemon
+        env:
+          JAVA_HOME: ${{ env.JAVA_HOME_21_X64 }}
