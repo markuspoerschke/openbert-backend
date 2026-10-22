@@ -24,7 +24,7 @@ class BodyProcessor(
 
     override fun saveEntity(entity: RawBody) = rawBodyRepository.save(entity)
 
-    override fun process(resource: OparlResource, dto: OparlBodyDto): RawBody {
+    override fun processRelationships(resource: OparlResource, dto: OparlBodyDto) {
         enqueueUrls(resource, OparlType.SYSTEM, dto.system)
         enqueueUrls(resource, OparlType.ORGANIZATION, dto.organization)
         enqueueUrls(resource, OparlType.PERSON, dto.person)
@@ -37,13 +37,8 @@ class BodyProcessor(
         enqueueUrls(resource, OparlType.LEGISLATIVE_TERM, dto.legislativeTermList)
         enqueueUrls(resource, OparlType.MEMBERSHIP, dto.membership)
         enqueueUrls(resource, OparlType.BODY, dto.equivalent.orEmpty())
-        processInline(resource, dto.legislativeTerm, legislativeTermProcessor)
-            .forEach { it.bodyUrl = resource.url }
-        processInline(resource, dto.location, locationProcessor)
-            ?.bodyUrls
-            ?.addUrl(resource.url)
-
-        return super.process(resource, dto)
+        processInline(resource, dto.legislativeTerm, legislativeTermProcessor) { it.bodyUrl = resource.url }
+        processInline(resource, dto.location, locationProcessor) { it.bodyUrls.addUrl(resource.url) }
     }
 
     override fun updateEntity(entity: RawBody, dto: OparlBodyDto) {

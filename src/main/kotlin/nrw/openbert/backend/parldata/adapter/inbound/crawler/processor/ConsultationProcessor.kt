@@ -22,13 +22,11 @@ class ConsultationProcessor(
 
     override fun saveEntity(entity: RawConsultation) = rawConsultationRepository.save(entity)
 
-    override fun process(resource: OparlResource, dto: OparlConsultationDto): RawConsultation {
+    override fun processRelationships(resource: OparlResource, dto: OparlConsultationDto) {
         enqueueUrls(resource, OparlType.PAPER, dto.paper)
         enqueueUrls(resource, OparlType.AGENDA_ITEM, dto.agendaItem)
         enqueueUrls(resource, OparlType.MEETING, dto.meeting)
         enqueueUrls(resource, OparlType.ORGANIZATION, dto.organization.orEmpty())
-
-        return super.process(resource, dto)
     }
 
     override fun updateEntity(entity: RawConsultation, dto: OparlConsultationDto) {

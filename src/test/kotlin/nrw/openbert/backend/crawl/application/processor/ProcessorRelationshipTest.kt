@@ -21,6 +21,7 @@ import nrw.openbert.backend.parldata.adapter.outbound.client.oparl.dto.OparlLegi
 import nrw.openbert.backend.parldata.adapter.outbound.client.oparl.dto.OparlLocationDto
 import nrw.openbert.backend.parldata.adapter.outbound.client.oparl.dto.OparlMeetingDto
 import nrw.openbert.backend.parldata.adapter.outbound.client.oparl.dto.OparlMembershipDto
+import nrw.openbert.backend.parldata.adapter.outbound.client.oparl.dto.OparlObjectDto
 import nrw.openbert.backend.parldata.adapter.outbound.client.oparl.dto.OparlOrganizationDto
 import nrw.openbert.backend.parldata.adapter.outbound.client.oparl.dto.OparlPaperDto
 import nrw.openbert.backend.parldata.adapter.outbound.client.oparl.dto.OparlPersonDto
@@ -183,7 +184,7 @@ class ProcessorRelationshipTest {
     }
 
     @Test
-    fun `processes every inline relationship immediately`() {
+    fun `processes every inline relationship through create-only processing`() {
         val resolutionFile = OparlFileDto(id = inlineUrl("agenda-resolution"))
         val agendaAuxiliaryFile = OparlFileDto(id = inlineUrl("agenda-auxiliary"))
         agendaItemProcessor().process(
@@ -252,23 +253,31 @@ class ProcessorRelationshipTest {
             ),
         )
 
-        verify(fileProcessor).process(resource(resolutionFile.id!!), resolutionFile)
-        verify(fileProcessor).process(resource(agendaAuxiliaryFile.id!!), agendaAuxiliaryFile)
-        verify(legislativeTermProcessor).process(resource(legislativeTerm.id!!), legislativeTerm)
-        verify(locationProcessor).process(resource(bodyLocation.id!!), bodyLocation)
-        verify(locationProcessor).process(resource(meetingLocation.id!!), meetingLocation)
-        verify(fileProcessor).process(resource(invitation.id!!), invitation)
-        verify(fileProcessor).process(resource(resultsProtocol.id!!), resultsProtocol)
-        verify(fileProcessor).process(resource(verbatimProtocol.id!!), verbatimProtocol)
-        verify(fileProcessor).process(resource(meetingAuxiliaryFile.id!!), meetingAuxiliaryFile)
-        verify(agendaItemProcessor).process(resource(agendaItem.id!!), agendaItem)
-        verify(locationProcessor).process(resource(organizationLocation.id!!), organizationLocation)
-        verify(fileProcessor).process(resource(mainFile.id!!), mainFile)
-        verify(fileProcessor).process(resource(paperAuxiliaryFile.id!!), paperAuxiliaryFile)
-        verify(locationProcessor).process(resource(paperLocation.id!!), paperLocation)
-        verify(consultationProcessor).process(resource(consultation.id!!), consultation)
-        verify(locationProcessor).process(resource(personLocation.id!!), personLocation)
-        verify(membershipProcessor).process(resource(membership.id!!), membership)
+        verifyEmbedded(fileProcessor, resource(resolutionFile.id!!), resolutionFile)
+        verifyEmbedded(fileProcessor, resource(agendaAuxiliaryFile.id!!), agendaAuxiliaryFile)
+        verifyEmbedded(legislativeTermProcessor, resource(legislativeTerm.id!!), legislativeTerm)
+        verifyEmbedded(locationProcessor, resource(bodyLocation.id!!), bodyLocation)
+        verifyEmbedded(locationProcessor, resource(meetingLocation.id!!), meetingLocation)
+        verifyEmbedded(fileProcessor, resource(invitation.id!!), invitation)
+        verifyEmbedded(fileProcessor, resource(resultsProtocol.id!!), resultsProtocol)
+        verifyEmbedded(fileProcessor, resource(verbatimProtocol.id!!), verbatimProtocol)
+        verifyEmbedded(fileProcessor, resource(meetingAuxiliaryFile.id!!), meetingAuxiliaryFile)
+        verifyEmbedded(agendaItemProcessor, resource(agendaItem.id!!), agendaItem)
+        verifyEmbedded(locationProcessor, resource(organizationLocation.id!!), organizationLocation)
+        verifyEmbedded(fileProcessor, resource(mainFile.id!!), mainFile)
+        verifyEmbedded(fileProcessor, resource(paperAuxiliaryFile.id!!), paperAuxiliaryFile)
+        verifyEmbedded(locationProcessor, resource(paperLocation.id!!), paperLocation)
+        verifyEmbedded(consultationProcessor, resource(consultation.id!!), consultation)
+        verifyEmbedded(locationProcessor, resource(personLocation.id!!), personLocation)
+        verifyEmbedded(membershipProcessor, resource(membership.id!!), membership)
+    }
+
+    private fun verifyEmbedded(processor: Any, resource: OparlResource, dto: OparlObjectDto) {
+        val invocations = mockingDetails(processor).invocations
+        assertEquals(1, invocations.count {
+            it.method.name == "processEmbedded" && it.arguments[0] == resource && it.arguments[1] == dto
+        })
+        assertEquals(0, invocations.count { it.method.name == "process" })
     }
 
     private fun agendaItemProcessor() = AgendaItemProcessor(

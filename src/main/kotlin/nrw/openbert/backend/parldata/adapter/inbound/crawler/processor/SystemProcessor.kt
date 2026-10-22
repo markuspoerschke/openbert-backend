@@ -22,10 +22,8 @@ class SystemProcessor(
 
     override fun saveEntity(entity: RawSystem) = rawSystemRepository.save(entity)
 
-    override fun process(resource: OparlResource, dto: OparlSystemDto): RawSystem {
+    override fun processRelationships(resource: OparlResource, dto: OparlSystemDto) {
         enqueueUrls(resource, OparlType.BODY, dto.body)
-
-        return super.process(resource, dto)
     }
 
     override fun updateEntity(entity: RawSystem, dto: OparlSystemDto) {

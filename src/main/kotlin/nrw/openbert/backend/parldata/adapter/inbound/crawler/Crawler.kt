@@ -1,6 +1,7 @@
 package nrw.openbert.backend.parldata.adapter.inbound.crawler
 
 import nrw.openbert.backend.parldata.adapter.inbound.crawler.processor.AgendaItemProcessor
+import nrw.openbert.backend.parldata.adapter.inbound.crawler.processor.AbstractProcessor
 import nrw.openbert.backend.parldata.adapter.inbound.crawler.processor.BodyProcessor
 import nrw.openbert.backend.parldata.adapter.inbound.crawler.processor.ConsultationProcessor
 import nrw.openbert.backend.parldata.adapter.inbound.crawler.processor.FileProcessor
@@ -89,7 +90,7 @@ class Crawler(
         when (response) {
             is OparlListDto -> {
                 response.data.orEmpty().forEach { dto ->
-                    process(dto, resource(system, requireNotNull(dto.id) { "OParl list item has no id" }))
+                    process(dto, resource(system, requireNotNull(dto.id) { "OParl list item has no id" }), embedded = true)
                 }
                 response.links?.next?.let { next ->
                     val listEntityType = entityType ?: response.data.orEmpty().firstOrNull()?.let(::entityTypeOf)
@@ -101,20 +102,33 @@ class Crawler(
         }
     }
 
-    private fun process(dto: OparlObjectDto, resource: OparlResource) {
+    private fun process(dto: OparlObjectDto, resource: OparlResource, embedded: Boolean = false) {
         when (dto) {
-            is OparlAgendaItemDto -> agendaItemProcessor.process(resource, dto)
-            is OparlBodyDto -> bodyProcessor.process(resource, dto)
-            is OparlConsultationDto -> consultationProcessor.process(resource, dto)
-            is OparlFileDto -> fileProcessor.process(resource, dto)
-            is OparlLegislativeTermDto -> legislativeTermProcessor.process(resource, dto)
-            is OparlLocationDto -> locationProcessor.process(resource, dto)
-            is OparlMeetingDto -> meetingProcessor.process(resource, dto)
-            is OparlMembershipDto -> membershipProcessor.process(resource, dto)
-            is OparlOrganizationDto -> organizationProcessor.process(resource, dto)
-            is OparlPaperDto -> paperProcessor.process(resource, dto)
-            is OparlPersonDto -> personProcessor.process(resource, dto)
-            is OparlSystemDto -> systemProcessor.process(resource, dto)
+            is OparlAgendaItemDto -> process(agendaItemProcessor, resource, dto, embedded)
+            is OparlBodyDto -> process(bodyProcessor, resource, dto, embedded)
+            is OparlConsultationDto -> process(consultationProcessor, resource, dto, embedded)
+            is OparlFileDto -> process(fileProcessor, resource, dto, embedded)
+            is OparlLegislativeTermDto -> process(legislativeTermProcessor, resource, dto, embedded)
+            is OparlLocationDto -> process(locationProcessor, resource, dto, embedded)
+            is OparlMeetingDto -> process(meetingProcessor, resource, dto, embedded)
+            is OparlMembershipDto -> process(membershipProcessor, resource, dto, embedded)
+            is OparlOrganizationDto -> process(organizationProcessor, resource, dto, embedded)
+            is OparlPaperDto -> process(paperProcessor, resource, dto, embedded)
+            is OparlPersonDto -> process(personProcessor, resource, dto, embedded)
+            is OparlSystemDto -> process(systemProcessor, resource, dto, embedded)
+        }
+    }
+
+    private fun <D : OparlObjectDto> process(
+        processor: AbstractProcessor<D, *>,
+        resource: OparlResource,
+        dto: D,
+        embedded: Boolean,
+    ) {
+        if (embedded) {
+            processor.processEmbedded(resource, dto)
+        } else {
+            processor.process(resource, dto)
         }
     }
 

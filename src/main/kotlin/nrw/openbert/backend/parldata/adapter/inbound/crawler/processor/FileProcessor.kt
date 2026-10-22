@@ -21,14 +21,12 @@ class FileProcessor(
 
     override fun saveEntity(entity: RawFile) = rawFileRepository.save(entity)
 
-    override fun process(resource: OparlResource, dto: OparlFileDto): RawFile {
+    override fun processRelationships(resource: OparlResource, dto: OparlFileDto) {
         enqueueUrls(resource, OparlType.FILE, dto.masterFile)
         enqueueUrls(resource, OparlType.FILE, dto.derivativeFile.orEmpty())
         enqueueUrls(resource, OparlType.MEETING, dto.meeting.orEmpty())
         enqueueUrls(resource, OparlType.AGENDA_ITEM, dto.agendaItem.orEmpty())
         enqueueUrls(resource, OparlType.PAPER, dto.paper.orEmpty())
-
-        return super.process(resource, dto)
     }
 
     override fun updateEntity(entity: RawFile, dto: OparlFileDto) {

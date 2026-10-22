@@ -24,28 +24,16 @@ class MeetingProcessor(
 
     override fun saveEntity(entity: RawMeeting) = rawMeetingRepository.save(entity)
 
-    override fun process(resource: OparlResource, dto: OparlMeetingDto): RawMeeting {
+    override fun processRelationships(resource: OparlResource, dto: OparlMeetingDto) {
         enqueueUrls(resource, OparlType.BODY, dto.body)
         enqueueUrls(resource, OparlType.ORGANIZATION, dto.organization.orEmpty())
         enqueueUrls(resource, OparlType.PERSON, dto.participant.orEmpty())
-        processInline(resource, dto.location, locationProcessor)
-            ?.meetingUrls
-            ?.addUrl(resource.url)
-        processInline(resource, dto.invitation, fileProcessor)
-            ?.meetingUrls
-            ?.addUrl(resource.url)
-        processInline(resource, dto.resultsProtocol, fileProcessor)
-            ?.meetingUrls
-            ?.addUrl(resource.url)
-        processInline(resource, dto.verbatimProtocol, fileProcessor)
-            ?.meetingUrls
-            ?.addUrl(resource.url)
-        processInline(resource, dto.auxiliaryFile, fileProcessor)
-            .forEach { it.meetingUrls.addUrl(resource.url) }
-        processInline(resource, dto.agendaItem, agendaItemProcessor)
-            .forEach { it.meetingUrl = resource.url }
-
-        return super.process(resource, dto)
+        processInline(resource, dto.location, locationProcessor) { it.meetingUrls.addUrl(resource.url) }
+        processInline(resource, dto.invitation, fileProcessor) { it.meetingUrls.addUrl(resource.url) }
+        processInline(resource, dto.resultsProtocol, fileProcessor) { it.meetingUrls.addUrl(resource.url) }
+        processInline(resource, dto.verbatimProtocol, fileProcessor) { it.meetingUrls.addUrl(resource.url) }
+        processInline(resource, dto.auxiliaryFile, fileProcessor) { it.meetingUrls.addUrl(resource.url) }
+        processInline(resource, dto.agendaItem, agendaItemProcessor) { it.meetingUrl = resource.url }
     }
 
     override fun updateEntity(entity: RawMeeting, dto: OparlMeetingDto) {
