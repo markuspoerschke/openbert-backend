@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Fixture adapter for native gh commands; gh api uses the real CLI locally.
+"""Fixture adapter for native commands and GraphQL; REST gh api uses the real CLI.
 
 Only test credentials and the test HTTP server are used. Reject unknown flags,
 record command arguments, and expose the native CLI's JSON field names.
@@ -19,14 +19,58 @@ body = sys.stdin.read() if '--body-file' in args else None
 with Path(os.environ['GH_TEST_CALLS']).open('a') as output:
     output.write(json.dumps({'args': args, 'stdin': body}) + '\n')
 
+
+def request_url(url, data=None, method=None):
+    payload = json.dumps(data).encode() if data is not None else None
+    try:
+        with urllib.request.urlopen(urllib.request.Request(url, data=payload, method=method)) as response:
+            content = response.read()
+            return json.loads(content) if content else None
+    except urllib.error.HTTPError as error:
+        print(f'gh: {error.code} {error.reason}', file=sys.stderr)
+        sys.exit(1)
+
+
+def graphql(query, variables):
+    data = request_url(os.environ['GH_TEST_API_URL'] + '/graphql', {'query': query, 'variables': variables})
+    if data.get('errors'):
+        print('gh: GraphQL: ' + json.dumps(data['errors']), file=sys.stderr)
+        sys.exit(1)
+    return data
+
+
+if args[:2] == ['project', 'item-edit']:
+    parser = argparse.ArgumentParser()
+    for flag in ['project-id', 'id', 'field-id', 'single-select-option-id']:
+        parser.add_argument('--' + flag, required=True)
+    options = parser.parse_args(args[2:])
+    graphql('mutation VibeProjectStatusUpdate($input: UpdateProjectV2ItemFieldValueInput!) '
+            '{ updateProjectV2ItemFieldValue(input: $input) { projectV2Item { id } } }',
+            {'input': {'projectId': options.project_id, 'itemId': options.id, 'fieldId': options.field_id,
+                       'value': {'singleSelectOptionId': options.single_select_option_id}}})
+    sys.exit(0)
+
 if args[0] == 'api':
     parser = argparse.ArgumentParser()
     parser.add_argument('endpoint')
     parser.add_argument('--paginate', action='store_true')
     parser.add_argument('--method')
     parser.add_argument('--raw-field', action='append')
+    parser.add_argument('--field', action='append')
     options = parser.parse_args(args[1:])
     endpoint = options.endpoint
+    if endpoint == 'graphql':
+        fields = dict(field.split('=', 1) for field in options.raw_field)
+        variables = dict(field.split('=', 1) for field in options.field)
+        variables = {key: json.loads(value) for key, value in variables.items()}
+        variables.update({key: value for key, value in fields.items() if key != 'query'})
+        while True:
+            data = graphql(fields['query'], variables)
+            print(json.dumps(data))
+            page = data['data']['repository']['issue']['projectItems']['pageInfo']
+            if not options.paginate or not page['hasNextPage']:
+                sys.exit(0)
+            variables['endCursor'] = page['endCursor']
     assert endpoint == 'user' or endpoint.startswith('repos/owner/repo/')
     args[args.index(endpoint)] = os.environ['GH_TEST_API_URL'] + '/' + endpoint
     os.execv(os.environ['GH_TEST_REAL_CLI'], ['gh', *args])
@@ -71,14 +115,7 @@ else:
 
 def request(path, data=None, method=None):
     url = os.environ['GH_TEST_API_URL'] + '/repos/owner/repo' + path
-    payload = json.dumps(data).encode() if data is not None else None
-    try:
-        with urllib.request.urlopen(urllib.request.Request(url, data=payload, method=method)) as response:
-            content = response.read()
-            return json.loads(content) if content else None
-    except urllib.error.HTTPError as error:
-        print(f'gh: {error.code} {error.reason}', file=sys.stderr)
-        sys.exit(1)
+    return request_url(url, data, method)
 
 
 def emit(data):

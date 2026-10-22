@@ -10,6 +10,8 @@ review feedback, and attempts CI repairs. A person must review and merge the PRs
 - Either permission for GitHub Actions to create pull requests, enabled in
   **Settings → Actions → General → Workflow permissions → Allow GitHub Actions
   to create and approve pull requests**, or a bot token configured below.
+- For Projects status updates, a bot PAT with the `project` scope and write
+  access to each linked project. Repository write access alone is insufficient.
 - The agent workflows and scripts merged into the default branch before using
   scheduled, review, or `workflow_run` triggers.
 
@@ -44,14 +46,21 @@ enable this setting. If it is disabled, PR creation fails with
 To publish as your dedicated GitHub bot account:
 
 1. Give the bot write access to this repository and accept the invitation.
-2. Sign in as the bot and create a personal access token. For a bot collaborating
-   on this personally owned repository, use a classic PAT with `repo` and
-   `workflow` scopes. The latter allows the agent to push workflow changes.
+2. Give the bot write access to the linked Projects board (for example,
+   **Openbert → Settings → Manage access**).
+3. Sign in as the bot and create a personal access token. For a bot collaborating
+   on this personally owned repository, use a classic PAT with `repo`,
+   `workflow`, and `project` scopes. These allow repository operations, workflow
+   changes, and Projects status updates respectively.
    GitHub currently does not support fine-grained PATs for outside/repository
    collaborators; see [GitHub's PAT limitations](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens#fine-grained-personal-access-tokens-limitations).
    Where fine-grained PATs are supported, grant this repository Contents,
    Pull requests, Issues, and Workflows write permissions, plus Actions read.
-3. Save that token as the repository Actions secret `VIBE_GITHUB_TOKEN`.
+4. Save that token as the repository Actions secret `VIBE_GITHUB_TOKEN`.
+
+The `project` scope allows Projects queries and mutations; `read:project` alone
+cannot update a status. The built-in `GITHUB_TOKEN` does not provide this Projects
+access. See [GitHub's Projects API authentication requirements](https://docs.github.com/en/issues/planning-and-tracking-with-projects/automating-your-project/using-the-api-to-manage-projects#authentication).
 
 All four agent workflows use the same selected token for checkout/Git pushes and
 GitHub CLI operations. A bot token takes precedence over `GH_TOKEN` and
@@ -79,14 +88,29 @@ written into the repository or passed as CLI arguments.
    **Actions → Vibe Agent - Manual → Run workflow**.
 3. Optionally supply an issue number. Without one, the oldest eligible issue
    is selected. A manual selection must also have the `vibe` label.
-4. Follow the start comment's Actions link while the issue is labeled `in progress`.
+4. Follow the start comment's Actions link. The Projects status becomes
+   **In Progress**, and the issue receives the temporary `in progress` label.
 5. Review the resulting draft PR and its Build results.
 
-The agent creates the `in progress` label when needed and posts its start comment
-before branch setup and Vibe execution. Existing label color/description are
-preserved. On exit it attempts to remove the label, including after failures and
+Before adding the label or posting its start comment, the agent reads all linked
+Projects items with `gh api graphql --paginate` and updates their `Status` field
+with `gh project item-edit`. Project, item, field, and option IDs are discovered
+automatically. It matches the **In Progress** option without case sensitivity.
+Archived items, closed projects, and items already in that status are skipped.
+An issue without visible active Projects items can still run; the agent does not
+add it to a project. The bot needs access to the board for it to be visible.
+
+If a Projects request fails or an active linked project has no matching Status
+field/option, the run stops before the start comment and Vibe execution. Correct
+the token scope, project access, or field configuration before retrying.
+
+The agent creates the `in progress` label when needed. Existing label color and
+description are preserved. On exit it attempts to remove the label, including after failures and
 catchable cancellation. Failures receive a comment linking back to the run; a
 successful implementation receives the existing draft-PR delivery comment.
+The Projects status remains **In Progress** after exit, including failures and
+cancellation, until a person or project automation changes it. Publishing a draft
+does not mean the issue is complete.
 
 The scheduled run skips selection while any `vibe/` PR is open. Manual runs skip
 an issue that already has an open Vibe PR. Branches use
