@@ -5,6 +5,7 @@ plugins {
     id("io.spring.dependency-management") version "1.1.7"
     id("org.asciidoctor.jvm.convert") version "4.0.5"
     kotlin("plugin.jpa") version "2.4.21"
+    id("io.gitlab.arturbosch.detekt") version "1.23.6"
 }
 
 group = "nrw.openbert"
@@ -13,7 +14,20 @@ description = "openbert-backend"
 
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(25)
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
+    compilerOptions {
+        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21)
+    }
+}
+
+kotlin {
+    compilerOptions {
+        jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21
+        freeCompilerArgs.add("-Xjsr305=strict")
     }
 }
 
@@ -52,6 +66,7 @@ dependencies {
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.1.1")
     implementation("org.springframework.ai:spring-ai-starter-mcp-server-webmvc:2.0.1")
     implementation("io.sentry:sentry-spring-boot-4:8.61.0")
+    detektPlugins("io.gitlab.arturbosch.detekt:detekt-formatting:1.23.6")
 }
 
 kotlin {
@@ -77,4 +92,24 @@ tasks.test {
 tasks.asciidoctor {
     inputs.dir(project.extra["snippetsDir"]!!)
     dependsOn(tasks.test)
+}
+
+
+
+// Ensure detekt runs as part of the check task
+// Detekt is disabled due to Kotlin version incompatibility with Java 25
+// tasks.named("check") {
+//     dependsOn("detekt")
+// }
+
+
+// Detekt configuration
+tasks.withType<io.gitlab.arturbosch.detekt.Detekt> {
+    buildUponDefaultConfig = true
+    config.setFrom("$rootDir/config/detekt/detekt.yml")
+    baseline = file("$rootDir/config/detekt/baseline.xml")
+}
+
+tasks.named("check") {
+    dependsOn("detekt")
 }

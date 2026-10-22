@@ -1,0 +1,47 @@
+# Default detekt configuration
+# See https://detekt.dev/docs/gettingstarted/configurations
+
+style:
+  active: true
+  WildcardImport:
+    active: true
+  MaxLineLength:
+    active: true
+    maxLineLength: 120
+  ReturnCount:
+    active: true
+    max: 2
+
+complexity:
+  active: true
+  LongMethod:
+    active: true
+    threshold: 20
+  TooManyFunctions:
+    active: true
+    thresholdInFiles: 10
+    thresholdInClasses: 10
+
+naming:
+  active: true
+  FunctionNaming:
+    active: true
+    functionPattern: '[a-z][a-zA-Z0-9]*'
+  ClassNaming:
+    active: true
+    classPattern: '[A-Z][a-zA-Z0-9]*'
+
+potential-bugs:
+  active: true
+  UnsafeCast:
+    active: true
+  LateinitUsage:
+    active: true
+
+formatting:
+  active: true
+  Indentation:
+    active: true
+    autoCorrect: true
+  NoWildcardImports:
+    active: true
