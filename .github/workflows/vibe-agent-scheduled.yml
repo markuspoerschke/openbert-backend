@@ -28,6 +28,7 @@ jobs:
     env:
       VIBE_API_KEY: ${{ secrets.VIBE_API_KEY }}
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      VIBE_GITHUB_TOKEN: ${{ secrets.VIBE_GITHUB_TOKEN }}
       VIBE_MODEL: ${{ secrets.VIBE_MODEL || 'mistral-large-latest' }}
       MAX_RETRIES: ${{ secrets.MAX_RETRIES || '3' }}
       VIBE_TIMEOUT_MINUTES: ${{ secrets.VIBE_TIMEOUT_MINUTES || '30' }}
@@ -38,6 +39,7 @@ jobs:
         uses: actions/checkout@v7
         with:
           fetch-depth: 0
+          token: ${{ secrets.VIBE_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
       - name: Run Vibe Agent
         uses: ./.github/actions/vibe-agent
         with:

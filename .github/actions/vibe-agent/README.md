@@ -37,21 +37,28 @@ PR is linked by the existing delivery comment. Dry runs do not update issues.
 
 Vibe works in a temporary copy without Git metadata. The caller applies changes,
 commits them, pushes the branch, then creates a draft PR or posts a response.
-Build is explicitly dispatched because pushes made with `GITHUB_TOKEN` do not
-trigger ordinary push/PR workflows.
+With `GITHUB_TOKEN`, Build is explicitly dispatched because its pushes do not
+trigger push workflows. With a bot token, pushes trigger CI automatically and
+the extra dispatch is skipped.
 
 GitHub operations use the runner's preinstalled `gh`: issue/PR views, draft PR
 creation, comments, workflow dispatch, and build logs use native commands.
 Inline review endpoints, run provenance, and collection listings use `gh api`;
 `--paginate` exhausts collections without the list commands' default result limit.
-`GH_TOKEN` takes precedence, with the Actions `GITHUB_TOKEN` as its fallback.
+The optional `VIBE_GITHUB_TOKEN` takes precedence over `GH_TOKEN` and the Actions
+`GITHUB_TOKEN`. All four workflows pass the selected token to checkout too, so
+Git pushes use the same account. A bot token's login and ID are resolved before
+Vibe runs; commits use its login and GitHub noreply email, and PRs/comments use
+that account. The triggering Actions actor is unchanged. See the setup guide for
+bot access and token scopes.
 
 ## Configuration
 
 | Environment variable | Default |
 | --- | --- |
 | `VIBE_API_KEY` | Required |
-| `GITHUB_TOKEN` | Required; provided by the caller |
+| `GITHUB_TOKEN` | Actions default; fallback when neither bot token nor `GH_TOKEN` is set |
+| `VIBE_GITHUB_TOKEN` | Optional bot-account PAT; overrides GitHub CLI and checkout authentication |
 | `GITHUB_REPOSITORY` | Provided by Actions |
 | `VIBE_MODEL` | `mistral-large-latest` |
 | `MAX_RETRIES` | `3` repair attempts per PR |
@@ -68,7 +75,9 @@ run per group, so a superseded pending review event may need to be retriggered.
 CI repair verifies the run repository, workflow, branch, and commit before
 checking out the failing branch. It skips stale runs. Bot-authored attempt
 comments persist retry counts across runners and prevent duplicate processing of
-the same Build run. Fork PRs and non-Vibe branches are skipped. Review triggers
+the same Build run. Both the current bot's markers and legacy `github-actions[bot]`
+markers count. The review handler ignores its own bot's comments. Fork PRs and
+non-Vibe branches are skipped. Review triggers
 accept repository owners, members, collaborators, and the configured Codex review bot.
 Review and CI workflows check that the local action exists after checking out the
 trusted default branch. Events from before the agent is installed there skip with

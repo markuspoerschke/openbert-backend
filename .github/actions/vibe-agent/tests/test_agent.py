@@ -64,7 +64,8 @@ class AgentTest(unittest.TestCase):
         self.addCleanup(self.server.shutdown)
         self.env = dict(os.environ, GITHUB_REPOSITORY='owner/repo', GITHUB_TOKEN='test-token',
                         VIBE_API_KEY='test-api-key', VIBE_TIMEOUT_MINUTES='1', MAX_RETRIES='3',
-                        GH_TOKEN='', GH_TEST_API_URL=f'http://127.0.0.1:{self.server.server_port}',
+                        GH_TOKEN='', VIBE_GITHUB_TOKEN='', VIBE_BOT_LOGIN='github-actions[bot]',
+                        GH_TEST_API_URL=f'http://127.0.0.1:{self.server.server_port}',
                         GH_TEST_REAL_CLI=REAL_GH, GH_TEST_CALLS=str(self.root / 'gh-calls.jsonl'),
                         LOGFILE=str(self.root / 'agent.log'),
                         PATH=f'{self.bin}:{os.environ["PATH"]}',
@@ -179,6 +180,37 @@ sys.exit(int(os.environ.get('VIBE_EXIT', '0')))
                   GITHUB_TOKEN='')
         self.assertEqual(self.gh_calls()[0]['args'], ['repo', 'view', 'owner/repo', '--json', 'nameWithOwner'])
 
+    def test_bot_token_selects_cli_account_and_commit_identity(self):
+        self.init_git()
+        self.route('GET', '', {'name': 'repository'})
+        self.routes['GET', '/user'] = 200, {'login': 'openbert-bot', 'id': 12345}
+        result = self.bash('validate_credentials; configure_git_identity',
+                           VIBE_GITHUB_TOKEN='bot-token', GH_TOKEN='other-token', TEST_GH_TOKEN='bot-token')
+        self.assertEqual(self.git('config', 'user.name'), 'openbert-bot')
+        self.assertEqual(self.git('config', 'user.email'), '12345+openbert-bot@users.noreply.github.com')
+        self.assertIn('Publishing as openbert-bot', result.stderr)
+        self.assertNotIn('bot-token', result.stdout + result.stderr)
+        self.assertEqual(self.gh_calls()[-1]['args'], ['api', 'user'])
+
+    def test_default_token_keeps_actions_identity_without_user_lookup(self):
+        self.init_git()
+        self.bash('configure_git_identity')
+        self.assertEqual(self.git('config', 'user.name'), 'github-actions[bot]')
+        self.assertEqual(self.git('config', 'user.email'),
+                         '41898282+github-actions[bot]@users.noreply.github.com')
+        self.assertEqual(self.requests, [])
+
+    def test_invalid_bot_identity_stops_before_implementation(self):
+        self.init_git()
+        self.route('GET', '', {'name': 'repository'})
+        for status, account in [(401, {'message': 'Bad credentials'}),
+                                (200, {'login': 'openbert-bot', 'id': None})]:
+            with self.subTest(status=status):
+                self.routes['GET', '/user'] = status, account
+                self.bash('main manual 42', ok=False, VIBE_GITHUB_TOKEN='bot-token', TEST_GH_TOKEN='bot-token')
+        self.assertTrue(all(method == 'GET' for method, _, _ in self.requests))
+        self.assertFalse((self.root / 'vibe.json').exists())
+
     def test_draft_pr_uses_cli_and_preserves_multiline_body(self):
         self.init_git()
         self.git('checkout', '-b', 'vibe/42-fix')
@@ -206,6 +238,11 @@ sys.exit(int(os.environ.get('VIBE_EXIT', '0')))
         self.route('POST', '/actions/workflows/test.yml/dispatches', {'message': 'forbidden'}, 403)
         result = self.bash('trigger_ci_monitoring vibe/42-fix', ok=False)
         self.assertNotIn('Build dispatched', result.stderr)
+
+    def test_bot_push_uses_automatic_build_without_extra_dispatch(self):
+        result = self.bash('trigger_ci_monitoring vibe/42-fix', VIBE_GITHUB_TOKEN='bot-token')
+        self.assertIn('triggers Build automatically', result.stderr)
+        self.assertEqual(self.requests, [])
 
     def test_issue_selection_preserves_json_strings_and_skips_active_pr(self):
         issues = [dict(number=3, title='A "quoted" title\nwith spaces', created_at='2020-01-01', labels=[]),
@@ -479,6 +516,35 @@ handle_review_comment 7 22
     def test_fork_pr_does_not_yield_a_branch(self):
         self.route('GET', '/pulls/7', {'state': 'open', 'head': {'ref': 'vibe/42-fix', 'repo': {'full_name': 'outsider/repo'}}})
         self.assertEqual(self.bash('get_pr_branch 7').stdout, '')
+
+    def test_review_skips_own_bot_replies_but_accepts_reviewer(self):
+        self.init_git()
+        self.route('GET', '/pulls/comments/22', {'id': 22, 'body': 'Please review the changes',
+                                               'user': {'login': 'OpenBert-Bot'}})
+        self.route('GET', '/pulls/7', {'state': 'open', 'head': {
+            'ref': 'vibe/42-fix', 'repo': {'full_name': 'owner/repo'}}})
+        result = self.bash('''
+process_comment_with_vibe() { echo unexpected; exit 1; }
+handle_review_comment 7 22
+is_actionable_comment 'Please fix it' reviewer
+''', VIBE_BOT_LOGIN='openbert-bot')
+        self.assertIn('not actionable', result.stderr)
+        self.assertNotIn('unexpected', result.stdout)
+        self.assertTrue(all(method == 'GET' for method, _, _ in self.requests))
+
+    def test_retry_markers_survive_switch_to_bot_account(self):
+        self.route('GET', '/issues/7/comments?per_page=100', [
+            {'user': {'login': 'github-actions[bot]'}, 'body': '<!-- vibe-ci-attempt:121 -->\nLegacy'},
+            {'user': {'login': 'OpenBert-Bot'}, 'body': '<!-- vibe-ci-attempt:122 -->\nBot attempt'},
+            {'user': {'login': 'reviewer'}, 'body': '<!-- vibe-ci-attempt:120 -->\nUntrusted marker'},
+            {'user': {'login': 'openbert-bot'}, 'body': 'An ordinary comment'}])
+        self.assertEqual(self.bash('get_retry_count 7', VIBE_BOT_LOGIN='openbert-bot').stdout.strip(), '2')
+        self.ci_routes('0' * 40)
+        self.route('GET', '/issues/7/comments?per_page=100', [
+            {'user': {'login': 'openbert-bot'}, 'body': '<!-- vibe-ci-attempt:123 -->\nAlready handled'}])
+        result = self.bash('run_ci_monitor', VIBE_BOT_LOGIN='openbert-bot',
+                           VIBE_MONITOR_BRANCH='vibe/42-fix', VIBE_RUN_ID='123')
+        self.assertIn('already handled', result.stderr)
 
     def ci_routes(self, sha):
         self.route('GET', '/actions/runs/123', {
