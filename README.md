@@ -78,6 +78,12 @@ Data availability depends on the upstream server and background processing.
 - **API documentation:** [Swagger UI](http://localhost:8080/swagger-ui.html) to browse and try the HTTP endpoints.
 - **Tests and packaging:** `./gradlew build` (Docker required for Testcontainers).
 
+## Static analysis
+
+Run `./gradlew detekt` to analyze production and test Kotlin sources. Detekt also runs through `check` when executing `./gradlew build`, including the CI build. Reports are written to `build/reports/detekt/` in HTML, XML, Markdown and SARIF formats.
+
+Existing findings currently fail the analysis and build; cleaning them up is a separate task. See [DETEKT_SUMMARY.md](DETEKT_SUMMARY.md) for compatibility details and the reason for using Detekt 2.0.0-alpha.6.
+
 ## Docker image
 
 The standalone backend image is built entirely inside Docker, so the build machine does not need JDK or Gradle installed:
