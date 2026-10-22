@@ -16,7 +16,7 @@ import java.util.UUID
 @Table(
     name = "crawl_target",
     uniqueConstraints = [
-        UniqueConstraint("uq_oparl_system_url", ["system_id", "url"])
+        UniqueConstraint(name = "uq_oparl_system_url", columnNames = ["system_id", "url"])
     ]
 )
 class CrawlTarget(

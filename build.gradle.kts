@@ -1,11 +1,14 @@
 plugins {
-    kotlin("jvm") version "1.9.23"
-    kotlin("plugin.spring") version "1.9.23"
+    kotlin("jvm") version "1.9.22"
+    kotlin("plugin.spring") version "1.9.22"
     id("org.springframework.boot") version "4.1.1"
     id("io.spring.dependency-management") version "1.1.7"
     id("org.asciidoctor.jvm.convert") version "4.0.5"
-    kotlin("plugin.jpa") version "1.9.23"
+    kotlin("plugin.jpa") version "1.9.22"
 }
+
+import org.gradle.jvm.toolchain.JavaLanguageVersion
+import org.gradle.jvm.toolchain.JvmVendorSpec
 
 group = "nrw.openbert"
 version = "0.0.1-SNAPSHOT"
@@ -15,12 +18,34 @@ java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(21)
         vendor = JvmVendorSpec.ADOPTIUM
+        // Explicitly set a stable Java 21 version
+        version = "21.0.4"
     }
 }
 
-tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
+// Fail fast if Java 25 is detected
+tasks.register("checkJavaVersion") {
+    doLast {
+        val javaVersion = org.gradle.internal.jvm.Jvm.current().javaVersion
+        if (javaVersion?.majorVersion == "25") {
+            throw GradleException("\n\n" +
+                "========================================\n" +
+                "ERROR: Java 25 is not supported.\n" +
+                "Please use Java 21 for this project.\n" +
+                "========================================\n")
+        }
+    }
+}
+
+tasks.named("compileKotlin") {
+    dependsOn("checkJavaVersion")
+}
+
+kotlin {
+    jvmToolchain(21)
     compilerOptions {
         jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21)
+        freeCompilerArgs.add("-Xjsr305=strict")
     }
 }
 
@@ -38,6 +63,7 @@ repositories {
 extra["snippetsDir"] = file("build/generated-snippets")
 
 dependencies {
+    implementation("org.springframework.boot:spring-boot-starter")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-flyway")
     implementation("org.springframework.boot:spring-boot-starter-restclient")
