@@ -36,17 +36,17 @@ class OparlMembershipController(
         }
 
         val memberships = resolvedMembershipRepository
-            .findAllByBody_IdOrderById(bodyId, pagination.toPageable())
+            .findAllByBodyIdOrderById(bodyId, pagination.toPageable())
             .map { membershipMapper.toDto(it) }
 
         return ResponseEntity.ok(
             OparlListDto(
-                id = urlGenerator.membershipList(bodyId, pagination.page),
+                id = urlGenerator.membership.list(bodyId, pagination.page),
                 data = memberships.toList(),
                 pagination = listPaginationMapper.toDto(memberships),
                 links = listLinksMapper.toDto(
                     memberships,
-                    { page -> urlGenerator.membershipList(bodyId, page) }
+                    { page -> urlGenerator.membership.list(bodyId, page) }
                 ),
             )
         )
@@ -57,7 +57,7 @@ class OparlMembershipController(
         @PathVariable bodyId: UUID,
         @PathVariable membershipId: UUID,
     ): ResponseEntity<OparlMembershipDto> {
-        val membership = resolvedMembershipRepository.findByIdAndBody_Id(membershipId, bodyId)
+        val membership = resolvedMembershipRepository.findByIdAndBodyId(membershipId, bodyId)
 
         if (!membership.isPresent) {
             return ResponseEntity.notFound().build()

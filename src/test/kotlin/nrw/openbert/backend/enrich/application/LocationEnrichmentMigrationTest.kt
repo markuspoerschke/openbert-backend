@@ -42,7 +42,10 @@ class LocationEnrichmentMigrationTest(
     private val existingTargetId = UUID.fromString("40000000-0000-4000-8000-000000000002")
 
     @ParameterizedTest
-    @ValueSource(strings = ["V11__enqueue_existing_locations_for_enrichment.sql", "V13__reenrich_location_addresses.sql"])
+    @ValueSource(strings = [
+        "V11__enqueue_existing_locations_for_enrichment.sql",
+        "V13__reenrich_location_addresses.sql",
+    ])
     fun `queues every existing location and updates resolved values through enrichment`(migration: String) {
         val rawIds = rawLocationRepository.findAll().map { it.id }.toSet()
         val existingTarget = targetRepository.findById(existingTargetId).orElseThrow()
@@ -83,7 +86,10 @@ class LocationEnrichmentMigrationTest(
     }
 
     @ParameterizedTest
-    @ValueSource(strings = ["V11__enqueue_existing_locations_for_enrichment.sql", "V13__reenrich_location_addresses.sql"])
+    @ValueSource(strings = [
+        "V11__enqueue_existing_locations_for_enrichment.sql",
+        "V13__reenrich_location_addresses.sql",
+    ])
     fun `clears old scheduling markers so previously scheduled locations become due again`(migration: String) {
         val existingTarget = targetRepository.findById(existingTargetId).orElseThrow()
         existingTarget.enqueue().markAsScheduled(UUID.randomUUID())

@@ -13,7 +13,7 @@ class OparlMeetingMapper(
 ) {
     fun toDto(meeting: ResolvedMeeting): OparlMeetingDto {
         return OparlMeetingDto(
-            id = urlGenerator.meeting(meeting.body.id, meeting.id),
+            id = urlGenerator.meeting.get(meeting.body.id, meeting.id),
             type = meeting.getType().url,
             name = meeting.name,
             meetingState = meeting.meetingState,
@@ -21,7 +21,7 @@ class OparlMeetingMapper(
             start = meeting.start?.toInstant()?.toString(),
             end = meeting.end?.toInstant()?.toString(),
             organization = meeting.organizations
-                .map { urlGenerator.organization(it.body.id, it.id) }
+                .map { urlGenerator.organization.get(it.body.id, it.id) }
                 .takeIf { it.isNotEmpty() },
             agendaItem = meeting.agendaItems
                 .map(agendaItemMapper::toDto)

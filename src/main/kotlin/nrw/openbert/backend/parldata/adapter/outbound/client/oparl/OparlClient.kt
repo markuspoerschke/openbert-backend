@@ -53,21 +53,18 @@ class OparlClient(
             else -> null
         }
 
-        if (itemType == null) {
-            return
+        if (itemType != null) {
+            data
+                .filterIsInstance<ObjectNode>()
+                .filter { it.textValue("type") == null }
+                .forEach { it.put("type", itemType) }
         }
-
-        data
-            .filterIsInstance<ObjectNode>()
-            .filter { it.textValue("type") == null }
-            .forEach { it.put("type", itemType) }
     }
 
     private fun inferListItemType(url: String): String? {
         val path = runCatching { URI.create(url).path }.getOrNull() ?: return null
         val resourceName = path.trimEnd('/').substringAfterLast('/').lowercase()
-        val objectType = LIST_RESOURCE_TYPES[resourceName] ?: return null
-        return "${inferSchema(path)}/$objectType"
+        return LIST_RESOURCE_TYPES[resourceName]?.let { objectType -> "${inferSchema(path)}/$objectType" }
     }
 
     private fun inferSchema(urlOrPath: String): String {

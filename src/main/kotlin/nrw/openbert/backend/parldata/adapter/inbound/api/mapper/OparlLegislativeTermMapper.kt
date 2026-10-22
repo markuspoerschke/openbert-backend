@@ -14,7 +14,7 @@ class OparlLegislativeTermMapper(
 ) {
     fun toDto(legislativeTerm: ResolvedLegislativeTerm): OparlLegislativeTermDto {
         return OparlLegislativeTermDto(
-            id = urlGenerator.legislativeTerm(legislativeTerm.body.id, legislativeTerm.id),
+            id = urlGenerator.legislativeTerm.get(legislativeTerm.body.id, legislativeTerm.id),
             type = legislativeTerm.getType().url,
             body = urlGenerator.body(legislativeTerm.body.id),
             name = legislativeTerm.name,

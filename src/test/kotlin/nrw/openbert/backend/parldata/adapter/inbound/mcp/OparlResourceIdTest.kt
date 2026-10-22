@@ -9,7 +9,9 @@ import org.junit.jupiter.api.Assertions.assertNull
 class OparlResourceIdTest {
     @Test
     fun `parses body url`() {
-        val result = OparlResourceId.fromUrl("https://example.org:8443/oparl/v1.1/body/903c26aa-dc8f-4d34-afd6-afdc5040dbd3")
+        val result = OparlResourceId.fromUrl(
+            "https://example.org:8443/oparl/v1.1/body/903c26aa-dc8f-4d34-afd6-afdc5040dbd3",
+        )
 
         assertEquals(OparlType.BODY, result?.type)
         assertEquals(UUID.fromString("903c26aa-dc8f-4d34-afd6-afdc5040dbd3"), result?.id)
@@ -57,7 +59,8 @@ class OparlResourceIdTest {
         assertNull(OparlResourceId.fromUrl("https://example.org/oparl/v1.1/body"))
         assertNull(
             OparlResourceId.fromUrl(
-                "https://example.org/oparl/v1.1/body/903c26aa-dc8f-4d34-afd6-afdc5040dbd3/system/11111111-1111-4111-a111-111111111111",
+                "https://example.org/oparl/v1.1/body/903c26aa-dc8f-4d34-afd6-afdc5040dbd3/" +
+                    "system/11111111-1111-4111-a111-111111111111",
             ),
         )
     }

@@ -11,13 +11,14 @@ data class OparlResourceId(
         fun fromUrl(url: String): OparlResourceId? {
             val trimmed = url.trim()
             BODY_URL.find(trimmed)?.let { match ->
-                return OparlResourceId(OparlType.BODY, match.groupValues[1].toUuidOrNull() ?: return null)
+                return match.groupValues[1].toUuidOrNull()?.let { OparlResourceId(OparlType.BODY, it) }
             }
 
-            val match = RESOURCE_URL.find(trimmed) ?: return null
-            val entityName = match.groupValues[1].lowercase().let { ENTITY_NAMES[it] } ?: return null
-
-            return OparlResourceId(entityName, match.groupValues[2].toUuidOrNull() ?: return null)
+            return RESOURCE_URL.find(trimmed)?.let { match ->
+                val entityType = ENTITY_NAMES[match.groupValues[1].lowercase()]
+                val id = match.groupValues[2].toUuidOrNull()
+                if (entityType != null && id != null) OparlResourceId(entityType, id) else null
+            }
         }
 
         private fun String.toUuidOrNull(): UUID? = try {

@@ -36,17 +36,17 @@ class OparlPaperController(
         }
 
         val papers = resolvedPaperRepository
-            .findAllByBody_IdOrderById(bodyId, pagination.toPageable())
+            .findAllByBodyIdOrderById(bodyId, pagination.toPageable())
             .map(paperMapper::toDto)
 
         return ResponseEntity.ok(
             OparlListDto(
-                id = urlGenerator.paperList(bodyId, pagination.page),
+                id = urlGenerator.paper.list(bodyId, pagination.page),
                 data = papers.toList(),
                 pagination = listPaginationMapper.toDto(papers),
                 links = listLinksMapper.toDto(
                     papers,
-                    { page -> urlGenerator.paperList(bodyId, page) }
+                    { page -> urlGenerator.paper.list(bodyId, page) }
                 ),
             )
         )
@@ -57,7 +57,7 @@ class OparlPaperController(
         @PathVariable bodyId: UUID,
         @PathVariable paperId: UUID,
     ): ResponseEntity<OparlPaperDto> {
-        val paper = resolvedPaperRepository.findByIdAndBody_Id(paperId, bodyId)
+        val paper = resolvedPaperRepository.findByIdAndBodyId(paperId, bodyId)
 
         if (!paper.isPresent) {
             return ResponseEntity.notFound().build()

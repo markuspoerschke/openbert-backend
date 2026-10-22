@@ -61,10 +61,7 @@ class ProcessorRelationshipTest {
     private val membershipProcessor = mock(MembershipProcessor::class.java)
 
     @Test
-    fun `enqueues every referenced OParl URL`() {
-        val expected = linkedSetOf<String>()
-        fun ref(name: String) = "https://oparl.example.org/references/$name".also(expected::add)
-
+    fun `enqueues agenda item reference URLs`() {
         agendaItemProcessor().process(
             resource("agenda-item"),
             OparlAgendaItemDto(
@@ -72,6 +69,12 @@ class ProcessorRelationshipTest {
                 consultation = ref("agenda-consultation"),
             ),
         )
+
+        assertEnqueuedReferences()
+    }
+
+    @Test
+    fun `enqueues body reference URLs`() {
         bodyProcessor().process(
             resource("body"),
             OparlBodyDto(
@@ -89,6 +92,12 @@ class ProcessorRelationshipTest {
                 membership = ref("body-memberships"),
             ),
         )
+
+        assertEnqueuedReferences()
+    }
+
+    @Test
+    fun `enqueues consultation reference URLs`() {
         consultationProcessor().process(
             resource("consultation"),
             OparlConsultationDto(
@@ -101,6 +110,12 @@ class ProcessorRelationshipTest {
                 ),
             ),
         )
+
+        assertEnqueuedReferences()
+    }
+
+    @Test
+    fun `enqueues file reference URLs`() {
         fileProcessor().process(
             resource("file"),
             OparlFileDto(
@@ -111,10 +126,22 @@ class ProcessorRelationshipTest {
                 paper = listOf(ref("file-paper")),
             ),
         )
+
+        assertEnqueuedReferences()
+    }
+
+    @Test
+    fun `enqueues legislative term reference URLs`() {
         legislativeTermProcessor().process(
             resource("legislative-term"),
             OparlLegislativeTermDto(body = ref("legislative-term-body")),
         )
+
+        assertEnqueuedReferences()
+    }
+
+    @Test
+    fun `enqueues location reference URLs`() {
         locationProcessor().process(
             resource("location"),
             OparlLocationDto(
@@ -125,6 +152,12 @@ class ProcessorRelationshipTest {
                 papers = listOf(ref("location-paper")),
             ),
         )
+
+        assertEnqueuedReferences()
+    }
+
+    @Test
+    fun `enqueues meeting reference URLs`() {
         meetingProcessor().process(
             resource("meeting"),
             OparlMeetingDto(
@@ -132,6 +165,12 @@ class ProcessorRelationshipTest {
                 participant = listOf(ref("meeting-participant")),
             ),
         )
+
+        assertEnqueuedReferences()
+    }
+
+    @Test
+    fun `enqueues membership reference URLs`() {
         membershipProcessor().process(
             resource("membership"),
             OparlMembershipDto(
@@ -140,6 +179,12 @@ class ProcessorRelationshipTest {
                 onBehalfOf = ref("membership-on-behalf-of"),
             ),
         )
+
+        assertEnqueuedReferences()
+    }
+
+    @Test
+    fun `enqueues organization reference URLs`() {
         organizationProcessor().process(
             resource("organization"),
             OparlOrganizationDto(
@@ -151,6 +196,12 @@ class ProcessorRelationshipTest {
                 externalBody = ref("organization-external-body"),
             ),
         )
+
+        assertEnqueuedReferences()
+    }
+
+    @Test
+    fun `enqueues paper reference URLs`() {
         paperProcessor().process(
             resource("paper"),
             OparlPaperDto(
@@ -163,6 +214,12 @@ class ProcessorRelationshipTest {
                 originatorOrganization = listOf(ref("paper-originator-organization")),
             ),
         )
+
+        assertEnqueuedReferences()
+    }
+
+    @Test
+    fun `enqueues person reference URLs`() {
         personProcessor().process(
             resource("person"),
             OparlPersonDto(
@@ -170,21 +227,22 @@ class ProcessorRelationshipTest {
                 location = ref("person-location"),
             ),
         )
+
+        assertEnqueuedReferences()
+    }
+
+    @Test
+    fun `enqueues system reference URLs`() {
         systemProcessor().process(
             resource("system"),
             OparlSystemDto(body = ref("system-bodies")),
         )
 
-        val actual = mockingDetails(crawlTargetEnqueuer).invocations
-            .filter { it.method.name == "enqueue" }
-            .map { (it.arguments[0] as OparlResource).url.value }
-
-        assertEquals(expected, actual.toSet())
-        assertEquals(expected.size, actual.size)
+        assertEnqueuedReferences()
     }
 
     @Test
-    fun `processes every inline relationship through create-only processing`() {
+    fun `processes agenda item inline relationships through create-only processing`() {
         val resolutionFile = OparlFileDto(id = inlineUrl("agenda-resolution"))
         val agendaAuxiliaryFile = OparlFileDto(id = inlineUrl("agenda-auxiliary"))
         agendaItemProcessor().process(
@@ -195,6 +253,12 @@ class ProcessorRelationshipTest {
             ),
         )
 
+        verifyEmbedded(fileProcessor, resource(resolutionFile.id!!), resolutionFile)
+        verifyEmbedded(fileProcessor, resource(agendaAuxiliaryFile.id!!), agendaAuxiliaryFile)
+    }
+
+    @Test
+    fun `processes body inline relationships through create-only processing`() {
         val legislativeTerm = OparlLegislativeTermDto(id = inlineUrl("body-legislative-term"))
         val bodyLocation = OparlLocationDto(id = inlineUrl("body-location"))
         bodyProcessor().process(
@@ -205,6 +269,12 @@ class ProcessorRelationshipTest {
             ),
         )
 
+        verifyEmbedded(legislativeTermProcessor, resource(legislativeTerm.id!!), legislativeTerm)
+        verifyEmbedded(locationProcessor, resource(bodyLocation.id!!), bodyLocation)
+    }
+
+    @Test
+    fun `processes meeting inline relationships through create-only processing`() {
         val meetingLocation = OparlLocationDto(id = inlineUrl("meeting-location"))
         val invitation = OparlFileDto(id = inlineUrl("meeting-invitation"))
         val resultsProtocol = OparlFileDto(id = inlineUrl("meeting-results"))
@@ -223,12 +293,27 @@ class ProcessorRelationshipTest {
             ),
         )
 
+        verifyEmbedded(locationProcessor, resource(meetingLocation.id!!), meetingLocation)
+        verifyEmbedded(fileProcessor, resource(invitation.id!!), invitation)
+        verifyEmbedded(fileProcessor, resource(resultsProtocol.id!!), resultsProtocol)
+        verifyEmbedded(fileProcessor, resource(verbatimProtocol.id!!), verbatimProtocol)
+        verifyEmbedded(fileProcessor, resource(meetingAuxiliaryFile.id!!), meetingAuxiliaryFile)
+        verifyEmbedded(agendaItemProcessor, resource(agendaItem.id!!), agendaItem)
+    }
+
+    @Test
+    fun `processes organization inline relationships through create-only processing`() {
         val organizationLocation = OparlLocationDto(id = inlineUrl("organization-location"))
         organizationProcessor().process(
             resource("organization"),
             OparlOrganizationDto(location = organizationLocation),
         )
 
+        verifyEmbedded(locationProcessor, resource(organizationLocation.id!!), organizationLocation)
+    }
+
+    @Test
+    fun `processes paper inline relationships through create-only processing`() {
         val mainFile = OparlFileDto(id = inlineUrl("paper-main-file"))
         val paperAuxiliaryFile = OparlFileDto(id = inlineUrl("paper-auxiliary"))
         val paperLocation = OparlLocationDto(id = inlineUrl("paper-location"))
@@ -243,6 +328,14 @@ class ProcessorRelationshipTest {
             ),
         )
 
+        verifyEmbedded(fileProcessor, resource(mainFile.id!!), mainFile)
+        verifyEmbedded(fileProcessor, resource(paperAuxiliaryFile.id!!), paperAuxiliaryFile)
+        verifyEmbedded(locationProcessor, resource(paperLocation.id!!), paperLocation)
+        verifyEmbedded(consultationProcessor, resource(consultation.id!!), consultation)
+    }
+
+    @Test
+    fun `processes person inline relationships through create-only processing`() {
         val personLocation = OparlLocationDto(id = inlineUrl("person-location"))
         val membership = OparlMembershipDto(id = inlineUrl("person-membership"))
         personProcessor().process(
@@ -253,23 +346,21 @@ class ProcessorRelationshipTest {
             ),
         )
 
-        verifyEmbedded(fileProcessor, resource(resolutionFile.id!!), resolutionFile)
-        verifyEmbedded(fileProcessor, resource(agendaAuxiliaryFile.id!!), agendaAuxiliaryFile)
-        verifyEmbedded(legislativeTermProcessor, resource(legislativeTerm.id!!), legislativeTerm)
-        verifyEmbedded(locationProcessor, resource(bodyLocation.id!!), bodyLocation)
-        verifyEmbedded(locationProcessor, resource(meetingLocation.id!!), meetingLocation)
-        verifyEmbedded(fileProcessor, resource(invitation.id!!), invitation)
-        verifyEmbedded(fileProcessor, resource(resultsProtocol.id!!), resultsProtocol)
-        verifyEmbedded(fileProcessor, resource(verbatimProtocol.id!!), verbatimProtocol)
-        verifyEmbedded(fileProcessor, resource(meetingAuxiliaryFile.id!!), meetingAuxiliaryFile)
-        verifyEmbedded(agendaItemProcessor, resource(agendaItem.id!!), agendaItem)
-        verifyEmbedded(locationProcessor, resource(organizationLocation.id!!), organizationLocation)
-        verifyEmbedded(fileProcessor, resource(mainFile.id!!), mainFile)
-        verifyEmbedded(fileProcessor, resource(paperAuxiliaryFile.id!!), paperAuxiliaryFile)
-        verifyEmbedded(locationProcessor, resource(paperLocation.id!!), paperLocation)
-        verifyEmbedded(consultationProcessor, resource(consultation.id!!), consultation)
         verifyEmbedded(locationProcessor, resource(personLocation.id!!), personLocation)
         verifyEmbedded(membershipProcessor, resource(membership.id!!), membership)
+    }
+
+    private val expectedReferences = linkedSetOf<String>()
+
+    private fun ref(name: String) = "https://oparl.example.org/references/$name".also(expectedReferences::add)
+
+    private fun assertEnqueuedReferences() {
+        val actual = mockingDetails(crawlTargetEnqueuer).invocations
+            .filter { it.method.name == "enqueue" }
+            .map { (it.arguments[0] as OparlResource).url.value }
+
+        assertEquals(expectedReferences, actual.toSet())
+        assertEquals(expectedReferences.size, actual.size)
     }
 
     private fun verifyEmbedded(processor: Any, resource: OparlResource, dto: OparlObjectDto) {

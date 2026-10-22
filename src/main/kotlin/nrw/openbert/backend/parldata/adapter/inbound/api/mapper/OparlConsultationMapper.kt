@@ -15,18 +15,18 @@ class OparlConsultationMapper(
         includePaper: Boolean = true,
     ): OparlConsultationDto {
         return OparlConsultationDto(
-            id = urlGenerator.consultation(consultation.body.id, consultation.id),
+            id = urlGenerator.consultation.get(consultation.body.id, consultation.id),
             type = consultation.getType().url,
             paper = consultation.paper
                 .takeIf { includePaper }
-                ?.let { urlGenerator.paper(it.body.id, it.id) },
-            agendaItem = urlGenerator.agendaItem(
+                ?.let { urlGenerator.paper.get(it.body.id, it.id) },
+            agendaItem = urlGenerator.agendaItem.get(
                 consultation.agendaItem.body.id,
                 consultation.agendaItem.id,
             ),
-            meeting = urlGenerator.meeting(consultation.meeting.body.id, consultation.meeting.id),
+            meeting = urlGenerator.meeting.get(consultation.meeting.body.id, consultation.meeting.id),
             organization = consultation.organizations
-                .map { urlGenerator.organization(it.body.id, it.id) }
+                .map { urlGenerator.organization.get(it.body.id, it.id) }
                 .takeIf { it.isNotEmpty() },
             authoritative = consultation.authoritative,
             role = consultation.role,

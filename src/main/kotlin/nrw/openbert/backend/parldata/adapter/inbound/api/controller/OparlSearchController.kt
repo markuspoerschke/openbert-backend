@@ -32,18 +32,15 @@ class OparlSearchController(
         @RequestParam(defaultValue = "20") size: Int,
     ): ResponseEntity<OparlSearchResultListDto> {
         val searchText = text?.trim()
-        if ((searchText != null && !SEARCHABLE_TEXT.containsMatchIn(searchText)) || page < 1 || size !in 1..MAX_PAGE_SIZE) {
+        val invalidText = searchText != null && !SEARCHABLE_TEXT.containsMatchIn(searchText)
+        if (invalidText || page < 1 || size !in 1..MAX_PAGE_SIZE) {
             return ResponseEntity.badRequest().build()
         }
 
         // Convert string types to OparlType enum values
         val typeEnums = types?.let { typeStrings ->
             typeStrings.mapNotNull { typeString ->
-                try {
-                    OparlType.valueOf(typeString.uppercase())
-                } catch (e: IllegalArgumentException) {
-                    null
-                }
+                OparlType.entries.find { it.name == typeString.uppercase() }
             }
         } ?: OparlType.entries.toList()
 
@@ -87,7 +84,14 @@ class OparlSearchController(
         )
     }
 
-    private fun pageUrl(baseUrl: String, text: String?, bodies: List<String>?, types: List<String>?, page: Int, size: Int): String {
+    private fun pageUrl(
+        baseUrl: String,
+        text: String?,
+        bodies: List<String>?,
+        types: List<String>?,
+        page: Int,
+        size: Int,
+    ): String {
         val builder = ServletUriComponentsBuilder
             .fromUriString(baseUrl)
             .queryParam("page", page)

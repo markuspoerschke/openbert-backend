@@ -299,7 +299,8 @@ class RawEntityProcessorsTest {
     @Test
     fun `processes an organization`() {
         val repository = processorRepository(RawOrganizationRepository::class.java)
-        val entity = OrganizationProcessor(repository, crawlTargetEnqueuer, locationProcessor, enrichTargetEnqueuer).process(
+        val processor = OrganizationProcessor(repository, crawlTargetEnqueuer, locationProcessor, enrichTargetEnqueuer)
+        val entity = processor.process(
             resource("organization"),
             OparlOrganizationDto(
                 body = "https://example.org/body/1",

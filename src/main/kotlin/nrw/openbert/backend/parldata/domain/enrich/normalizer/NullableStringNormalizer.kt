@@ -5,16 +5,6 @@ import org.springframework.stereotype.Component
 @Component
 class NullableStringNormalizer {
     fun normalize(input: String?): String? {
-        if (input == null) {
-            return null
-        }
-
-        val normalizedString = input.trim()
-
-        if (normalizedString == "" || normalizedString == "-") {
-            return null
-        }
-
-        return normalizedString
+        return input?.trim()?.takeUnless { it.isEmpty() || it == "-" }
     }
 }

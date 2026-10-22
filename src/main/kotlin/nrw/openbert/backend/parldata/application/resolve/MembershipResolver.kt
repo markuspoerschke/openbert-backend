@@ -20,8 +20,12 @@ class MembershipResolver(
         val raw = rawRepository.findById(rawEntityId).orElseThrow {
             IllegalArgumentException("Raw membership with id $rawEntityId does not exist")
         }
-        val person = personResolver.resolve(relatedResource(raw.resource, required(raw.personUrl, "person", raw.resource)))
-        val organization = organizationResolver.resolve(relatedResource(raw.resource, required(raw.organizationUrl, "organization", raw.resource)))
+        val person = personResolver.resolve(
+            relatedResource(raw.resource, required(raw.personUrl, "person", raw.resource)),
+        )
+        val organization = organizationResolver.resolve(
+            relatedResource(raw.resource, required(raw.organizationUrl, "organization", raw.resource)),
+        )
         val onBehalfOf = raw.onBehalfOfUrl?.let { organizationResolver.resolve(relatedResource(raw.resource, it)) }
         val body = commonBody(raw.resource, listOfNotNull(person.body, organization.body, onBehalfOf?.body))
         val resolved = resolvedRepository.findByResource(raw.resource)

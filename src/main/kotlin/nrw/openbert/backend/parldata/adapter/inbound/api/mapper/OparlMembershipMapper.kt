@@ -17,19 +17,19 @@ class OparlMembershipMapper(
         includePerson: Boolean = true,
     ): OparlMembershipDto {
         return OparlMembershipDto(
-            id = urlGenerator.membership(membership.body.id, membership.id),
+            id = urlGenerator.membership.get(membership.body.id, membership.id),
             type = membership.getType().url,
             person = membership.person
                 .takeIf { includePerson }
-                ?.let { urlGenerator.person(it.body.id, it.id) },
+                ?.let { urlGenerator.person.get(it.body.id, it.id) },
             organization = membership.organization
-                .let { urlGenerator.organization(it.body.id, it.id) },
+                .let { urlGenerator.organization.get(it.body.id, it.id) },
             role = membership.role,
             votingRight = membership.votingRight,
             startDate = membership.startDate?.toOparlDate(),
             endDate = membership.endDate?.toOparlDate(),
             onBehalfOf = membership.onBehalfOf
-                ?.let { urlGenerator.organization(it.body.id, it.id) },
+                ?.let { urlGenerator.organization.get(it.body.id, it.id) },
             license = membership.license,
             keyword = membership.keyword.toList().takeIf { it.isNotEmpty() },
             created = membership.created.toString(),

@@ -36,17 +36,17 @@ class OparlPersonController(
         }
 
         val persons = resolvedPersonRepository
-            .findAllByBody_IdOrderById(bodyId, pagination.toPageable())
+            .findAllByBodyIdOrderById(bodyId, pagination.toPageable())
             .map(personMapper::toDto)
 
         return ResponseEntity.ok(
             OparlListDto(
-                id = urlGenerator.personList(bodyId, pagination.page),
+                id = urlGenerator.person.list(bodyId, pagination.page),
                 data = persons.toList(),
                 pagination = listPaginationMapper.toDto(persons),
                 links = listLinksMapper.toDto(
                     persons,
-                    { page -> urlGenerator.personList(bodyId, page) }
+                    { page -> urlGenerator.person.list(bodyId, page) }
                 ),
             )
         )
@@ -57,7 +57,7 @@ class OparlPersonController(
         @PathVariable bodyId: UUID,
         @PathVariable personId: UUID,
     ): ResponseEntity<OparlPersonDto> {
-        val person = resolvedPersonRepository.findByIdAndBody_Id(personId, bodyId)
+        val person = resolvedPersonRepository.findByIdAndBodyId(personId, bodyId)
 
         if (!person.isPresent) {
             return ResponseEntity.notFound().build()

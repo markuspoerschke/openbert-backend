@@ -28,7 +28,9 @@ class LocationResolver(
         }
         val bodies = buildList {
             raw.bodyUrls.mapTo(this) { bodyResolver.resolve(relatedResource(raw.resource, OparlUrl(it))) }
-            raw.organizationUrls.mapTo(this) { organizationResolver.resolve(relatedResource(raw.resource, OparlUrl(it))).body }
+            raw.organizationUrls.mapTo(this) {
+                organizationResolver.resolve(relatedResource(raw.resource, OparlUrl(it))).body
+            }
             raw.personUrls.mapTo(this) { personResolver.resolve(relatedResource(raw.resource, OparlUrl(it))).body }
             raw.meetingUrls.mapTo(this) { meetingResolver.resolve(relatedResource(raw.resource, OparlUrl(it))).body }
             raw.paperUrls.mapTo(this) { paperResolver.resolve(relatedResource(raw.resource, OparlUrl(it))).body }

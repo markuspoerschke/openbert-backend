@@ -15,7 +15,7 @@ class OparlPaperMapper(
 ) {
     fun toDto(paper: ResolvedPaper): OparlPaperDto {
         return OparlPaperDto(
-            id = urlGenerator.paper(paper.body.id, paper.id),
+            id = urlGenerator.paper.get(paper.body.id, paper.id),
             type = paper.getType().url,
             body = urlGenerator.body(paper.body.id),
             name = paper.name,

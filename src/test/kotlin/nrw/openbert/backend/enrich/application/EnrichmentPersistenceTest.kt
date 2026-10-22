@@ -72,7 +72,8 @@ class EnrichmentPersistenceTest(
         "5f37b17f-74de-4940-b1ab-9f2dd7ab521a | | | |",
         "028a0258-262f-47cc-8e7f-95c97c4863da | | | 1, Am Lindenkamp 33 | Sitzungssaal",
         "b64c7df8-c0be-421b-8779-84fdcf93e080 | Donnerstraße 13 | 42555 | Velbert | Raum 41",
-        "3c04fe2e-d8bc-4bf9-a9fc-caacbfa8b154 | | | Den Sitzungsort entnehmen Sie bitte der Einladung bzw. dem Newseintrag |",
+        "3c04fe2e-d8bc-4bf9-a9fc-caacbfa8b154 | | | " +
+            "Den Sitzungsort entnehmen Sie bitte der Einladung bzw. dem Newseintrag |",
     ])
     fun `issue 84 examples are persisted and resolved without changing the source`(
         id: UUID,
@@ -106,7 +107,11 @@ class EnrichmentPersistenceTest(
 
         val unchangedRaw = rawLocationRepository.findById(id).orElseThrow()
         assertEquals(originalValues, listOf(
-            unchangedRaw.streetAddress, unchangedRaw.postalCode, unchangedRaw.locality, unchangedRaw.room, unchangedRaw.description,
+            unchangedRaw.streetAddress,
+            unchangedRaw.postalCode,
+            unchangedRaw.locality,
+            unchangedRaw.room,
+            unchangedRaw.description,
         ))
         val resolved = resolvedLocationRepository.findByResource(unchangedRaw.resource)!!
         assertEquals(streetAddress, resolved.streetAddress)
@@ -287,7 +292,10 @@ class EnrichmentPersistenceTest(
     }
 
     private fun resource(path: String): OparlResource {
-        val system = entityManager.find(OparlSystem::class.java, UUID.fromString("9352fa21-68c6-4f4e-8832-08a0454ff179"))
+        val system = entityManager.find(
+            OparlSystem::class.java,
+            UUID.fromString("9352fa21-68c6-4f4e-8832-08a0454ff179"),
+        )
         return OparlResource(system, OparlUrl("https://oparl-demo.example.org/oparl/v1.1/$path"))
     }
 }

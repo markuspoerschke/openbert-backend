@@ -26,7 +26,9 @@ class SentryJobFilter(
 
     private fun unwrap(throwable: Throwable): Throwable {
         var current = throwable
-        while (current.cause != null && (current is InvocationTargetException || current.javaClass.name.endsWith("JobExecutionException"))) {
+        while (current.cause != null &&
+            (current is InvocationTargetException || current.javaClass.name.endsWith("JobExecutionException"))
+        ) {
             current = current.cause!!
         }
         return current

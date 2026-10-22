@@ -16,12 +16,12 @@ class OparlOrganizationMapper(
 ) {
     fun toDto(organization: ResolvedOrganization): OparlOrganizationDto {
         return OparlOrganizationDto(
-            id = urlGenerator.organization(organization.body.id, organization.id),
+            id = urlGenerator.organization.get(organization.body.id, organization.id),
             type = organization.getType().url,
             body = urlGenerator.body(organization.body.id),
             membership = resolvedMembershipRepository
-                .findAllByOrganization_IdAndBody_IdOrderById(organization.id, organization.body.id)
-                .map { urlGenerator.membership(organization.body.id, it.id) }
+                .findAllByOrganizationIdAndBodyIdOrderById(organization.id, organization.body.id)
+                .map { urlGenerator.membership.get(organization.body.id, it.id) }
                 .takeIf { it.isNotEmpty() },
             meeting = urlGenerator.organizationMeetingList(organization.body.id, organization.id),
             consultation = urlGenerator.organizationConsultationList(

@@ -90,7 +90,11 @@ class Crawler(
         when (response) {
             is OparlListDto -> {
                 response.data.orEmpty().forEach { dto ->
-                    process(dto, resource(system, requireNotNull(dto.id) { "OParl list item has no id" }), embedded = true)
+                    process(
+                        dto,
+                        resource(system, requireNotNull(dto.id) { "OParl list item has no id" }),
+                        embedded = true,
+                    )
                 }
                 response.links?.next?.let { next ->
                     val listEntityType = entityType ?: response.data.orEmpty().firstOrNull()?.let(::entityTypeOf)

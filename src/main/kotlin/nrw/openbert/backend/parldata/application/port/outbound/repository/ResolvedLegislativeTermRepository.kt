@@ -11,7 +11,7 @@ import java.util.UUID
 interface ResolvedLegislativeTermRepository : JpaRepository<ResolvedLegislativeTerm, UUID> {
     fun findByResource(resource: OparlResource): ResolvedLegislativeTerm?
 
-    fun findAllByBody_IdOrderById(bodyId: UUID, pageable: Pageable): Page<ResolvedLegislativeTerm>
+    fun findAllByBodyIdOrderById(bodyId: UUID, pageable: Pageable): Page<ResolvedLegislativeTerm>
 
-    fun findByIdAndBody_Id(id: UUID, bodyId: UUID): Optional<ResolvedLegislativeTerm>
+    fun findByIdAndBodyId(id: UUID, bodyId: UUID): Optional<ResolvedLegislativeTerm>
 }
