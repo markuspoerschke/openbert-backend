@@ -37,7 +37,18 @@ jobs:
         with:
           ref: ${{ github.event.repository.default_branch }}
           fetch-depth: 0
+      - name: Check trusted agent availability
+        id: agent
+        shell: bash
+        run: |
+          if [[ -f .github/actions/vibe-agent/action.yml ]]; then
+            echo "available=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "available=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Vibe agent is not installed on the default branch; skipping this event."
+          fi
       - name: Run Vibe Agent
+        if: steps.agent.outputs.available == 'true'
         uses: ./.github/actions/vibe-agent
         with:
           mode: review

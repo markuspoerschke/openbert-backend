@@ -9,6 +9,7 @@ import json
 import os
 from pathlib import Path
 import shlex
+import selectors
 import shutil
 import subprocess
 import tempfile
@@ -39,6 +40,9 @@ class AgentTest(unittest.TestCase):
             def do_POST(self):
                 self.respond('POST')
 
+            def do_DELETE(self):
+                self.respond('DELETE')
+
             def respond(self, method):
                 body = self.rfile.read(int(self.headers.get('Content-Length', '0')))
                 test.requests.append((method, self.path, json.loads(body) if body else None))
@@ -68,6 +72,10 @@ class AgentTest(unittest.TestCase):
                         DRY_RUN='false')
         self.env.pop('VIBE_COMMENT_KIND', None)
         self.env.pop('GITHUB_EVENT_NAME', None)
+        self.route('GET', '/labels?search=in%20progress', [{'name': 'in progress'}])
+        self.route('POST', '/issues/42/labels', {}, 200)
+        self.route('DELETE', '/issues/42/labels/in%20progress', None, 204)
+        self.route('POST', '/issues/42/comments', {}, 201)
         shutil.copyfile(AGENT / 'tests/fake_gh.py', self.bin / 'gh')
         (self.bin / 'gh').chmod(0o755)
 
@@ -105,10 +113,10 @@ class AgentTest(unittest.TestCase):
     def mock_vibe(self):
         path = self.bin / 'vibe'
         path.write_text('''#!/usr/bin/env python3
-import json, os, pathlib, sys, tomllib
+import json, os, pathlib, sys, time, tomllib
 args = sys.argv[1:]
 assert args[0] == '--prompt-file', args
-assert args[2:] == ['--auto-approve', '--trust', '--time-limit', '60'], args
+assert args[2:] == ['--auto-approve', '--trust', '--time-limit', '60', '--output', 'streaming'], args
 assert os.environ['MISTRAL_API_KEY'] == 'test-api-key'
 config = tomllib.loads((pathlib.Path(os.environ['VIBE_HOME']) / 'config.toml').read_text())
 assert config['active_model'] == 'vibe-agent'
@@ -117,6 +125,10 @@ prompt = pathlib.Path(args[1]).read_text()
 assert len(prompt) > 20
 assert not pathlib.Path('.git').exists()
 pathlib.Path(os.environ['VIBE_CAPTURE']).write_text(json.dumps({'args': args, 'prompt': prompt}))
+print(json.dumps({'role': 'assistant', 'content': 'Inspecting the codebase'}), flush=True)
+if os.environ.get('VIBE_PAUSE_FILE'):
+    while not pathlib.Path(os.environ['VIBE_PAUSE_FILE']).exists():
+        time.sleep(0.05)
 pathlib.Path('app.txt').write_text('fixed by Vibe')
 pathlib.Path('new.txt').write_text('new file')
 pathlib.Path('delete.txt').unlink(missing_ok=True)
@@ -222,6 +234,98 @@ sys.exit(int(os.environ.get('VIBE_EXIT', '0')))
         self.assertFalse((self.repo / 'unwanted-build').exists())
         self.assertFalse((self.repo / 'injected').exists())
 
+    def test_vibe_output_is_visible_before_process_finishes(self):
+        self.init_git()
+        self.mock_vibe()
+        release = self.root / 'continue-vibe'
+        log = self.root / 'stream.log'
+        command = f'source {shlex.quote(str(AGENT / "entrypoint.sh"))}\nexecute_vibe_prompt "Implement the requested changes" "$STREAM_LOG"'
+        process = subprocess.Popen(['bash', '-c', command], cwd=self.repo,
+                                   env=dict(self.env, VIBE_PAUSE_FILE=str(release), STREAM_LOG=str(log)),
+                                   text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        with selectors.DefaultSelector() as selector:
+            selector.register(process.stdout, selectors.EVENT_READ)
+            try:
+                self.assertTrue(selector.select(timeout=10), 'Vibe output was buffered until completion')
+                line = process.stdout.readline()
+                self.assertIn('Inspecting the codebase', line)
+                self.assertIsNone(process.poll(), 'Agent exited before progress could be observed')
+            finally:
+                release.touch()
+                output, errors = process.communicate(timeout=10)
+        self.assertEqual(process.returncode, 0, output + errors)
+        self.assertIn('Inspecting the codebase', log.read_text())
+
+    def test_streaming_preserves_vibe_failure_status(self):
+        self.init_git()
+        self.mock_vibe()
+        log = self.root / 'failed-stream.log'
+        result = self.bash('execute_vibe_prompt "Implement the requested changes" "$STREAM_LOG"',
+                           ok=False, VIBE_EXIT='7', STREAM_LOG=str(log))
+        self.assertEqual(result.returncode, 7)
+        self.assertIn('Inspecting the codebase', result.stdout)
+        self.assertIn('Inspecting the codebase', log.read_text())
+        self.assertEqual((self.repo / 'app.txt').read_text(), 'original')
+
+    def test_missing_progress_label_is_created_without_overwriting_existing_label(self):
+        self.route('GET', '/labels?search=in%20progress', [])
+        self.route('POST', '/labels', {}, 201)
+        self.bash('mark_issue_in_progress 42')
+        created = [body for method, path, body in self.requests if method == 'POST' and path.endswith('/labels') and 'name' in body]
+        self.assertEqual(len(created), 1)
+        self.assertEqual(created[0]['name'], 'in progress')
+        self.route('GET', '/labels?search=in%20progress', [{'name': 'In Progress'}])
+        self.bash('mark_issue_in_progress 42')
+        self.assertEqual(len([call for call in self.gh_calls() if call['args'][:2] == ['label', 'create']]), 1)
+
+    def test_failed_implementation_clears_progress_and_reports_failure(self):
+        self.init_git()
+        self.remote()
+        result = self.bash('''get_issue_details() { echo '{"title":"Fix failure"}'; }
+run_vibe_cli() { return 7; }
+implement_issue 42
+''', ok=False, GITHUB_RUN_ID='123')
+        self.assertEqual(result.returncode, 7)
+        paths = [(method, path) for method, path, _ in self.requests]
+        self.assertIn(('DELETE', '/repos/owner/repo/issues/42/labels/in%20progress'), paths)
+        comments = [body['body'] for method, path, body in self.requests if method == 'POST' and path.endswith('/comments')]
+        self.assertIn('starting work', comments[0])
+        self.assertIn('https://github.com/owner/repo/actions/runs/123', comments[0])
+        self.assertIn('stopped before completing', comments[-1])
+        self.assertIn('exit 7', comments[-1])
+
+    def test_progress_cleanup_failure_does_not_hide_original_failure(self):
+        self.init_git()
+        self.remote()
+        self.route('DELETE', '/issues/42/labels/in%20progress', {}, 403)
+        result = self.bash('''get_issue_details() { echo '{"title":"Fix failure"}'; }
+run_vibe_cli() { return 7; }
+implement_issue 42
+''', ok=False)
+        self.assertEqual(result.returncode, 7)
+        self.assertIn('Could not remove', result.stderr)
+
+    def test_start_comment_failure_clears_progress_and_does_not_run_vibe(self):
+        self.init_git()
+        self.route('POST', '/issues/42/comments', {}, 403)
+        self.bash('''get_issue_details() { echo '{"title":"Fix failure"}'; }
+run_vibe_cli() { touch unexpected-run; }
+implement_issue 42
+''', ok=False)
+        self.assertFalse((self.repo / 'unexpected-run').exists())
+        self.assertTrue(any(method == 'DELETE' for method, _, _ in self.requests))
+
+    def test_cancelled_implementation_clears_progress(self):
+        self.init_git()
+        self.remote()
+        result = self.bash('''get_issue_details() { echo '{"title":"Fix failure"}'; }
+run_vibe_cli() { kill -TERM "$BASHPID"; }
+implement_issue 42
+''', ok=False)
+        self.assertEqual(result.returncode, 143)
+        self.assertTrue(any(method == 'DELETE' for method, _, _ in self.requests))
+        self.assertIn('exit 143', self.requests[-1][2]['body'])
+
     def test_all_vibe_paths_use_supported_headless_contract_and_sync_changes(self):
         self.init_git('vibe/42-fix')
         self.mock_vibe()
@@ -267,6 +371,12 @@ trigger_ci_monitoring() { echo "$1" > dispatched; }
 implement_issue 42
 ''', TEST_ORIGIN=str(self.origin))
         self.assertEqual((self.repo / 'dispatched').read_text().strip(), 'vibe/42-fix-issue-with-spaces')
+        edits = [c for c in self.gh_calls() if c['args'][:2] == ['issue', 'edit']]
+        self.assertIn('--add-label', edits[0]['args'])
+        self.assertIn('--remove-label', edits[-1]['args'])
+        comments = [body['body'] for method, path, body in self.requests if method == 'POST' and path.endswith('/comments')]
+        self.assertIn('starting work', comments[0])
+        self.assertFalse(any('stopped before completing' in body for body in comments))
         message = self.git('log', '-1', '--format=%B')
         self.assertIn('\n\nImplements #42\n', message)
         self.assertNotIn('\\n', message)
