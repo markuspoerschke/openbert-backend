@@ -27,7 +27,7 @@ if args[0] == 'api':
     parser.add_argument('--raw-field', action='append')
     options = parser.parse_args(args[1:])
     endpoint = options.endpoint
-    assert endpoint.startswith('repos/owner/repo/')
+    assert endpoint == 'user' or endpoint.startswith('repos/owner/repo/')
     args[args.index(endpoint)] = os.environ['GH_TEST_API_URL'] + '/' + endpoint
     os.execv(os.environ['GH_TEST_REAL_CLI'], ['gh', *args])
 

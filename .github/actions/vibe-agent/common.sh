@@ -25,6 +25,8 @@ log_error() {
 # Configuration with defaults
 VIBE_API_KEY="${VIBE_API_KEY:-}"
 GITHUB_TOKEN="${GITHUB_TOKEN:-}"
+VIBE_GITHUB_TOKEN="${VIBE_GITHUB_TOKEN:-}"
+VIBE_BOT_LOGIN="${VIBE_BOT_LOGIN:-github-actions[bot]}"
 VIBE_MODEL="${VIBE_MODEL:-mistral-large-latest}"
 MAX_RETRIES="${MAX_RETRIES:-3}"
 VIBE_TIMEOUT_MINUTES="${VIBE_TIMEOUT_MINUTES:-30}"
@@ -32,8 +34,9 @@ VIBE_DEBUG="${VIBE_DEBUG:-false}"
 DRY_RUN="${DRY_RUN:-false}"
 
 # GitHub CLI handles authentication, request errors, and API pagination.
-# Keep the Actions-provided token as the fallback for local GH_TOKEN users.
-export GH_TOKEN="${GH_TOKEN:-$GITHUB_TOKEN}"
+# The optional bot token is also passed to checkout by the workflows, keeping
+# API operations and Git pushes under the same account.
+export GH_TOKEN="${VIBE_GITHUB_TOKEN:-${GH_TOKEN:-$GITHUB_TOKEN}}"
 GITHUB_REPO="${GITHUB_REPOSITORY:-}"
 
 # Get repository info
@@ -55,7 +58,7 @@ validate_credentials() {
     fi
     
     if [[ -z "$GH_TOKEN" ]]; then
-        log_error "GH_TOKEN or GITHUB_TOKEN must be set"
+        log_error "VIBE_GITHUB_TOKEN, GH_TOKEN or GITHUB_TOKEN must be set"
         exit 1
     fi
     
@@ -64,6 +67,23 @@ validate_credentials() {
         log_error "GitHub repository access failed"
         exit 1
     fi
+}
+
+# Installation GITHUB_TOKENs cannot query /user. Resolve the account only when
+# a personal bot token was supplied; otherwise retain the Actions identity.
+configure_git_identity() {
+    local account account_id email='41898282+github-actions[bot]@users.noreply.github.com'
+    VIBE_BOT_LOGIN='github-actions[bot]'
+    if [[ -n "$VIBE_GITHUB_TOKEN" ]]; then
+        account=$(gh api user) || { log_error "Could not identify the VIBE_GITHUB_TOKEN account"; return 1; }
+        VIBE_BOT_LOGIN=$(jq -er '.login | select(type == "string" and length > 0)' <<< "$account") || return 1
+        account_id=$(jq -er '.id' <<< "$account") || return 1
+        require_number "GitHub account ID" "$account_id" || return 1
+        email="${account_id}+${VIBE_BOT_LOGIN}@users.noreply.github.com"
+    fi
+    git config user.name "$VIBE_BOT_LOGIN"
+    git config user.email "$email"
+    log_info "Publishing as ${VIBE_BOT_LOGIN}"
 }
 
 # Check if dry run mode

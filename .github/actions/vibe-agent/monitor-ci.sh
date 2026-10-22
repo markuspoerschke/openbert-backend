@@ -4,11 +4,15 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/common.sh"
 
-# GITHUB_TOKEN pushes do not generate push/PR workflows. workflow_dispatch does.
+# Bot token pushes generate push/PR workflows; GITHUB_TOKEN needs dispatch.
 # The completed Build is handled by workflow_run; no background polling process.
 trigger_ci_monitoring() {
     local branch_name="$1"
     is_dry_run && return 0
+    if [[ -n "$VIBE_GITHUB_TOKEN" ]]; then
+        log_info "Bot token push triggers Build automatically for ${branch_name}"
+        return 0
+    fi
     gh workflow run test.yml --repo "$GITHUB_REPO" --ref "$branch_name"
     log_info "Build dispatched for ${branch_name}"
 }
@@ -22,8 +26,9 @@ find_pr_number() {
 # Attempt comments persist across runners, including failed repair executions.
 # All mutating Vibe workflows share one concurrency group.
 get_retry_comments() {
-    gh api --paginate "repos/${GITHUB_REPO}/issues/$1/comments?per_page=100" | jq -sc '[.[][] |
-        select(.user.login == "github-actions[bot]" and
+    gh api --paginate "repos/${GITHUB_REPO}/issues/$1/comments?per_page=100" | jq -sc --arg actor "$VIBE_BOT_LOGIN" '[.[][] |
+        select(((.user.login | ascii_downcase) == ($actor | ascii_downcase) or
+                .user.login == "github-actions[bot]") and
             (.body | startswith("<!-- vibe-ci-attempt:")))]'
 }
 
@@ -104,5 +109,5 @@ run_ci_monitor() {
     commit_changes "$issue_number" "vibe: Fix CI failure - attempt $((retry_count + 1))"
     push_branch "$branch"
     trigger_ci_monitoring "$branch"
-    add_pr_comment "$pr_number" "CI repair attempt $((retry_count + 1)) pushed in $(git rev-parse --short HEAD); a new Build was dispatched."
+    add_pr_comment "$pr_number" "CI repair attempt $((retry_count + 1)) pushed in $(git rev-parse --short HEAD); a new Build was triggered."
 }
