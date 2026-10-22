@@ -1,0 +1,47 @@
+name: Vibe Agent - Manual
+
+on:
+  workflow_dispatch:
+    inputs:
+      issue-number:
+        description: Specific issue number to work on
+        required: false
+        type: number
+      dry-run:
+        description: Preview selection without invoking Vibe or publishing changes
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+  actions: write
+
+# One group across implementation, review, and CI repair workflows.
+concurrency:
+  group: vibe-agent-${{ github.repository }}
+  cancel-in-progress: false
+
+jobs:
+  implement-issue:
+    runs-on: ubuntu-latest
+    env:
+      VIBE_API_KEY: ${{ secrets.VIBE_API_KEY }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      VIBE_MODEL: ${{ secrets.VIBE_MODEL || 'mistral-large-latest' }}
+      MAX_RETRIES: ${{ secrets.MAX_RETRIES || '3' }}
+      VIBE_TIMEOUT_MINUTES: ${{ secrets.VIBE_TIMEOUT_MINUTES || '30' }}
+      VIBE_DEBUG: ${{ secrets.VIBE_DEBUG || 'false' }}
+      DRY_RUN: ${{ inputs.dry-run && 'true' || 'false' }}
+    steps:
+      - name: Checkout trusted agent scripts
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - name: Run Vibe Agent
+        uses: ./.github/actions/vibe-agent
+        with:
+          mode: manual
+          issue-number: ${{ inputs.issue-number || '' }}

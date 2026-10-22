@@ -1,0 +1,68 @@
+name: Mistral Vibe Agent
+description: Autonomous coding agent for GitHub issue resolution
+inputs:
+  mode:
+    description: Execution mode (scheduled, manual, review, ci-monitor)
+    required: true
+    default: scheduled
+  issue-number:
+    description: Issue number for manual mode
+    required: false
+  pr-number:
+    description: Pull request number for review mode
+    required: false
+  comment-id:
+    description: Comment ID for review mode
+    required: false
+  comment-kind:
+    description: issue_comment or pull_request_review_comment
+    required: false
+    default: pull_request_review_comment
+  branch:
+    description: Failed Build branch for ci-monitor mode
+    required: false
+  run-id:
+    description: Failed Build run ID for ci-monitor mode
+    required: false
+
+# Callers must check out trusted scripts and use the shared concurrency group.
+runs:
+  using: composite
+  steps:
+    - name: Set up Python
+      uses: actions/setup-python@v6
+      with:
+        python-version: '3.12'
+    - name: Set up Java
+      uses: actions/setup-java@v6
+      with:
+        distribution: temurin
+        java-version: '25'
+    - name: Install dependencies and Mistral Vibe CLI
+      shell: bash
+      run: |
+        gh --version
+        sudo apt-get update -qq
+        sudo apt-get install -y -qq jq rsync
+        python -m pip install 'mistral-vibe==3.0.1'
+        vibe --version
+    - name: Run Vibe Agent
+      id: vibe-agent
+      shell: bash
+      env:
+        VIBE_ACTION_PATH: ${{ github.action_path }}
+        VIBE_AGENT_MODE: ${{ inputs.mode }}
+        VIBE_ISSUE_NUMBER: ${{ inputs.issue-number }}
+        VIBE_PR_NUMBER: ${{ inputs.pr-number }}
+        VIBE_COMMENT_ID: ${{ inputs.comment-id }}
+        VIBE_COMMENT_KIND: ${{ inputs.comment-kind }}
+        VIBE_MONITOR_BRANCH: ${{ inputs.branch }}
+        VIBE_RUN_ID: ${{ inputs.run-id }}
+      run: bash "$VIBE_ACTION_PATH/entrypoint.sh"
+    - name: Upload logs on failure
+      if: failure() && steps.vibe-agent.outcome == 'failure'
+      uses: actions/upload-artifact@v4
+      with:
+        name: vibe-agent-logs-${{ github.run_id }}
+        path: /tmp/vibe-*.log
+        retention-days: 7
