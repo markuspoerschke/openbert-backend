@@ -1,0 +1,26 @@
+name: Vibe Agent Tests
+
+on:
+  push:
+    paths:
+      - .github/actions/vibe-agent/**
+      - .github/workflows/vibe-agent-*.yml
+      - .github/workflows/test.yml
+  pull_request:
+    paths:
+      - .github/actions/vibe-agent/**
+      - .github/workflows/vibe-agent-*.yml
+      - .github/workflows/test.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  vibe-agent-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+      - name: Test Vibe agent orchestration
+        run: python3 -m unittest discover -s .github/actions/vibe-agent/tests -v

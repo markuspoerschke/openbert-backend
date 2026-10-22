@@ -24,11 +24,3 @@ jobs:
 
       - name: Build and test
         run: ./gradlew build --no-daemon
-
-  vibe-agent-tests:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out repository
-        uses: actions/checkout@v7
-      - name: Test Vibe agent orchestration
-        run: python3 -m unittest discover -s .github/actions/vibe-agent/tests -v

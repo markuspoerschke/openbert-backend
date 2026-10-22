@@ -87,5 +87,7 @@ actionlint .github/workflows/vibe-agent-*.yml .github/workflows/test.yml
 Tests use a local HTTP server, temporary Git repositories and a fake Vibe CLI.
 Native GitHub CLI commands use fixtures; `gh api` uses the installed CLI against
 that local server, including pagination and HTTP errors.
-They do not call Mistral or write to GitHub. The Build workflow runs the regression
-suite alongside the application build.
+They do not call Mistral or write to GitHub. The Vibe Agent Tests workflow runs
+the suite on pushes and pull requests that change `.github/actions/vibe-agent/**`,
+`.github/workflows/vibe-agent-*.yml`, or `.github/workflows/test.yml`. It can also
+be dispatched manually. Application builds run separately in the Build workflow.
