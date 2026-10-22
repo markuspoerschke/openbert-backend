@@ -7,6 +7,7 @@ import nrw.openbert.backend.parldata.adapter.inbound.api.dto.OparlSearchResultLi
 import nrw.openbert.backend.parldata.adapter.inbound.api.mapper.OparlSearchResultMapper
 import nrw.openbert.backend.parldata.application.port.inbound.OparlEntitySearchServiceInterface
 import nrw.openbert.backend.parldata.application.port.model.SearchCriteria
+import nrw.openbert.backend.parldata.domain.enums.OparlType
 import org.springframework.data.domain.PageRequest
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
@@ -22,17 +23,36 @@ class OparlSearchController(
     @GetMapping("oparl/v1.1/search")
     fun search(
         @Parameter(description = "Literal substring containing at least three consecutive letters or digits")
-        @RequestParam text: String,
+        @RequestParam(required = false) text: String?,
+        @Parameter(description = "List of body IDs to filter by")
+        @RequestParam(required = false) bodies: List<String>?,
+        @Parameter(description = "List of OParl types to filter by (e.g., PERSON, ORGANIZATION)")
+        @RequestParam(required = false) types: List<String>?,
         @RequestParam(defaultValue = "1") page: Int,
         @RequestParam(defaultValue = "20") size: Int,
     ): ResponseEntity<OparlSearchResultListDto> {
-        val searchText = text.trim()
-        if (!SEARCHABLE_TEXT.containsMatchIn(searchText) || page < 1 || size !in 1..MAX_PAGE_SIZE) {
+        val searchText = text?.trim()
+        if ((searchText != null && !SEARCHABLE_TEXT.containsMatchIn(searchText)) || page < 1 || size !in 1..MAX_PAGE_SIZE) {
             return ResponseEntity.badRequest().build()
         }
 
+        // Convert string types to OparlType enum values
+        val typeEnums = types?.let { typeStrings ->
+            typeStrings.mapNotNull { typeString ->
+                try {
+                    OparlType.valueOf(typeString.uppercase())
+                } catch (e: IllegalArgumentException) {
+                    null
+                }
+            }
+        } ?: OparlType.entries.toList()
+
         val resultPage = searchService.search(
-            SearchCriteria(term = searchText),
+            SearchCriteria(
+                term = searchText,
+                bodies = bodies ?: emptyList(),
+                types = typeEnums
+            ),
             PageRequest.of(page - 1, size),
         ).map(mapper::toDto)
 
@@ -53,27 +73,31 @@ class OparlSearchController(
                     totalPages = totalPages,
                 ),
                 links = OparlListLinksDto(
-                    first = pageUrl(baseUrl, searchText, 1, size),
-                    prev = if (page > 1) pageUrl(baseUrl, searchText, page - 1, size) else null,
-                    self = pageUrl(baseUrl, searchText, page, size),
+                    first = pageUrl(baseUrl, searchText, bodies, types, 1, size),
+                    prev = if (page > 1) pageUrl(baseUrl, searchText, bodies, types, page - 1, size) else null,
+                    self = pageUrl(baseUrl, searchText, bodies, types, page, size),
                     next = if (page < totalPages) {
-                        pageUrl(baseUrl, searchText, page + 1, size)
+                        pageUrl(baseUrl, searchText, bodies, types, page + 1, size)
                     } else {
                         null
                     },
-                    last = pageUrl(baseUrl, searchText, totalPages.coerceAtLeast(1), size),
+                    last = pageUrl(baseUrl, searchText, bodies, types, totalPages.coerceAtLeast(1), size),
                 ),
             )
         )
     }
 
-    private fun pageUrl(baseUrl: String, text: String, page: Int, size: Int): String {
-        return ServletUriComponentsBuilder
+    private fun pageUrl(baseUrl: String, text: String?, bodies: List<String>?, types: List<String>?, page: Int, size: Int): String {
+        val builder = ServletUriComponentsBuilder
             .fromUriString(baseUrl)
-            .queryParam("text", text)
             .queryParam("page", page)
             .queryParam("size", size)
-            .build()
+        
+        text?.let { builder.queryParam("text", it) }
+        bodies?.let { if (it.isNotEmpty()) builder.queryParam("bodies", it.joinToString(",")) }
+        types?.let { if (it.isNotEmpty()) builder.queryParam("types", it.joinToString(",")) }
+        
+        return builder.build()
             .encode()
             .toUriString()
     }
