@@ -8,7 +8,7 @@ import nrw.openbert.backend.parldata.domain.entity.raw.RawLocation
 import org.springframework.stereotype.Component
 
 /**
- * This normalizer normalizes the field values in a basic manner like removing leading and trailing whitespaces.
+ * Corrects unambiguous location field mistakes without changing the source data.
  */
 @Component
 class SimpleLocationEnricher(
@@ -20,16 +20,32 @@ class SimpleLocationEnricher(
     fun enrich(location: RawLocation, result: LocationOverrides): LocationOverrides {
         return result
             // normalize field values
-            .let { normalizeStreetName(location.streetAddress, it) }
-            .let { normalizePostalCode(location.postalCode, it) }
-            .let { normalizeRoom(location.room, it) }
-            .let { normalizeDescription(location.description, it) }
-            .let { normalizeLocality(location.locality, it) }
+            .let { normalizeStreetName(it.getStreetAddressOverrideOrOriginalValue(location.streetAddress), it) }
+            .let { normalizePostalCode(it.getPostalCodeOverrideOrOriginalValue(location.postalCode), it) }
+            .let { normalizeRoom(it.getRoomOverrideOrOriginalValue(location.room), it) }
+            .let { normalizeDescription(it.getDescriptionOverrideOrOriginalValue(location.description), it) }
+            .let { normalizeLocality(it.getLocalityOverrideOrOriginalValue(location.locality), it) }
             // check if field values have values from other fields
             .let {
-                normalizedSwappedStreetNameAndRoom(
+                removeRepeatedPostalCodeAndLocality(
+                    it.getStreetAddressOverrideOrOriginalValue(location.streetAddress),
+                    it.getPostalCodeOverrideOrOriginalValue(location.postalCode),
+                    it.getLocalityOverrideOrOriginalValue(location.locality),
+                    it,
+                )
+            }
+            .let {
+                normalizeStreetAddressInRoom(
                     it.getStreetAddressOverrideOrOriginalValue(location.streetAddress),
                     it.getRoomOverrideOrOriginalValue(location.room),
+                    it,
+                )
+            }
+            .let {
+                removeOrganizationNameFromAddress(
+                    it.getPostalCodeOverrideOrOriginalValue(location.postalCode),
+                    it.getLocalityOverrideOrOriginalValue(location.locality),
+                    it.getDescriptionOverrideOrOriginalValue(location.description),
                     it,
                 )
             }
@@ -37,6 +53,13 @@ class SimpleLocationEnricher(
                 normalizePostalCodeContainsRoom(
                     it.getPostalCodeOverrideOrOriginalValue(location.postalCode),
                     it.getRoomOverrideOrOriginalValue(location.room),
+                    it,
+                )
+            }
+            .let {
+                rejoinSplitLocality(
+                    it.getPostalCodeOverrideOrOriginalValue(location.postalCode),
+                    it.getLocalityOverrideOrOriginalValue(location.locality),
                     it,
                 )
             }
@@ -92,16 +115,43 @@ class SimpleLocationEnricher(
         return result.withLocalityOverride(normalizedLocality)
     }
 
-    private fun normalizedSwappedStreetNameAndRoom(
+    private fun removeRepeatedPostalCodeAndLocality(
+        streetAddress: String?,
+        postalCode: String?,
+        locality: String?,
+        result: LocationOverrides,
+    ): LocationOverrides {
+        if (isGermanPostalCode(postalCode) && locality != null && streetAddress == "$postalCode $locality") {
+            return result.withStreetAddressOverride(null)
+        }
+
+        return result
+    }
+
+    private fun normalizeStreetAddressInRoom(
         streetAddress: String?,
         room: String?,
-        result: LocationOverrides
+        result: LocationOverrides,
     ): LocationOverrides {
-        if (roomMatcher.isRoom(streetAddress) && streetNameMatcher.isStreetName(room)) {
-            // the field room and streetName are swapped
+        if ((streetAddress == null || roomMatcher.isRoom(streetAddress)) && streetNameMatcher.isStreetName(room)) {
             return result
-                .withStreetAddressOverride(room)
+                .withStreetAddressOverride(streetAddressNormalizer.normalize(room))
                 .withRoomOverride(streetAddress)
+        }
+
+        return result
+    }
+
+    private fun removeOrganizationNameFromAddress(
+        postalCode: String?,
+        locality: String?,
+        description: String?,
+        result: LocationOverrides,
+    ): LocationOverrides {
+        if (postalCode != null && !isGermanPostalCode(postalCode) && locality != null &&
+            "$postalCode $locality" == description
+        ) {
+            return result.withPostalCodeOverride(null).withLocalityOverride(null)
         }
 
         return result
@@ -110,9 +160,9 @@ class SimpleLocationEnricher(
     private fun normalizePostalCodeContainsRoom(
         postalCode: String?,
         room: String?,
-        result: LocationOverrides
+        result: LocationOverrides,
     ): LocationOverrides {
-        if (room == null && roomMatcher.isRoom(postalCode)) {
+        if (room == null && !isGermanPostalCode(postalCode) && roomMatcher.isRoom(postalCode)) {
             return result
                 .withRoomOverride(postalCode)
                 .withPostalCodeOverride(null)
@@ -120,4 +170,24 @@ class SimpleLocationEnricher(
 
         return result
     }
+
+    private fun rejoinSplitLocality(
+        postalCode: String?,
+        locality: String?,
+        result: LocationOverrides,
+    ): LocationOverrides {
+        // Room terms stay in place when a room already exists; do not move them into the locality.
+        if (postalCode != null && !isGermanPostalCode(postalCode) && !roomMatcher.isRoom(postalCode) &&
+            locality != null
+        ) {
+            return result.withLocalityOverride("$postalCode $locality").withPostalCodeOverride(null)
+        }
+
+        return result
+    }
+
+    private fun isGermanPostalCode(postalCode: String?): Boolean =
+        postalCode != null && germanPostalCode.matches(postalCode)
+
+    private val germanPostalCode = Regex("[0-9]{5}")
 }

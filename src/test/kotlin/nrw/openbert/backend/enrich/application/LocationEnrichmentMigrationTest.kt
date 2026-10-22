@@ -9,7 +9,8 @@ import nrw.openbert.backend.parldata.application.port.outbound.repository.Resolv
 import nrw.openbert.backend.parldata.application.port.outbound.repository.ResolvedLocationRepository
 import nrw.openbert.backend.parldata.application.resolve.Resolver
 import nrw.openbert.backend.parldata.domain.enums.OparlType
-import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.ValueSource
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.annotation.Import
@@ -40,12 +41,13 @@ class LocationEnrichmentMigrationTest(
 ) {
     private val existingTargetId = UUID.fromString("40000000-0000-4000-8000-000000000002")
 
-    @Test
-    fun `queues every existing location and updates resolved values through enrichment`() {
+    @ParameterizedTest
+    @ValueSource(strings = ["V11__enqueue_existing_locations_for_enrichment.sql", "V13__reenrich_location_addresses.sql"])
+    fun `queues every existing location and updates resolved values through enrichment`(migration: String) {
         val rawIds = rawLocationRepository.findAll().map { it.id }.toSet()
         val existingTarget = targetRepository.findById(existingTargetId).orElseThrow()
 
-        migrate()
+        migrate(migration)
 
         val dueTargets = targetRepository.findDue(Instant.now(), PageRequest.of(0, 100))
         assertEquals(rawIds, dueTargets.map { it.rawEntityId }.toSet())
@@ -80,13 +82,14 @@ class LocationEnrichmentMigrationTest(
         assertEquals("  Rathausplatz 1  ", raw.streetAddress)
     }
 
-    @Test
-    fun `clears old scheduling markers so previously scheduled locations become due again`() {
+    @ParameterizedTest
+    @ValueSource(strings = ["V11__enqueue_existing_locations_for_enrichment.sql", "V13__reenrich_location_addresses.sql"])
+    fun `clears old scheduling markers so previously scheduled locations become due again`(migration: String) {
         val existingTarget = targetRepository.findById(existingTargetId).orElseThrow()
         existingTarget.enqueue().markAsScheduled(UUID.randomUUID())
         existingTarget.scheduledAt = Instant.now().plusSeconds(3600)
 
-        migrate()
+        migrate(migration)
 
         val requeued = targetRepository.findById(existingTargetId).orElseThrow()
         assertEquals(2, requeued.referenceCount)
@@ -98,10 +101,10 @@ class LocationEnrichmentMigrationTest(
         assertTrue(existingTargetId in dueIds)
     }
 
-    private fun migrate() {
+    private fun migrate(migration: String) {
         entityManager.flush()
         ResourceDatabasePopulator(
-            ClassPathResource("db/migration/V11__enqueue_existing_locations_for_enrichment.sql"),
+            ClassPathResource("db/migration/$migration"),
         ).execute(dataSource)
         entityManager.clear()
     }

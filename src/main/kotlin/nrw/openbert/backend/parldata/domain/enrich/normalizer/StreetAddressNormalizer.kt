@@ -9,13 +9,15 @@ class StreetAddressNormalizer(
     fun normalize(streetAddress: String?): String? {
         val normalizedString = nullableStringNormalizer.normalize(streetAddress)
 
-        if (normalizedString === null) {
+        if (normalizedString == null) {
             return null
         }
 
         return normalizedString
-            .replace(" Str.", " Straße")
-            .replace("str.", "straße")
-            .replace("-Str.", "-Straße")
+            .replace(separateAbbreviation, "Straße")
+            .replace(attachedAbbreviation, "straße")
     }
+
+    private val separateAbbreviation = Regex("""(?<!\p{L})str\.(?=\s|[0-9]|$)""", RegexOption.IGNORE_CASE)
+    private val attachedAbbreviation = Regex("""(?<=\p{L})str\.(?=\s|[0-9]|$)""", RegexOption.IGNORE_CASE)
 }
