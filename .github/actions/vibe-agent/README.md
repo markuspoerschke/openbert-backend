@@ -25,7 +25,9 @@ Vibe configuration. API keys are never passed as command arguments.
 
 Vibe runs with `--output streaming`. Assistant and tool messages appear in the
 Actions log as they arrive, and `tee` retains the stream in `/tmp/vibe-*.log`.
-The pipeline preserves failures from both Vibe and log capture.
+The pipeline preserves failures from both Vibe and log capture. Workspace cleanup
+handles Vibe's read-only plugin cache; a cleanup error is logged as a warning and
+preserves the original execution result so successful changes can be published.
 
 Before implementation starts, the issue receives an `in progress` label and a
 comment linking to the Actions run. The label is created if needed without

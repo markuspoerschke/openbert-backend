@@ -61,7 +61,7 @@ runs:
       run: bash "$VIBE_ACTION_PATH/entrypoint.sh"
     - name: Upload logs on failure
       if: failure() && steps.vibe-agent.outcome == 'failure'
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: vibe-agent-logs-${{ github.run_id }}
         path: /tmp/vibe-*.log

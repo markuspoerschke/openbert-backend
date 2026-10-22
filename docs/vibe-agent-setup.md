@@ -139,9 +139,12 @@ older pending event. Retrigger feedback whose pending run was superseded.
 Vibe uses `--output streaming` so assistant/tool messages are visible during
 execution in the Actions log. The same stream is retained in `/tmp/vibe-*.log`
 via `tee`, with CLI failures still propagated. Failed agent executions upload
-those logs for seven days. Check API errors, model availability, repository
-workflow permissions, the retry markers, and the exact failing Build run when
-investigating a failure.
+those logs for seven days using the Node.js 24-based artifact action.
+Temporary-workspace cleanup makes Vibe's read-only plugin cache writable before
+deletion. If deletion still fails, it warns without turning a successful execution
+into a failure or hiding an actual CLI failure. Check API errors, model availability,
+repository workflow permissions, the retry markers, and the exact failing Build
+run when investigating a failure.
 
 Run the regression suite without live credentials or Mistral usage:
 

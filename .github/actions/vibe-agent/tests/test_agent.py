@@ -124,7 +124,7 @@ assert config['models'][0]['name'] == 'mistral-large-latest'
 prompt = pathlib.Path(args[1]).read_text()
 assert len(prompt) > 20
 assert not pathlib.Path('.git').exists()
-pathlib.Path(os.environ['VIBE_CAPTURE']).write_text(json.dumps({'args': args, 'prompt': prompt}))
+pathlib.Path(os.environ['VIBE_CAPTURE']).write_text(json.dumps({'args': args, 'prompt': prompt, 'work_dir': str(pathlib.Path.cwd().parent)}))
 print(json.dumps({'role': 'assistant', 'content': 'Inspecting the codebase'}), flush=True)
 if os.environ.get('VIBE_PAUSE_FILE'):
     while not pathlib.Path(os.environ['VIBE_PAUSE_FILE']).exists():
@@ -132,6 +132,14 @@ if os.environ.get('VIBE_PAUSE_FILE'):
 pathlib.Path('app.txt').write_text('fixed by Vibe')
 pathlib.Path('new.txt').write_text('new file')
 pathlib.Path('delete.txt').unlink(missing_ok=True)
+if os.environ.get('VIBE_READONLY_CACHE'):
+    package = pathlib.Path(os.environ['VIBE_HOME']) / 'logs/session/plugins/packages/13/test-plugin'
+    skill = package / 'skills/example'
+    skill.mkdir(parents=True)
+    (package / 'plugin.json').write_text('{}')
+    (skill / 'SKILL.md').write_text('# Fixture skill')
+    for directory in [skill, skill.parent, package]:
+        directory.chmod(0o555)
 sys.exit(int(os.environ.get('VIBE_EXIT', '0')))
 ''')
         path.chmod(0o755)
@@ -266,6 +274,45 @@ sys.exit(int(os.environ.get('VIBE_EXIT', '0')))
         self.assertIn('Inspecting the codebase', result.stdout)
         self.assertIn('Inspecting the codebase', log.read_text())
         self.assertEqual((self.repo / 'app.txt').read_text(), 'original')
+
+    @staticmethod
+    def remove_workspace_fixture(path):
+        # Old cleanup may leave the read-only fixture behind when this test fails.
+        for directory, _, _ in os.walk(path):
+            Path(directory).chmod(0o700)
+        shutil.rmtree(path, ignore_errors=True)
+
+    def test_workspace_cleanup_handles_read_only_plugin_cache(self):
+        self.init_git()
+        self.mock_vibe()
+        try:
+            self.bash('execute_vibe_prompt "Implement the requested changes" "$STREAM_LOG"',
+                      VIBE_READONLY_CACHE='1', STREAM_LOG=str(self.root / 'readonly.log'))
+        finally:
+            capture = self.root / 'vibe.json'
+            if capture.exists():
+                work_dir = Path(json.loads(capture.read_text())['work_dir'])
+                self.addCleanup(self.remove_workspace_fixture, work_dir)
+        self.assertEqual((self.repo / 'app.txt').read_text(), 'fixed by Vibe')
+        self.assertFalse(work_dir.exists(), 'Read-only plugin cache was left behind')
+
+    def test_workspace_cleanup_errors_preserve_execution_status(self):
+        self.init_git()
+        self.mock_vibe()
+        for exit_code in [0, 7]:
+            with self.subTest(exit_code=exit_code):
+                (self.repo / 'app.txt').write_text('original')
+                try:
+                    result = self.bash('''rm() { return 13; }
+execute_vibe_prompt "Implement the requested changes" "$STREAM_LOG"
+''', ok=exit_code == 0, VIBE_EXIT=str(exit_code), STREAM_LOG=str(self.root / 'cleanup.log'))
+                finally:
+                    work_dir = Path(json.loads((self.root / 'vibe.json').read_text())['work_dir'])
+                    self.addCleanup(self.remove_workspace_fixture, work_dir)
+                self.assertEqual(result.returncode, exit_code)
+                self.assertIn('Could not clean up Vibe workspace', result.stderr)
+                expected = 'fixed by Vibe' if exit_code == 0 else 'original'
+                self.assertEqual((self.repo / 'app.txt').read_text(), expected)
 
     def test_missing_progress_label_is_created_without_overwriting_existing_label(self):
         self.route('GET', '/labels?search=in%20progress', [])
