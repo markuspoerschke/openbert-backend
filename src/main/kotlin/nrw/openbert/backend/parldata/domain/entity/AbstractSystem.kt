@@ -1,11 +1,9 @@
 package nrw.openbert.backend.parldata.domain.entity
 
 import jakarta.persistence.Column
-import jakarta.persistence.Convert
 import jakarta.persistence.MappedSuperclass
 import nrw.openbert.backend.parldata.domain.entity.embeddable.OparlResource
 import nrw.openbert.backend.parldata.domain.valueObject.OparlUrl
-import nrw.openbert.backend.parldata.adapter.outbound.persistence.converter.OparlUrlConverter
 import nrw.openbert.backend.parldata.domain.enums.OparlType
 
 @MappedSuperclass
@@ -16,7 +14,6 @@ abstract class AbstractSystem(resource: OparlResource) : AbstractOparlEntity(res
     @Column(columnDefinition = "text[]")
     var otherOparlVersions: MutableList<String> = mutableListOf()
 
-    @Convert(converter = OparlUrlConverter::class)
     @Column
     var license: OparlUrl? = null
 
@@ -29,15 +26,12 @@ abstract class AbstractSystem(resource: OparlResource) : AbstractOparlEntity(res
     @Column
     var contactName: String? = null
 
-    @Convert(converter = OparlUrlConverter::class)
     @Column
     var website: OparlUrl? = null
 
-    @Convert(converter = OparlUrlConverter::class)
     @Column
     var vendor: OparlUrl? = null
 
-    @Convert(converter = OparlUrlConverter::class)
     @Column
     var product: OparlUrl? = null
 

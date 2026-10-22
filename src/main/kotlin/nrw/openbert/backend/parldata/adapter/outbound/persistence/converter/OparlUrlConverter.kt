@@ -4,7 +4,7 @@ import jakarta.persistence.AttributeConverter
 import jakarta.persistence.Converter
 import nrw.openbert.backend.parldata.domain.valueObject.OparlUrl
 
-@Converter
+@Converter(autoApply = true)
 class OparlUrlConverter : AttributeConverter<OparlUrl, String> {
     override fun convertToDatabaseColumn(attribute: OparlUrl?): String? {
         return attribute?.value
