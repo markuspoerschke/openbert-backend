@@ -32,11 +32,13 @@ PY
     cd "$work_dir/repo" || return 1
     timeout_seconds=$((VIBE_TIMEOUT_MINUTES * 60))
     log_info "Running Vibe (model: ${VIBE_MODEL}, timeout: ${timeout_seconds}s)"
+    # Streaming emits assistant/tool messages during the run. tee keeps the same
+    # events in the failure artifact; pipefail preserves CLI and logging failures.
     # The external timeout is a final guard if the CLI fails to shut down.
     if MISTRAL_API_KEY="$VIBE_API_KEY" VIBE_HOME="$work_dir/home" \
         timeout --kill-after=30 "$((timeout_seconds + 30))" \
         vibe --prompt-file "$work_dir/prompt.md" --auto-approve --trust \
-        --time-limit "$timeout_seconds" > "$output_log" 2>&1; then
+        --time-limit "$timeout_seconds" --output streaming 2>&1 | tee "$output_log"; then
         log_info "Vibe completed"
     else
         local status=$?

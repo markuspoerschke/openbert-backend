@@ -9,6 +9,7 @@ source "${SCRIPT_DIR}/run-vibe.sh"
 source "${SCRIPT_DIR}/create-pr.sh"
 source "${SCRIPT_DIR}/monitor-ci.sh"
 source "${SCRIPT_DIR}/handle-review.sh"
+source "${SCRIPT_DIR}/issue-progress.sh"
 
 run_scheduled_mode() {
     local issue pr_status=0
@@ -48,8 +49,8 @@ run_manual_mode() {
     implement_issue "$issue_number"
 }
 
-implement_issue() {
-    local issue_number="$1" issue_data slug branch_name pr_url
+implement_issue() (
+    local issue_number="$1" issue_data slug branch_name pr_url="" started=false
     issue_data=$(get_issue_details "$issue_number")
     slug=$(create_slug "$issue_data")
     branch_name="vibe/${issue_number}-${slug:-issue}"
@@ -57,6 +58,13 @@ implement_issue() {
         log_info "[DRY RUN] Would implement #${issue_number} on ${branch_name} and create a draft PR"
         return 0
     fi
+    trap 'finish_issue_work "$issue_number" "$?" "$started" "$pr_url"' EXIT
+    trap 'exit 130' INT
+    trap 'exit 143' TERM
+    mark_issue_in_progress "$issue_number"
+    started=true
+    announce_issue_work "$issue_number" "$branch_name"
+    log_info "Starting implementation of issue #${issue_number}: ${branch_name}"
     create_working_branch "$branch_name"
     run_vibe_cli "$issue_number" "$branch_name"
     if ! run_tests; then
@@ -67,7 +75,7 @@ implement_issue() {
     pr_url=$(create_draft_pr "$branch_name" "$issue_number")
     log_info "Draft PR created: ${pr_url}"
     trigger_ci_monitoring "$branch_name"
-}
+)
 
 main() {
     local mode="${1:-${VIBE_AGENT_MODE:-scheduled}}"

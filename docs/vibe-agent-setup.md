@@ -49,7 +49,14 @@ written into the repository or passed as CLI arguments.
    **Actions → Vibe Agent - Manual → Run workflow**.
 3. Optionally supply an issue number. Without one, the oldest eligible issue
    is selected. A manual selection must also have the `vibe` label.
-4. Review the resulting draft PR and its Build results.
+4. Follow the start comment's Actions link while the issue is labeled `in progress`.
+5. Review the resulting draft PR and its Build results.
+
+The agent creates the `in progress` label when needed and posts its start comment
+before branch setup and Vibe execution. Existing label color/description are
+preserved. On exit it attempts to remove the label, including after failures and
+catchable cancellation. Failures receive a comment linking back to the run; a
+successful implementation receives the existing draft-PR delivery comment.
 
 The scheduled run skips selection while any `vibe/` PR is open. Manual runs skip
 an issue that already has an open Vibe PR. Branches use
@@ -101,6 +108,11 @@ collaborators, and `chatgpt-codex-connector[bot]`. It skips fork PRs and non-Vib
 branches. Actionable comments are handled on the current remote branch head.
 Changes are committed, pushed, and built before a response is posted.
 
+Review and CI workflows always check out trusted default-branch scripts. If that
+checkout does not contain the local action yet (for example, while reviewing the
+PR that first introduces the agent), they skip with an explicit notice. They do
+not load the PR's agent scripts as a fallback.
+
 Inline feedback gets a reply in its original review thread, including when the
 triggering comment was itself a reply. PR conversation comments receive a
 conversation response. A run that produces no changes reports that manual review
@@ -124,8 +136,10 @@ older pending event. Retrigger feedback whose pending run was superseded.
 
 ## Diagnostics and validation
 
-Agent diagnostics appear in Actions logs. Failed agent executions upload
-`/tmp/vibe-*.log` for seven days. Check API errors, model availability, repository
+Vibe uses `--output streaming` so assistant/tool messages are visible during
+execution in the Actions log. The same stream is retained in `/tmp/vibe-*.log`
+via `tee`, with CLI failures still propagated. Failed agent executions upload
+those logs for seven days. Check API errors, model availability, repository
 workflow permissions, the retry markers, and the exact failing Build run when
 investigating a failure.
 

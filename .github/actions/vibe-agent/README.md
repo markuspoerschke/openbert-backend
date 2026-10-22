@@ -23,6 +23,16 @@ Implementation, review, and repair all use Vibe 3.0.1 with `--prompt-file`,
 is passed to the CLI as `MISTRAL_API_KEY`; `VIBE_MODEL` is written to a temporary
 Vibe configuration. API keys are never passed as command arguments.
 
+Vibe runs with `--output streaming`. Assistant and tool messages appear in the
+Actions log as they arrive, and `tee` retains the stream in `/tmp/vibe-*.log`.
+The pipeline preserves failures from both Vibe and log capture.
+
+Before implementation starts, the issue receives an `in progress` label and a
+comment linking to the Actions run. The label is created if needed without
+changing an existing label. Exit cleanup removes it after completion, failure,
+or catchable cancellation, and reports failures on the issue. A completed draft
+PR is linked by the existing delivery comment. Dry runs do not update issues.
+
 Vibe works in a temporary copy without Git metadata. The caller applies changes,
 commits them, pushes the branch, then creates a draft PR or posts a response.
 Build is explicitly dispatched because pushes made with `GITHUB_TOKEN` do not
@@ -58,6 +68,9 @@ checking out the failing branch. It skips stale runs. Bot-authored attempt
 comments persist retry counts across runners and prevent duplicate processing of
 the same Build run. Fork PRs and non-Vibe branches are skipped. Review triggers
 accept repository owners, members, collaborators, and the configured Codex review bot.
+Review and CI workflows check that the local action exists after checking out the
+trusted default branch. Events from before the agent is installed there skip with
+a notice, rather than attempting to load a missing local action.
 
 ## Validation
 
