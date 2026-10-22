@@ -138,7 +138,7 @@ class OparlSearchControllerTest(
             jsonPath("$.pagination.totalElements") { value(5) }
             jsonPath("$.pagination.currentPage") { value(1) }
             jsonPath("$.pagination.totalPages") { value(3) }
-            jsonPath("$.links.next") { value("$searchUrl?text=haushalt&page=2&size=2") }
+            jsonPath("$.links.next") { value("$searchUrl?page=2&size=2&text=haushalt") }
         }
     }
 
@@ -158,11 +158,11 @@ class OparlSearchControllerTest(
             jsonPath("$.pagination.elementsPerPage") { value(1) }
             jsonPath("$.pagination.currentPage") { value(1) }
             jsonPath("$.pagination.totalPages") { value(2) }
-            jsonPath("$.links.first") { value("$searchUrl?text=searchable&page=1&size=1") }
+            jsonPath("$.links.first") { value("$searchUrl?page=1&size=1&text=searchable") }
             jsonPath("$.links.prev") { doesNotExist() }
-            jsonPath("$.links.self") { value("$searchUrl?text=searchable&page=1&size=1") }
-            jsonPath("$.links.next") { value("$searchUrl?text=searchable&page=2&size=1") }
-            jsonPath("$.links.last") { value("$searchUrl?text=searchable&page=2&size=1") }
+            jsonPath("$.links.self") { value("$searchUrl?page=1&size=1&text=searchable") }
+            jsonPath("$.links.next") { value("$searchUrl?page=2&size=1&text=searchable") }
+            jsonPath("$.links.last") { value("$searchUrl?page=2&size=1&text=searchable") }
         }
 
         mockMvc.get(searchUrl) {
@@ -175,7 +175,7 @@ class OparlSearchControllerTest(
             jsonPath("$.data[0].id") {
                 value("$secondBodyUrl/file/33333333-3333-4333-a333-333333333333")
             }
-            jsonPath("$.links.prev") { value("$searchUrl?text=searchable&page=1&size=1") }
+            jsonPath("$.links.prev") { value("$searchUrl?page=1&size=1&text=searchable") }
             jsonPath("$.links.next") { doesNotExist() }
         }
     }
