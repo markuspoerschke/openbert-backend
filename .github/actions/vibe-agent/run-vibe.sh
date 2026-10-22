@@ -4,6 +4,17 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/common.sh"
 
+# Vibe caches plugin packages in read-only directories. Make this private
+# workspace writable before deletion; cleanup must retain the execution result.
+cleanup_vibe_workspace() {
+    local work_dir="$1" execution_status="$2"
+    chmod -R u+rwX -- "$work_dir" 2>/dev/null || true
+    if ! rm -rf -- "$work_dir"; then
+        log_warn "Could not clean up Vibe workspace: ${work_dir}" || true
+    fi
+    return "$execution_status"
+}
+
 # All three modes use the pinned CLI's headless interface. Credentials never
 # enter command arguments or debug logs. Git publication belongs to the caller.
 execute_vibe_prompt() (
@@ -12,7 +23,7 @@ execute_vibe_prompt() (
     is_dry_run && { log_info "[DRY RUN] Would run Vibe"; return 0; }
     repo_root=$(pwd)
     work_dir=$(mktemp -d /tmp/vibe-work.XXXXXX)
-    trap 'rm -rf "$work_dir"' EXIT
+    trap 'cleanup_vibe_workspace "$work_dir" "$?"' EXIT
     mkdir -p "$work_dir/repo" "$work_dir/home"
     printf '%s\n' "$prompt" > "$work_dir/prompt.md"
     # Build a valid TOML model entry instead of using the unsupported --model.

@@ -25,7 +25,9 @@ Vibe configuration. API keys are never passed as command arguments.
 
 Vibe runs with `--output streaming`. Assistant and tool messages appear in the
 Actions log as they arrive, and `tee` retains the stream in `/tmp/vibe-*.log`.
-The pipeline preserves failures from both Vibe and log capture.
+The pipeline preserves failures from both Vibe and log capture. Workspace cleanup
+handles Vibe's read-only plugin cache; a cleanup error is logged as a warning and
+preserves the original execution result so successful changes can be published.
 
 Before implementation starts, the issue receives an `in progress` label and a
 comment linking to the Actions run. The label is created if needed without
@@ -85,5 +87,7 @@ actionlint .github/workflows/vibe-agent-*.yml .github/workflows/test.yml
 Tests use a local HTTP server, temporary Git repositories and a fake Vibe CLI.
 Native GitHub CLI commands use fixtures; `gh api` uses the installed CLI against
 that local server, including pagination and HTTP errors.
-They do not call Mistral or write to GitHub. The Build workflow runs the regression
-suite alongside the application build.
+They do not call Mistral or write to GitHub. The Vibe Agent Tests workflow runs
+the suite on pushes and pull requests that change `.github/actions/vibe-agent/**`,
+`.github/workflows/vibe-agent-*.yml`, or `.github/workflows/test.yml`. It can also
+be dispatched manually. Application builds run separately in the Build workflow.
