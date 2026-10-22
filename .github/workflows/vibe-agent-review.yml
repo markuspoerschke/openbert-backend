@@ -20,7 +20,9 @@ concurrency:
 jobs:
   handle-review:
     runs-on: ubuntu-latest
+    # Disabled; remove `false &&` to re-enable review handling.
     if: >-
+      false &&
       (github.event_name == 'pull_request_review_comment' || github.event.issue.pull_request) &&
       (contains(fromJSON('["OWNER", "MEMBER", "COLLABORATOR"]'), github.event.comment.author_association) ||
        github.event.comment.user.login == 'chatgpt-codex-connector[bot]')

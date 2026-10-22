@@ -84,7 +84,7 @@ written into the repository or passed as CLI arguments.
 ## Run the agent
 
 1. Open an issue with concrete requirements and add the `vibe` label.
-2. Wait for the hourly **Vibe Agent - Scheduled** workflow, or open
+2. Wait for the **Vibe Agent - Scheduled** workflow (every three hours), or open
    **Actions → Vibe Agent - Manual → Run workflow**.
 3. Optionally supply an issue number. Without one, the oldest eligible issue
    is selected. A manual selection must also have the `vibe` label.
