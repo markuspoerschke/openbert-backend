@@ -36,17 +36,17 @@ class OparlConsultationController(
         }
 
         val consultations = resolvedConsultationRepository
-            .findAllByBody_IdOrderById(bodyId, pagination.toPageable())
+            .findAllByBodyIdOrderById(bodyId, pagination.toPageable())
             .map(consultationMapper::toDto)
 
         return ResponseEntity.ok(
             OparlListDto(
-                id = urlGenerator.consultationList(bodyId, pagination.page),
+                id = urlGenerator.consultation.list(bodyId, pagination.page),
                 data = consultations.toList(),
                 pagination = listPaginationMapper.toDto(consultations),
                 links = listLinksMapper.toDto(
                     consultations,
-                    { page -> urlGenerator.consultationList(bodyId, page) }
+                    { page -> urlGenerator.consultation.list(bodyId, page) }
                 ),
             )
         )
@@ -57,7 +57,7 @@ class OparlConsultationController(
         @PathVariable bodyId: UUID,
         @PathVariable consultationId: UUID,
     ): ResponseEntity<OparlConsultationDto> {
-        val consultation = resolvedConsultationRepository.findByIdAndBody_Id(
+        val consultation = resolvedConsultationRepository.findByIdAndBodyId(
             consultationId,
             bodyId,
         )

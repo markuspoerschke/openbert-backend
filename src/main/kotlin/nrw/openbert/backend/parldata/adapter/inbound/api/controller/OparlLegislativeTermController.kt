@@ -36,17 +36,17 @@ class OparlLegislativeTermController(
         }
 
         val legislativeTerms = resolvedLegislativeTermRepository
-            .findAllByBody_IdOrderById(bodyId, pagination.toPageable())
+            .findAllByBodyIdOrderById(bodyId, pagination.toPageable())
             .map(legislativeTermMapper::toDto)
 
         return ResponseEntity.ok(
             OparlListDto(
-                id = urlGenerator.legislativeTermList(bodyId, pagination.page),
+                id = urlGenerator.legislativeTerm.list(bodyId, pagination.page),
                 data = legislativeTerms.toList(),
                 pagination = listPaginationMapper.toDto(legislativeTerms),
                 links = listLinksMapper.toDto(
                     legislativeTerms,
-                    { page -> urlGenerator.legislativeTermList(bodyId, page) }
+                    { page -> urlGenerator.legislativeTerm.list(bodyId, page) }
                 ),
             )
         )
@@ -58,7 +58,7 @@ class OparlLegislativeTermController(
         @PathVariable legislativeTermId: UUID,
     ): ResponseEntity<OparlLegislativeTermDto> {
         val legislativeTerm = resolvedLegislativeTermRepository
-            .findByIdAndBody_Id(legislativeTermId, bodyId)
+            .findByIdAndBodyId(legislativeTermId, bodyId)
 
         if (!legislativeTerm.isPresent) {
             return ResponseEntity.notFound().build()

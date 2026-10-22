@@ -36,17 +36,17 @@ class OparlMeetingController(
         }
 
         val meetings = resolvedMeetingRepository
-            .findAllByBody_IdOrderById(bodyId, pagination.toPageable())
+            .findAllByBodyIdOrderById(bodyId, pagination.toPageable())
             .map(meetingMapper::toDto)
 
         return ResponseEntity.ok(
             OparlListDto(
-                id = urlGenerator.meetingList(bodyId, pagination.page),
+                id = urlGenerator.meeting.list(bodyId, pagination.page),
                 data = meetings.toList(),
                 pagination = listPaginationMapper.toDto(meetings),
                 links = listLinksMapper.toDto(
                     meetings,
-                    { page -> urlGenerator.meetingList(bodyId, page) }
+                    { page -> urlGenerator.meeting.list(bodyId, page) }
                 ),
             )
         )
@@ -57,7 +57,7 @@ class OparlMeetingController(
         @PathVariable bodyId: UUID,
         @PathVariable meetingId: UUID,
     ): ResponseEntity<OparlMeetingDto> {
-        val meeting = resolvedMeetingRepository.findByIdAndBody_Id(meetingId, bodyId)
+        val meeting = resolvedMeetingRepository.findByIdAndBodyId(meetingId, bodyId)
 
         if (!meeting.isPresent) {
             return ResponseEntity.notFound().build()

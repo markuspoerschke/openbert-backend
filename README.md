@@ -82,7 +82,7 @@ Data availability depends on the upstream server and background processing.
 
 Run `./gradlew detekt` to analyze production and test Kotlin sources. Detekt also runs through `check` when executing `./gradlew build`, including the CI build. Reports are written to `build/reports/detekt/` in HTML, XML, Markdown and SARIF formats.
 
-Existing findings currently fail the analysis and build; cleaning them up is a separate task. See [DETEKT_SUMMARY.md](DETEKT_SUMMARY.md) for compatibility details and the reason for using Detekt 2.0.0-alpha.6.
+Detekt findings fail the build. The project uses Detekt 2.0.0-alpha.6 for compatibility with JDK 25 and Gradle 9.
 
 ## Docker image
 

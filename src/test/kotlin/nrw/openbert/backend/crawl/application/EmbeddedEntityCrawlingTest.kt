@@ -206,7 +206,10 @@ class EmbeddedEntityCrawlingTest(
     }
 
     private fun resource(path: String): OparlResource {
-        val system = entityManager.find(OparlSystem::class.java, UUID.fromString("9352fa21-68c6-4f4e-8832-08a0454ff179"))
+        val system = entityManager.find(
+            OparlSystem::class.java,
+            UUID.fromString("9352fa21-68c6-4f4e-8832-08a0454ff179"),
+        )
         return OparlResource(system, OparlUrl("https://oparl-demo.example.org/oparl/v1.1/$path"))
     }
 }

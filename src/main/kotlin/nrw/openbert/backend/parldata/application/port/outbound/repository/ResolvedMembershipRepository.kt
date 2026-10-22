@@ -11,16 +11,16 @@ import java.util.UUID
 interface ResolvedMembershipRepository : JpaRepository<ResolvedMembership, UUID> {
     fun findByResource(resource: OparlResource): ResolvedMembership?
 
-    fun findAllByBody_IdOrderById(bodyId: UUID, pageable: Pageable): Page<ResolvedMembership>
+    fun findAllByBodyIdOrderById(bodyId: UUID, pageable: Pageable): Page<ResolvedMembership>
 
-    fun findByIdAndBody_Id(id: UUID, bodyId: UUID): Optional<ResolvedMembership>
+    fun findByIdAndBodyId(id: UUID, bodyId: UUID): Optional<ResolvedMembership>
 
-    fun findAllByPerson_IdAndBody_IdOrderById(
+    fun findAllByPersonIdAndBodyIdOrderById(
         personId: UUID,
         bodyId: UUID,
     ): List<ResolvedMembership>
 
-    fun findAllByOrganization_IdAndBody_IdOrderById(
+    fun findAllByOrganizationIdAndBodyIdOrderById(
         organizationId: UUID,
         bodyId: UUID,
     ): List<ResolvedMembership>

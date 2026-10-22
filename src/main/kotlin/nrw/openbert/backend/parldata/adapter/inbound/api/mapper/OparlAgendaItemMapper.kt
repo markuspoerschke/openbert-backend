@@ -12,9 +12,9 @@ class OparlAgendaItemMapper(
 ) {
     fun toDto(agendaItem: ResolvedAgendaItem): OparlAgendaItemDto {
         return OparlAgendaItemDto(
-            id = urlGenerator.agendaItem(agendaItem.body.id, agendaItem.id),
+            id = urlGenerator.agendaItem.get(agendaItem.body.id, agendaItem.id),
             type = agendaItem.getType().url,
-            meeting = urlGenerator.meeting(agendaItem.body.id, agendaItem.meeting.id),
+            meeting = urlGenerator.meeting.get(agendaItem.body.id, agendaItem.meeting.id),
             number = agendaItem.number,
             order = requireNotNull(agendaItem.order) {
                 "Resolved agenda item ${agendaItem.id} has no order"
@@ -22,7 +22,7 @@ class OparlAgendaItemMapper(
             name = agendaItem.name,
             public = agendaItem.public,
             consultation = agendaItem.consultation
-                ?.let { urlGenerator.consultation(it.body.id, it.id) },
+                ?.let { urlGenerator.consultation.get(it.body.id, it.id) },
             result = agendaItem.result,
             resolutionText = agendaItem.resolutionText,
             resolutionFile = agendaItem.resolutionFile?.let(fileMapper::toDto),

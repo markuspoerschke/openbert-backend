@@ -20,7 +20,8 @@ class GetResourceTool(
     fun getResource(
         @McpToolParam(
             required = true,
-            description = "The id of the OParl resource to fetch, e.g. https://example.org/oparl/v1.1/body/{bodyId}/person/{personId}",
+            description = "The id of the OParl resource to fetch, " +
+                "e.g. https://example.org/oparl/v1.1/body/{bodyId}/person/{personId}",
         )
         id: String,
     ): Any {

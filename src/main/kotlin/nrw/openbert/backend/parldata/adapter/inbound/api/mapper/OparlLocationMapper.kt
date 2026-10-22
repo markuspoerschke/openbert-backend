@@ -12,7 +12,7 @@ class OparlLocationMapper(
 ) {
     fun toDto(location: ResolvedLocation): OparlLocationDto {
         return OparlLocationDto(
-            id = urlGenerator.location(location.body.id, location.id),
+            id = urlGenerator.location.get(location.body.id, location.id),
             type = location.getType().url,
             description = location.description,
             geojson = location.geojson,

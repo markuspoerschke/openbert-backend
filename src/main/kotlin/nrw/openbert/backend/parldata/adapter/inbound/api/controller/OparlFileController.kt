@@ -41,17 +41,17 @@ class OparlFileController(
         }
 
         val files = resolvedFileRepository
-            .findAllByBody_IdOrderById(bodyId, pagination.toPageable())
+            .findAllByBodyIdOrderById(bodyId, pagination.toPageable())
             .map(fileMapper::toDto)
 
         return ResponseEntity.ok(
             OparlListDto(
-                id = urlGenerator.fileList(bodyId, pagination.page),
+                id = urlGenerator.file.list(bodyId, pagination.page),
                 data = files.toList(),
                 pagination = listPaginationMapper.toDto(files),
                 links = listLinksMapper.toDto(
                     files,
-                    { page -> urlGenerator.fileList(bodyId, page) }
+                    { page -> urlGenerator.file.list(bodyId, page) }
                 ),
             )
         )
@@ -62,7 +62,7 @@ class OparlFileController(
         @PathVariable bodyId: UUID,
         @PathVariable fileId: UUID,
     ): ResponseEntity<OparlFileDto> {
-        val file = resolvedFileRepository.findByIdAndBody_Id(fileId, bodyId)
+        val file = resolvedFileRepository.findByIdAndBodyId(fileId, bodyId)
 
         if (!file.isPresent) {
             return ResponseEntity.notFound().build()
@@ -76,7 +76,7 @@ class OparlFileController(
         @PathVariable bodyId: UUID,
         @PathVariable fileId: UUID,
     ): ResponseEntity<ByteArray> {
-        val file = resolvedFileRepository.findByIdAndBody_Id(fileId, bodyId)
+        val file = resolvedFileRepository.findByIdAndBodyId(fileId, bodyId)
 
         if (!file.isPresent) {
             return ResponseEntity.notFound().build()
@@ -97,7 +97,7 @@ class OparlFileController(
         @PathVariable bodyId: UUID,
         @PathVariable fileId: UUID,
     ): ResponseEntity<ByteArray> {
-        val file = resolvedFileRepository.findByIdAndBody_Id(fileId, bodyId)
+        val file = resolvedFileRepository.findByIdAndBodyId(fileId, bodyId)
 
         if (!file.isPresent) {
             return ResponseEntity.notFound().build()

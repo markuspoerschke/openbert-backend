@@ -18,13 +18,7 @@ class SimpleLocationEnricher(
     private val streetNameMatcher: StreetNameMatcher,
 ) {
     fun enrich(location: RawLocation, result: LocationOverrides): LocationOverrides {
-        return result
-            // normalize field values
-            .let { normalizeStreetName(it.getStreetAddressOverrideOrOriginalValue(location.streetAddress), it) }
-            .let { normalizePostalCode(it.getPostalCodeOverrideOrOriginalValue(location.postalCode), it) }
-            .let { normalizeRoom(it.getRoomOverrideOrOriginalValue(location.room), it) }
-            .let { normalizeDescription(it.getDescriptionOverrideOrOriginalValue(location.description), it) }
-            .let { normalizeLocality(it.getLocalityOverrideOrOriginalValue(location.locality), it) }
+        return normalizeFields(location, result)
             // check if field values have values from other fields
             .let {
                 removeRepeatedPostalCodeAndLocality(
@@ -65,6 +59,40 @@ class SimpleLocationEnricher(
             }
     }
 
+    private fun normalizeFields(location: RawLocation, result: LocationOverrides): LocationOverrides {
+        return result
+            // normalize field values
+            .let { normalizeStreetName(it.getStreetAddressOverrideOrOriginalValue(location.streetAddress), it) }
+            .let {
+                nullableStringNormalizer.normalizeField(
+                    it.getPostalCodeOverrideOrOriginalValue(location.postalCode),
+                    it,
+                    LocationOverrides::withPostalCodeOverride,
+                )
+            }
+            .let {
+                nullableStringNormalizer.normalizeField(
+                    it.getRoomOverrideOrOriginalValue(location.room),
+                    it,
+                    LocationOverrides::withRoomOverride,
+                )
+            }
+            .let {
+                nullableStringNormalizer.normalizeField(
+                    it.getDescriptionOverrideOrOriginalValue(location.description),
+                    it,
+                    LocationOverrides::withDescriptionOverride,
+                )
+            }
+            .let {
+                nullableStringNormalizer.normalizeField(
+                    it.getLocalityOverrideOrOriginalValue(location.locality),
+                    it,
+                    LocationOverrides::withLocalityOverride,
+                )
+            }
+    }
+
     private fun normalizeStreetName(streetName: String?, result: LocationOverrides): LocationOverrides {
         val normalizedStreetName = streetAddressNormalizer.normalize(streetName)
 
@@ -73,46 +101,6 @@ class SimpleLocationEnricher(
         }
 
         return result.withStreetAddressOverride(normalizedStreetName)
-    }
-
-    private fun normalizePostalCode(postalCode: String?, result: LocationOverrides): LocationOverrides {
-        val normalizedPostalCode = nullableStringNormalizer.normalize(postalCode)
-
-        if (normalizedPostalCode == postalCode) {
-            return result
-        }
-
-        return result.withPostalCodeOverride(normalizedPostalCode)
-    }
-
-    private fun normalizeRoom(room: String?, result: LocationOverrides): LocationOverrides {
-        val normalizedRoom = nullableStringNormalizer.normalize(room)
-
-        if (normalizedRoom == room) {
-            return result
-        }
-
-        return result.withRoomOverride(normalizedRoom)
-    }
-
-    private fun normalizeDescription(description: String?, result: LocationOverrides): LocationOverrides {
-        val normalizedDescription = nullableStringNormalizer.normalize(description)
-
-        if (normalizedDescription == description) {
-            return result
-        }
-
-        return result.withDescriptionOverride(normalizedDescription)
-    }
-
-    private fun normalizeLocality(locality: String?, result: LocationOverrides): LocationOverrides {
-        val normalizedLocality = nullableStringNormalizer.normalize(locality)
-
-        if (normalizedLocality == locality) {
-            return result
-        }
-
-        return result.withLocalityOverride(normalizedLocality)
     }
 
     private fun removeRepeatedPostalCodeAndLocality(
@@ -148,9 +136,8 @@ class SimpleLocationEnricher(
         description: String?,
         result: LocationOverrides,
     ): LocationOverrides {
-        if (postalCode != null && !isGermanPostalCode(postalCode) && locality != null &&
-            "$postalCode $locality" == description
-        ) {
+        val hasOrganizationName = postalCode != null && !isGermanPostalCode(postalCode) && locality != null
+        if (hasOrganizationName && "$postalCode $locality" == description) {
             return result.withPostalCodeOverride(null).withLocalityOverride(null)
         }
 
@@ -177,9 +164,8 @@ class SimpleLocationEnricher(
         result: LocationOverrides,
     ): LocationOverrides {
         // Room terms stay in place when a room already exists; do not move them into the locality.
-        if (postalCode != null && !isGermanPostalCode(postalCode) && !roomMatcher.isRoom(postalCode) &&
-            locality != null
-        ) {
+        val hasSplitLocality = postalCode != null && !isGermanPostalCode(postalCode) && !roomMatcher.isRoom(postalCode)
+        if (hasSplitLocality && locality != null) {
             return result.withLocalityOverride("$postalCode $locality").withPostalCodeOverride(null)
         }
 
@@ -190,4 +176,13 @@ class SimpleLocationEnricher(
         postalCode != null && germanPostalCode.matches(postalCode)
 
     private val germanPostalCode = Regex("[0-9]{5}")
+}
+
+private fun NullableStringNormalizer.normalizeField(
+    original: String?,
+    result: LocationOverrides,
+    withOverride: LocationOverrides.(String?) -> LocationOverrides,
+): LocationOverrides {
+    val normalized = normalize(original)
+    return if (normalized == original) result else result.withOverride(normalized)
 }

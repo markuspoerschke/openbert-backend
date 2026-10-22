@@ -11,7 +11,7 @@ import java.util.UUID
 interface ResolvedPersonRepository : JpaRepository<ResolvedPerson, UUID> {
     fun findByResource(resource: OparlResource): ResolvedPerson?
 
-    fun findAllByBody_IdOrderById(bodyId: UUID, pageable: Pageable): Page<ResolvedPerson>
+    fun findAllByBodyIdOrderById(bodyId: UUID, pageable: Pageable): Page<ResolvedPerson>
 
-    fun findByIdAndBody_Id(id: UUID, bodyId: UUID): Optional<ResolvedPerson>
+    fun findByIdAndBodyId(id: UUID, bodyId: UUID): Optional<ResolvedPerson>
 }

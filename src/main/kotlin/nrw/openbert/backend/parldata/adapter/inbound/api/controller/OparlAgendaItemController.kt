@@ -36,17 +36,17 @@ class OparlAgendaItemController(
         }
 
         val agendaItems = resolvedAgendaItemRepository
-            .findAllByBody_IdOrderById(bodyId, pagination.toPageable())
+            .findAllByBodyIdOrderById(bodyId, pagination.toPageable())
             .map(agendaItemMapper::toDto)
 
         return ResponseEntity.ok(
             OparlListDto(
-                id = urlGenerator.agendaItemList(bodyId, pagination.page),
+                id = urlGenerator.agendaItem.list(bodyId, pagination.page),
                 data = agendaItems.toList(),
                 pagination = listPaginationMapper.toDto(agendaItems),
                 links = listLinksMapper.toDto(
                     agendaItems,
-                    { page -> urlGenerator.agendaItemList(bodyId, page) }
+                    { page -> urlGenerator.agendaItem.list(bodyId, page) }
                 ),
             )
         )
@@ -57,7 +57,7 @@ class OparlAgendaItemController(
         @PathVariable bodyId: UUID,
         @PathVariable agendaItemId: UUID,
     ): ResponseEntity<OparlAgendaItemDto> {
-        val agendaItem = resolvedAgendaItemRepository.findByIdAndBody_Id(agendaItemId, bodyId)
+        val agendaItem = resolvedAgendaItemRepository.findByIdAndBodyId(agendaItemId, bodyId)
 
         if (!agendaItem.isPresent) {
             return ResponseEntity.notFound().build()

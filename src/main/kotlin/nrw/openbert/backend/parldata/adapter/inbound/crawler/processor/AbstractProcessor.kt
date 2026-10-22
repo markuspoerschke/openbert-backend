@@ -27,7 +27,7 @@ abstract class AbstractProcessor<D : OparlObjectDto, E : AbstractOparlEntity>(
     open fun process(resource: OparlResource, dto: D): E {
         logger.info("Processing OParl resource {}", resource.url.value)
 
-        val entity = findOrCreate(resource)
+        val entity = findEntity(resource) ?: createEntity(resource)
         processRelationships(resource, dto)
         updateEntity(entity, dto)
         val savedEntity = saveEntity(entity)
@@ -102,21 +102,10 @@ abstract class AbstractProcessor<D : OparlObjectDto, E : AbstractOparlEntity>(
         processor: AbstractProcessor<EmbeddedDto, EmbeddedEntity>,
         initialize: (EmbeddedEntity) -> Unit,
     ): List<EmbeddedEntity> = dtos?.mapNotNull { processInline(source, it, processor, initialize) }.orEmpty()
+}
 
-    protected fun MutableList<String>.addUrl(url: OparlUrl) {
-        if (url.value !in this) add(url.value)
-    }
+private fun OparlResource.withUrl(url: String) = OparlResource(system, OparlUrl(url))
 
-    private fun findOrCreate(resource: OparlResource): E {
-        val entity = findEntity(resource)
-
-        if (entity != null) {
-            return entity
-        }
-
-        return createEntity(resource)
-    }
-
-    private fun OparlResource.withUrl(url: String) =
-        OparlResource(system, OparlUrl(url))
+internal fun MutableList<String>.addUrl(url: OparlUrl) {
+    if (url.value !in this) add(url.value)
 }

@@ -34,8 +34,12 @@ class AgendaItemResolver(
     }
 
     private fun resolve(raw: RawAgendaItem): ResolvedAgendaItem {
-        val meeting = meetingResolver.resolve(relatedResource(raw.resource, required(raw.meetingUrl, "meeting", raw.resource)))
-        val resolutionFile = raw.resolutionFileUrl?.let { fileResolver.resolve(relatedResource(raw.resource, it), meeting.body) }
+        val meeting = meetingResolver.resolve(
+            relatedResource(raw.resource, required(raw.meetingUrl, "meeting", raw.resource)),
+        )
+        val resolutionFile = raw.resolutionFileUrl?.let {
+            fileResolver.resolve(relatedResource(raw.resource, it), meeting.body)
+        }
         val auxiliaryFiles = raw.auxiliaryFileUrls.map {
             fileResolver.resolve(relatedResource(raw.resource, OparlUrl(it)), meeting.body)
         }

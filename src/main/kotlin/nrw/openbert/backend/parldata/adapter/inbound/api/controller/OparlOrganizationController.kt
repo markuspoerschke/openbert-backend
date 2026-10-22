@@ -46,17 +46,17 @@ class OparlOrganizationController(
         }
 
         val organizations = resolvedOrganizationRepository
-            .findAllByBody_IdOrderById(bodyId, pagination.toPageable())
+            .findAllByBodyIdOrderById(bodyId, pagination.toPageable())
             .map(organizationMapper::toDto)
 
         return ResponseEntity.ok(
             OparlListDto(
-                id = urlGenerator.organizationList(bodyId, pagination.page),
+                id = urlGenerator.organization.list(bodyId, pagination.page),
                 data = organizations.toList(),
                 pagination = listPaginationMapper.toDto(organizations),
                 links = listLinksMapper.toDto(
                     organizations,
-                    { page -> urlGenerator.organizationList(bodyId, page) }
+                    { page -> urlGenerator.organization.list(bodyId, page) }
                 ),
             )
         )
@@ -67,7 +67,7 @@ class OparlOrganizationController(
         @PathVariable bodyId: UUID,
         @PathVariable organizationId: UUID,
     ): ResponseEntity<OparlOrganizationDto> {
-        val organization = resolvedOrganizationRepository.findByIdAndBody_Id(organizationId, bodyId)
+        val organization = resolvedOrganizationRepository.findByIdAndBodyId(organizationId, bodyId)
 
         if (!organization.isPresent) {
             return ResponseEntity.notFound().build()
@@ -82,12 +82,12 @@ class OparlOrganizationController(
         @PathVariable organizationId: UUID,
         @ParameterObject @Valid pagination: OparlPaginationRequestDto,
     ): ResponseEntity<OparlListDto<OparlMeetingDto>> {
-        if (!resolvedOrganizationRepository.findByIdAndBody_Id(organizationId, bodyId).isPresent) {
+        if (!resolvedOrganizationRepository.findByIdAndBodyId(organizationId, bodyId).isPresent) {
             return ResponseEntity.notFound().build()
         }
 
         val meetings = resolvedMeetingRepository
-            .findAllDistinctByOrganizations_IdAndBody_IdOrderById(
+            .findAllDistinctByOrganizationsIdAndBodyIdOrderById(
                 organizationId,
                 bodyId,
                 pagination.toPageable(),
@@ -113,12 +113,12 @@ class OparlOrganizationController(
         @PathVariable organizationId: UUID,
         @ParameterObject @Valid pagination: OparlPaginationRequestDto,
     ): ResponseEntity<OparlListDto<OparlConsultationDto>> {
-        if (!resolvedOrganizationRepository.findByIdAndBody_Id(organizationId, bodyId).isPresent) {
+        if (!resolvedOrganizationRepository.findByIdAndBodyId(organizationId, bodyId).isPresent) {
             return ResponseEntity.notFound().build()
         }
 
         val consultations = resolvedConsultationRepository
-            .findAllDistinctByOrganizations_IdAndBody_IdOrderById(
+            .findAllDistinctByOrganizationsIdAndBodyIdOrderById(
                 organizationId,
                 bodyId,
                 pagination.toPageable(),

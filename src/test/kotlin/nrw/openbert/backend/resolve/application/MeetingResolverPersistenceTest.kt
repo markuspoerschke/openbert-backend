@@ -55,7 +55,9 @@ class MeetingResolverPersistenceTest(
             organization = listOf("$organizationBaseUrl/34"),
         )
         val firstCrawl = meetingProcessor.process(raw.resource, originalDto)
-        val enrichTarget = assertNotNull(enrichTargetRepository.findByRawEntityIdAndEntityType(raw.id, OparlType.MEETING))
+        val enrichTarget = assertNotNull(
+            enrichTargetRepository.findByRawEntityIdAndEntityType(raw.id, OparlType.MEETING),
+        )
         enricher.run(enrichTarget.id)
         val firstTarget = assertNotNull(targetRepository.findByRawEntityIdAndEntityType(raw.id, OparlType.MEETING))
         resolver.run(firstTarget.id)

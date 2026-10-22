@@ -51,6 +51,8 @@ class FileResolver(
         // Only infer the body: resolving the agenda item itself would resolve this file again.
         resolvedAgendaItemRepository.findByResource(resource)?.let { return it.body }
         val raw = rawAgendaItemRepository.findByResource(resource) ?: throw notCrawled("agenda item", resource)
-        return meetingResolver.resolve(relatedResource(raw.resource, required(raw.meetingUrl, "meeting", raw.resource))).body
+        return meetingResolver.resolve(
+            relatedResource(raw.resource, required(raw.meetingUrl, "meeting", raw.resource)),
+        ).body
     }
 }

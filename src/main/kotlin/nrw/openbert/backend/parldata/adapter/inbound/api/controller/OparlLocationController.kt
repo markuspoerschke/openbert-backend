@@ -36,17 +36,17 @@ class OparlLocationController(
         }
 
         val locations = resolvedLocationRepository
-            .findAllByBody_IdOrderById(bodyId, pagination.toPageable())
+            .findAllByBodyIdOrderById(bodyId, pagination.toPageable())
             .map(locationMapper::toDto)
 
         return ResponseEntity.ok(
             OparlListDto(
-                id = urlGenerator.locationList(bodyId, pagination.page),
+                id = urlGenerator.location.list(bodyId, pagination.page),
                 data = locations.toList(),
                 pagination = listPaginationMapper.toDto(locations),
                 links = listLinksMapper.toDto(
                     locations,
-                    { page -> urlGenerator.locationList(bodyId, page) }
+                    { page -> urlGenerator.location.list(bodyId, page) }
                 ),
             )
         )
@@ -57,7 +57,7 @@ class OparlLocationController(
         @PathVariable bodyId: UUID,
         @PathVariable locationId: UUID,
     ): ResponseEntity<OparlLocationDto> {
-        val location = resolvedLocationRepository.findByIdAndBody_Id(locationId, bodyId)
+        val location = resolvedLocationRepository.findByIdAndBodyId(locationId, bodyId)
 
         if (!location.isPresent) {
             return ResponseEntity.notFound().build()

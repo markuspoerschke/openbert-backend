@@ -11,13 +11,13 @@ import java.util.UUID
 interface ResolvedMeetingRepository : JpaRepository<ResolvedMeeting, UUID> {
     fun findByResource(resource: OparlResource): ResolvedMeeting?
 
-    fun findAllByBody_IdOrderById(bodyId: UUID, pageable: Pageable): Page<ResolvedMeeting>
+    fun findAllByBodyIdOrderById(bodyId: UUID, pageable: Pageable): Page<ResolvedMeeting>
 
-    fun findAllDistinctByOrganizations_IdAndBody_IdOrderById(
+    fun findAllDistinctByOrganizationsIdAndBodyIdOrderById(
         organizationId: UUID,
         bodyId: UUID,
         pageable: Pageable,
     ): Page<ResolvedMeeting>
 
-    fun findByIdAndBody_Id(id: UUID, bodyId: UUID): Optional<ResolvedMeeting>
+    fun findByIdAndBodyId(id: UUID, bodyId: UUID): Optional<ResolvedMeeting>
 }

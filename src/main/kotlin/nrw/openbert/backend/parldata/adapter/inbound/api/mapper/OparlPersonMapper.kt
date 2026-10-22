@@ -15,11 +15,11 @@ class OparlPersonMapper(
 ) {
     fun toDto(person: ResolvedPerson): OparlPersonDto {
         return OparlPersonDto(
-            id = urlGenerator.person(person.body.id, person.id),
+            id = urlGenerator.person.get(person.body.id, person.id),
             type = person.getType().url,
             body = urlGenerator.body(person.body.id),
             membership = resolvedMembershipRepository
-                .findAllByPerson_IdAndBody_IdOrderById(person.id, person.body.id)
+                .findAllByPersonIdAndBodyIdOrderById(person.id, person.body.id)
                 .map { membershipMapper.toDto(it, includePerson = false) }
                 .takeIf { it.isNotEmpty() },
             name = person.name,

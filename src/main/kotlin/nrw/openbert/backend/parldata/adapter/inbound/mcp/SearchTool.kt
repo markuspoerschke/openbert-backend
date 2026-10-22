@@ -30,15 +30,15 @@ class SearchTool(
                 term = term?.trim(),
                 bodies = bodies ?: emptyList(),
                 types = types?.mapNotNull { typeString ->
-                    try {
-                        OparlType.valueOf(typeString.uppercase())
-                    } catch (e: IllegalArgumentException) {
-                        null
-                    }
+                    OparlType.entries.find { it.name == typeString.uppercase() }
                 } ?: OparlType.entries.toList()
             ),
-            PageRequest.of(0, 30)
+            PageRequest.of(0, PAGE_SIZE)
         )
         .map(mapper::toDto)
         .toList()
+
+    private companion object {
+        const val PAGE_SIZE = 30
+    }
 }
