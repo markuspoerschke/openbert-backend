@@ -38,6 +38,6 @@ class ScheduleDueEnriches(
     }
 
     companion object {
-        const val BATCH_SIZE = 30
+        const val BATCH_SIZE = 100
     }
 }
