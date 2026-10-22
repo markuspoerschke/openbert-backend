@@ -1,6 +1,6 @@
 """Regression tests with a local Git remote, HTTP API, and deterministic Vibe CLI.
 
-Native gh commands use fixture responses; gh api runs the real CLI against a local server.
+Native gh commands and GraphQL use fixtures; REST gh api runs the real CLI locally.
 No GitHub credentials or Mistral requests are used. Run with:
 python3 -m unittest discover -s .github/actions/vibe-agent/tests -v
 """
@@ -45,8 +45,15 @@ class AgentTest(unittest.TestCase):
 
             def respond(self, method):
                 body = self.rfile.read(int(self.headers.get('Content-Length', '0')))
-                test.requests.append((method, self.path, json.loads(body) if body else None))
-                status, data = test.routes.get((method, self.path), (404, {'message': self.path}))
+                payload = json.loads(body) if body else None
+                test.requests.append((method, self.path, payload))
+                route = self.path
+                if route == '/graphql':
+                    route += '/update' if 'mutation' in payload['query'] else '/projects'
+                    cursor = payload.get('variables', {}).get('endCursor')
+                    if cursor:
+                        route += '/' + cursor
+                status, data = test.routes.get((method, route), (404, {'message': route}))
                 self.send_response(status)
                 next_page = self.path + '&page=2'
                 if (method, next_page) in test.routes:
@@ -77,6 +84,9 @@ class AgentTest(unittest.TestCase):
         self.route('POST', '/issues/42/labels', {}, 200)
         self.route('DELETE', '/issues/42/labels/in%20progress', None, 204)
         self.route('POST', '/issues/42/comments', {}, 201)
+        self.routes['POST', '/graphql/projects'] = 200, self.project_response()
+        self.routes['POST', '/graphql/update'] = 200, {'data': {'updateProjectV2ItemFieldValue': {
+            'projectV2Item': {'id': 'PVTI_item'}}}}
         shutil.copyfile(AGENT / 'tests/fake_gh.py', self.bin / 'gh')
         (self.bin / 'gh').chmod(0o755)
 
@@ -110,6 +120,20 @@ class AgentTest(unittest.TestCase):
 
     def route(self, method, path, data=None, status=200):
         self.routes[method, '/repos/owner/repo' + path] = status, data
+
+    @staticmethod
+    def project_item(suffix='1', *, archived=False, closed=False, current='todo'):
+        return {'id': 'PVTI_' + suffix, 'isArchived': archived,
+                'fieldValueByName': {'optionId': current},
+                'project': {'id': 'PVT_' + suffix, 'title': 'Openbert ' + suffix, 'closed': closed,
+                            'field': {'id': 'PVTSSF_' + suffix, 'options': [
+                                {'id': 'todo', 'name': 'Todo'},
+                                {'id': 'progress-' + suffix, 'name': 'In progress'}]}}}
+
+    @staticmethod
+    def project_response(*items, cursor=None):
+        return {'data': {'repository': {'issue': {'projectItems': {
+            'nodes': list(items), 'pageInfo': {'hasNextPage': cursor is not None, 'endCursor': cursor}}}}}}
 
     def mock_vibe(self):
         path = self.bin / 'vibe'
@@ -362,6 +386,75 @@ execute_vibe_prompt "Implement the requested changes" "$STREAM_LOG"
         self.bash('mark_issue_in_progress 42')
         self.assertEqual(len([call for call in self.gh_calls() if call['args'][:2] == ['label', 'create']]), 1)
 
+    def test_project_status_updates_all_active_memberships_across_pages(self):
+        self.routes['POST', '/graphql/projects'] = 200, self.project_response(
+            self.project_item('1'), self.project_item('2', archived=True),
+            self.project_item('3', closed=True), self.project_item('4', current='progress-4'), cursor='next')
+        self.routes['POST', '/graphql/projects/next'] = 200, self.project_response(self.project_item('5'))
+        self.bash('mark_issue_in_progress 42')
+        queries = [body for _, _, body in self.requests if body and 'query' in body and 'query Vibe' in body['query']]
+        self.assertEqual(queries[0]['variables'], {'owner': 'owner', 'name': 'repo', 'number': 42})
+        self.assertEqual(queries[1]['variables']['endCursor'], 'next')
+        self.assertIn('--paginate', self.gh_calls()[0]['args'])
+        updates = [body['variables']['input'] for _, _, body in self.requests
+                   if body and 'query' in body and 'mutation' in body['query']]
+        self.assertEqual(updates, [
+            {'projectId': 'PVT_' + suffix, 'itemId': 'PVTI_' + suffix, 'fieldId': 'PVTSSF_' + suffix,
+             'value': {'singleSelectOptionId': 'progress-' + suffix}} for suffix in ['1', '5']])
+
+    def test_project_status_rejects_missing_or_ambiguous_status_options(self):
+        for problem in ['field', 'option', 'duplicate']:
+            with self.subTest(problem=problem):
+                item = self.project_item('2')
+                if problem == 'field':
+                    item['project']['field'] = None
+                elif problem == 'option':
+                    item['project']['field']['options'] = [{'id': 'todo', 'name': 'Todo'}]
+                else:
+                    item['project']['field']['options'].append({'id': 'other', 'name': 'In Progress'})
+                self.routes['POST', '/graphql/projects'] = 200, self.project_response(self.project_item(), item)
+                result = self.bash('mark_issue_in_progress 42', ok=False)
+                self.assertIn('Status single-select field with an In Progress option', result.stderr)
+        # Even the valid first project is not changed until all targets validate.
+        self.assertTrue(all(call['args'][:2] == ['api', 'graphql'] for call in self.gh_calls()))
+
+    def test_project_read_failures_stop_before_implementation(self):
+        redacted = self.project_item()
+        redacted['project'] = None
+        for status, response in [(403, {'message': 'Forbidden'}),
+                                 (200, {'errors': [{'message': 'Missing project scope'}]}),
+                                 (200, self.project_response(redacted)),
+                                 (200, self.project_response(self.project_item(), cursor='denied'))]:
+            with self.subTest(status=status, response=response):
+                self.routes['POST', '/graphql/projects'] = status, response
+                self.routes['POST', '/graphql/projects/denied'] = 403, {'message': 'Forbidden'}
+                result = self.bash('''get_issue_details() { echo '{"title":"Fix project status"}'; }
+run_vibe_cli() { touch unexpected-run; }
+implement_issue 42
+''', ok=False)
+                self.assertIn('project scope', result.stderr)
+        self.assertFalse((self.repo / 'unexpected-run').exists())
+        self.assertTrue(all(call['args'][:2] == ['api', 'graphql'] for call in self.gh_calls()))
+
+    def test_project_write_failures_stop_before_implementation(self):
+        self.routes['POST', '/graphql/projects'] = 200, self.project_response(self.project_item())
+        for status, response in [(403, {'message': 'Forbidden'}),
+                                 (200, {'errors': [{'message': 'Project is read only'}]})]:
+            with self.subTest(status=status):
+                self.routes['POST', '/graphql/update'] = status, response
+                result = self.bash('''get_issue_details() { echo '{"title":"Fix project status"}'; }
+run_vibe_cli() { touch unexpected-run; }
+implement_issue 42
+''', ok=False)
+                self.assertIn('project write access', result.stderr)
+        self.assertFalse((self.repo / 'unexpected-run').exists())
+        self.assertFalse(any(call['args'][0] in ['issue', 'label'] for call in self.gh_calls()))
+
+    def test_no_project_item_does_not_create_or_move_an_item(self):
+        self.bash('mark_issue_in_progress 42')
+        self.assertFalse(any(call['args'][0] == 'project' for call in self.gh_calls()))
+        self.assertEqual(self.gh_calls()[-1]['args'][:2], ['issue', 'edit'])
+
     def test_failed_implementation_clears_progress_and_reports_failure(self):
         self.init_git()
         self.remote()
@@ -443,6 +536,7 @@ implement_issue 42
     def test_implementation_commits_and_pushes_before_creating_pr(self):
         self.init_git()
         self.remote()
+        self.routes['POST', '/graphql/projects'] = 200, self.project_response(self.project_item())
         self.bash('''
 get_issue_details() { echo '{"title":"Fix issue with spaces"}'; }
 run_vibe_cli() { echo implementation > app.txt; }
@@ -458,6 +552,12 @@ implement_issue 42
         edits = [c for c in self.gh_calls() if c['args'][:2] == ['issue', 'edit']]
         self.assertIn('--add-label', edits[0]['args'])
         self.assertIn('--remove-label', edits[-1]['args'])
+        updates = [(index, body['variables']['input']) for index, (_, _, body) in enumerate(self.requests)
+                   if body and 'query' in body and 'mutation' in body['query']]
+        self.assertEqual(len(updates), 1, 'Exit cleanup must not undo the Projects status')
+        comment_index = next(index for index, (_, path, _) in enumerate(self.requests) if path.endswith('/comments'))
+        self.assertLess(updates[0][0], comment_index)
+        self.assertEqual(updates[0][1]['value'], {'singleSelectOptionId': 'progress-1'})
         comments = [body['body'] for method, path, body in self.requests if method == 'POST' and path.endswith('/comments')]
         self.assertIn('starting work', comments[0])
         self.assertFalse(any('stopped before completing' in body for body in comments))

@@ -29,11 +29,21 @@ The pipeline preserves failures from both Vibe and log capture. Workspace cleanu
 handles Vibe's read-only plugin cache; a cleanup error is logged as a warning and
 preserves the original execution result so successful changes can be published.
 
-Before implementation starts, the issue receives an `in progress` label and a
-comment linking to the Actions run. The label is created if needed without
+Before implementation starts, the agent sets the issue's visible active Projects
+items to **In Progress** using their actual `Status` field and option IDs. It uses
+`gh api graphql --paginate` for discovery and `gh project item-edit` for updates.
+Closed projects, archived items, and items already in progress are skipped; no
+new project membership is created. A Projects API or configuration failure stops
+the run before announcing work or invoking Vibe. The bot needs the classic PAT
+`project` scope and write access to the board, in addition to repository access.
+
+The issue then receives an `in progress` label and a comment linking to the
+Actions run. The label is created if needed without
 changing an existing label. Exit cleanup removes it after completion, failure,
 or catchable cancellation, and reports failures on the issue. A completed draft
-PR is linked by the existing delivery comment. Dry runs do not update issues.
+PR is linked by the existing delivery comment. The Projects status stays
+**In Progress** until a person or project automation changes it. Dry runs do not
+update issues or Projects.
 
 Vibe works in a temporary copy without Git metadata. The caller applies changes,
 commits them, pushes the branch, then creates a draft PR or posts a response.
@@ -94,8 +104,8 @@ actionlint .github/workflows/vibe-agent-*.yml .github/workflows/test.yml
 ```
 
 Tests use a local HTTP server, temporary Git repositories and a fake Vibe CLI.
-Native GitHub CLI commands use fixtures; `gh api` uses the installed CLI against
-that local server, including pagination and HTTP errors.
+Native GitHub CLI commands and GraphQL requests use fixtures; REST `gh api` uses
+the installed CLI against that local server, including pagination and HTTP errors.
 They do not call Mistral or write to GitHub. The Vibe Agent Tests workflow runs
 the suite on pushes and pull requests that change `.github/actions/vibe-agent/**`,
 `.github/workflows/vibe-agent-*.yml`, or `.github/workflows/test.yml`. It can also
