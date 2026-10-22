@@ -13,7 +13,7 @@ The entrypoint can also be sourced to access its functions without starting a ru
 
 | Mode | Trigger | Behavior |
 | --- | --- | --- |
-| `scheduled` | Hourly or manual dispatch | Select the oldest eligible issue when no Vibe PR is open |
+| `scheduled` | Every three hours or manual dispatch | Select the oldest eligible issue when no Vibe PR is open |
 | `manual` | Manual dispatch | Implement a specified labeled issue, or select one automatically |
 | `review` | PR conversation or inline comment | Apply actionable feedback and reply in the appropriate thread |
 | `ci-monitor` | Failed Build completion | Repair the current failing Vibe branch, within the retry limit |
