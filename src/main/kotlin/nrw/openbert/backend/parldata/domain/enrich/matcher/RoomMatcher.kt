@@ -9,8 +9,8 @@ class RoomMatcher {
             return false
         }
 
-        return room.contains("raum", true) ||
-                room.contains("aula", true) ||
-                room.contains("saal", true)
+        return roomTerms.any { room.contains(it, ignoreCase = true) }
     }
+
+    private val roomTerms = listOf("raum", "saal", "aula", "halle", "neubau")
 }

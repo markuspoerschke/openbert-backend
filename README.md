@@ -45,12 +45,13 @@ flowchart TD
 flowchart LR
     Source[OParl source] --> Crawler
     Crawler --> Raw[(Raw tables)]
-    Raw --> Resolver
+    Raw --> Enrichment
+    Enrichment --> Resolver
     Resolver --> Resolved[(Resolved tables)]
     Resolved --> API[API / MCP]
 ```
 
-Raw records allow incomplete source relationships. Resolution builds the relationships used by the API; separate tables leave room for future enrichment without overwriting source fields.
+Raw records allow incomplete source relationships. Deterministic location enrichment trims fields, normalizes street abbreviations, and corrects misplaced address and room values. Overrides are stored separately, preserving the source fields. Resolution applies those overrides and builds the relationships used by the API.
 
 Code lives under `parldata`: `domain` holds the model, `application` handles resolution and search, and `adapter` contains HTTP, MCP, crawler, and persistence integrations. Entities use JPA annotations and repository ports extend Spring Data. Crawler HTTP requests precede transactional processing; each resolver job has its own transaction.
 

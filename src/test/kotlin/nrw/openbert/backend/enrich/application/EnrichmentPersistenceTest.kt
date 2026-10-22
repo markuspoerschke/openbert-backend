@@ -27,6 +27,8 @@ import org.jobrunr.jobs.JobId
 import org.jobrunr.jobs.lambdas.JobLambda
 import org.jobrunr.scheduling.JobScheduler
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.CsvSource
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.times
@@ -40,6 +42,7 @@ import org.springframework.transaction.annotation.Transactional
 import java.time.Instant
 import java.util.UUID
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
@@ -63,6 +66,83 @@ class EnrichmentPersistenceTest(
     @Autowired private val resolvedSystemRepository: ResolvedSystemRepository,
     @Autowired private val entityManager: EntityManager,
 ) {
+    @ParameterizedTest
+    @CsvSource(delimiter = '|', value = [
+        "f8573c97-eac8-443f-bc5d-e61f73185777 | Nevigeser Straße 307 | 42553 | Velbert |",
+        "5f37b17f-74de-4940-b1ab-9f2dd7ab521a | | | |",
+        "028a0258-262f-47cc-8e7f-95c97c4863da | | | 1, Am Lindenkamp 33 | Sitzungssaal",
+        "b64c7df8-c0be-421b-8779-84fdcf93e080 | Donnerstraße 13 | 42555 | Velbert | Raum 41",
+        "3c04fe2e-d8bc-4bf9-a9fc-caacbfa8b154 | | | Den Sitzungsort entnehmen Sie bitte der Einladung bzw. dem Newseintrag |",
+    ])
+    fun `issue 84 examples are persisted and resolved without changing the source`(
+        id: UUID,
+        streetAddress: String?,
+        postalCode: String?,
+        locality: String?,
+        room: String?,
+    ) {
+        val raw = rawLocationRepository.findById(id).orElseThrow()
+        val originalValues = listOf(raw.streetAddress, raw.postalCode, raw.locality, raw.room, raw.description)
+        enqueuer.enqueue(raw)
+        val target = targetRepository.findByRawEntityIdAndEntityType(id, OparlType.LOCATION)!!
+
+        enricher.run(target.id)
+        entityManager.flush()
+        entityManager.clear()
+        val enriched = enrichedLocationRepository.findById(id).orElseThrow()
+        assertEquals(id, enriched.id)
+        val storedOverrides = enriched.toLocationOverrides()
+        // Reprocessing the same source produces the same overrides.
+        enqueuer.enqueue(rawLocationRepository.findById(id).orElseThrow())
+        enricher.run(target.id)
+        entityManager.flush()
+        entityManager.clear()
+        assertEquals(storedOverrides, enrichedLocationRepository.findById(id).orElseThrow().toLocationOverrides())
+
+        val resolveTarget = resolveTargetRepository.findByRawEntityIdAndEntityType(id, OparlType.LOCATION)!!
+        resolver.run(resolveTarget.id)
+        entityManager.flush()
+        entityManager.clear()
+
+        val unchangedRaw = rawLocationRepository.findById(id).orElseThrow()
+        assertEquals(originalValues, listOf(
+            unchangedRaw.streetAddress, unchangedRaw.postalCode, unchangedRaw.locality, unchangedRaw.room, unchangedRaw.description,
+        ))
+        val resolved = resolvedLocationRepository.findByResource(unchangedRaw.resource)!!
+        assertEquals(streetAddress, resolved.streetAddress)
+        assertEquals(postalCode, resolved.postalCode)
+        assertEquals(locality, resolved.locality)
+        assertEquals(room, resolved.room)
+        assertEquals(raw.description, resolved.description)
+    }
+
+    @Test
+    fun `a corrected source clears obsolete null overrides on re-enrichment`() {
+        val id = UUID.fromString("5f37b17f-74de-4940-b1ab-9f2dd7ab521a")
+        val raw = rawLocationRepository.findById(id).orElseThrow()
+        enqueuer.enqueue(raw)
+        val target = targetRepository.findByRawEntityIdAndEntityType(id, OparlType.LOCATION)!!
+        enricher.run(target.id)
+        val resolveTarget = resolveTargetRepository.findByRawEntityIdAndEntityType(id, OparlType.LOCATION)!!
+        resolver.run(resolveTarget.id)
+        assertNull(resolvedLocationRepository.findByResource(raw.resource)!!.locality)
+
+        raw.postalCode = "42553"
+        raw.locality = "Velbert"
+        enqueuer.enqueue(raw)
+        enricher.run(target.id)
+        resolver.run(resolveTarget.id)
+        entityManager.flush()
+        entityManager.clear()
+
+        val enriched = enrichedLocationRepository.findById(id).orElseThrow()
+        assertFalse(enriched.overridePostalCode)
+        assertFalse(enriched.overrideLocality)
+        val resolved = resolvedLocationRepository.findByResource(raw.resource)!!
+        assertEquals("42553", resolved.postalCode)
+        assertEquals("Velbert", resolved.locality)
+    }
+
     @Test
     fun `crawling a location queues enrichment before resolution`() {
         val raw = locationProcessor.process(
