@@ -84,8 +84,7 @@ main() {
     validate_credentials
     require_number "VIBE_TIMEOUT_MINUTES" "$VIBE_TIMEOUT_MINUTES"
     [[ "$MAX_RETRIES" =~ ^(0|[1-9][0-9]*)$ ]] || { log_error "MAX_RETRIES must be a nonnegative integer"; return 1; }
-    git config user.name 'github-actions[bot]'
-    git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+    configure_git_identity
     log_info "Starting Mistral Vibe Agent: ${mode}"
     case "$mode" in
         scheduled) run_scheduled_mode ;;

@@ -7,8 +7,9 @@ review feedback, and attempts CI repairs. A person must review and merge the PRs
 
 - GitHub Actions enabled on the repository.
 - A Mistral API key with access to the configured model and active billing.
-- Permission for GitHub Actions to create pull requests, enabled in
-  **Settings → Actions → General → Workflow permissions**.
+- Either permission for GitHub Actions to create pull requests, enabled in
+  **Settings → Actions → General → Workflow permissions → Allow GitHub Actions
+  to create and approve pull requests**, or a bot token configured below.
 - The agent workflows and scripts merged into the default branch before using
   scheduled, review, or `workflow_run` triggers.
 
@@ -22,21 +23,50 @@ Configure these under **Settings → Secrets and variables → Actions**:
 | Secret | Purpose | Default |
 | --- | --- | --- |
 | `VIBE_API_KEY` | Mistral API key; required | None |
+| `VIBE_GITHUB_TOKEN` | Optional personal access token belonging to the bot account | Uses `GITHUB_TOKEN` |
 | `VIBE_MODEL` | Mistral model name | `mistral-large-latest` |
 | `MAX_RETRIES` | Maximum CI repair attempts per PR | `3` |
 | `VIBE_TIMEOUT_MINUTES` | Timeout for each Vibe invocation | `30` |
 | `VIBE_DEBUG` | Additional diagnostic logging | `false` |
 
-`GITHUB_TOKEN` is automatically supplied by GitHub. Each agent workflow requests
+## GitHub authentication and identity
+
+Without `VIBE_GITHUB_TOKEN`, the agent uses the automatically supplied
+`GITHUB_TOKEN`. Each agent workflow requests
 `contents: write`, `pull-requests: write`, `issues: write`, and `actions: write`.
 Issues write permission is needed for issue/PR conversation comments and retry
 tracking. Actions write permission is needed to dispatch Build explicitly.
-No PAT or GitHub App installation is required by these workflows. The preinstalled
-GitHub CLI (`gh`) handles repository access, issue and PR operations, comments,
-workflow dispatch, and build inspection. `gh api --paginate` retrieves complete
+The repository must also enable **Allow GitHub Actions to create and approve
+pull requests**. The workflow's `pull-requests: write` permission alone does not
+enable this setting. If it is disabled, PR creation fails with
+`GitHub Actions is not permitted to create or approve pull requests`.
+
+To publish as your dedicated GitHub bot account:
+
+1. Give the bot write access to this repository and accept the invitation.
+2. Sign in as the bot and create a personal access token. For a bot collaborating
+   on this personally owned repository, use a classic PAT with `repo` and
+   `workflow` scopes. The latter allows the agent to push workflow changes.
+   GitHub currently does not support fine-grained PATs for outside/repository
+   collaborators; see [GitHub's PAT limitations](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens#fine-grained-personal-access-tokens-limitations).
+   Where fine-grained PATs are supported, grant this repository Contents,
+   Pull requests, Issues, and Workflows write permissions, plus Actions read.
+3. Save that token as the repository Actions secret `VIBE_GITHUB_TOKEN`.
+
+All four agent workflows use the same selected token for checkout/Git pushes and
+GitHub CLI operations. A bot token takes precedence over `GH_TOKEN` and
+`GITHUB_TOKEN`; an invalid bot token fails rather than falling back to another
+identity. The agent resolves the token's login and numeric ID before running Vibe
+and sets the commit author/committer to that login and its GitHub noreply address.
+PRs and comments are authored by the bot. The workflow's triggering actor still
+identifies the user/event that started the run.
+
+The preinstalled GitHub CLI (`gh`) handles repository access, issue and PR
+operations, comments, workflow dispatch, and build inspection. `gh api --paginate` retrieves complete
 collections, and `gh api` handles inline review endpoints. Custom HTTP request
 and pagination helpers are not needed. Locally, `GH_TOKEN` can be supplied instead
-of `GITHUB_TOKEN` and takes precedence when both are present.
+of `GITHUB_TOKEN` and takes precedence when both are present and no bot token
+is set.
 
 `VIBE_API_KEY` is exposed to Vibe as `MISTRAL_API_KEY`. The selected model is
 configured through a temporary `VIBE_HOME/config.toml`; credentials are not
@@ -83,8 +113,10 @@ Initial implementations run `./gradlew build --no-daemon`. If that local build
 fails, changes are still published as a draft so CI and a reviewer can assess
 them. PR descriptions leave validation unchecked rather than claiming success.
 
-`GITHUB_TOKEN` pushes and PR creation do not trigger ordinary push/PR workflows.
-The agent therefore dispatches `test.yml`, which declares `workflow_dispatch`.
+Bot-token pushes and PR creation trigger the normal Build workflows, so the agent
+does not dispatch an additional Build. `GITHUB_TOKEN` pushes do not trigger push
+workflows, and its PR workflows may require approval. In that mode the agent
+explicitly dispatches `test.yml`, which declares `workflow_dispatch`.
 The completed **Build** triggers the CI monitor, so no background polling process
 needs to survive the implementation job.
 
@@ -96,9 +128,11 @@ the current remote head; stale runs are skipped. It checks out that branch befor
 calling Vibe and passes failed jobs and logs into the repair prompt.
 
 Each attempted repair adds a bot-authored `vibe-ci-attempt` marker to the PR.
+Markers from both the current bot account and `github-actions[bot]` are counted,
+so switching to a bot token preserves existing retry limits and duplicate checks.
 Those comments persist the retry count across runners and identify Build runs
 already handled. `MAX_RETRIES` applies across the PR's lifetime. A successful
-repair commit is pushed and another Build is dispatched. If Vibe produces no
+repair commit is pushed and another Build is triggered. If Vibe produces no
 changes, or the limit is reached, manual intervention is required.
 
 ## Review feedback
@@ -107,6 +141,8 @@ The review workflow accepts comments from repository owners, members,
 collaborators, and `chatgpt-codex-connector[bot]`. It skips fork PRs and non-Vibe
 branches. Actionable comments are handled on the current remote branch head.
 Changes are committed, pushed, and built before a response is posted.
+Comments from the authenticated bot itself and `github-actions[bot]` are ignored
+to prevent the bot's own responses from starting another review cycle.
 
 Review and CI workflows always check out trusted default-branch scripts. If that
 checkout does not contain the local action yet (for example, while reviewing the

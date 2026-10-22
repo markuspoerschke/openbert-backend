@@ -66,8 +66,9 @@ is_actionable_comment() {
     local body="$1"
     local user="$2"
     
-    # Skip bot comments
-    if [[ "$user" == "github-actions[bot]" || "$user" == "github-actions" ]]; then
+    # A personal bot token generates comment events too. Never process our own
+    # replies as new feedback, including comments from the previous identity.
+    if [[ "${user,,}" == "${VIBE_BOT_LOGIN,,}" || "${user,,}" == "github-actions[bot]" || "${user,,}" == "github-actions" ]]; then
         return 1
     fi
     
