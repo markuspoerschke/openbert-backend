@@ -84,6 +84,14 @@ Run `./gradlew detekt` to analyze production and test Kotlin sources. Detekt als
 
 Detekt findings fail the build. The project uses Detekt 2.0.0-alpha.6 for compatibility with JDK 25 and Gradle 9.
 
+## Architecture tests
+
+ArchUnit checks production bytecode to enforce dependencies between the domain, application, and adapter layers in each bounded context. Dependencies point inward: domain code cannot depend on application code or adapters, and application code cannot depend on adapters. The root package contains application bootstrap code, which no other layer may depend on. Every production class must belong to one of these layers.
+
+Inbound and outbound ports must be interfaces. Port contracts and their models may depend on domain types and other port contracts, but not on application implementations. Existing JPA annotations, Spring components, and Spring Data repository ports remain supported; the rules constrain dependencies within the backend. Dependencies within the adapter layer are allowed, including crawler access to the OParl client and MCP access to API mappers.
+
+Run `./gradlew test --tests 'nrw.openbert.backend.architecture.ArchitectureTest'` to check the architecture without starting Spring or Docker. These tests also run with `./gradlew test` and the CI `./gradlew build`; violations fail the build. URL persistence uses an automatically applied JPA converter so domain entities do not reference the persistence adapter.
+
 ## Docker image
 
 The standalone backend image is built entirely inside Docker, so the build machine does not need JDK or Gradle installed:

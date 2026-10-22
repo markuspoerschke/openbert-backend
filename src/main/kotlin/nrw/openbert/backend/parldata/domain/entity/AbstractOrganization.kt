@@ -1,11 +1,9 @@
 package nrw.openbert.backend.parldata.domain.entity
 
 import jakarta.persistence.Column
-import jakarta.persistence.Convert
 import jakarta.persistence.MappedSuperclass
 import nrw.openbert.backend.parldata.domain.entity.embeddable.OparlResource
 import nrw.openbert.backend.parldata.domain.valueObject.OparlUrl
-import nrw.openbert.backend.parldata.adapter.outbound.persistence.converter.OparlUrlConverter
 import nrw.openbert.backend.parldata.domain.enums.OparlType
 import java.util.*
 
@@ -32,7 +30,6 @@ abstract class AbstractOrganization(resource: OparlResource) : AbstractOparlEnti
     @Column
     var endDate: Date? = null
 
-    @Convert(converter = OparlUrlConverter::class)
     @Column
     var website: OparlUrl? = null
 
