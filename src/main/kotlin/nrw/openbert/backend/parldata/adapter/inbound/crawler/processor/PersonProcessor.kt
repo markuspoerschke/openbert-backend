@@ -23,16 +23,11 @@ class PersonProcessor(
 
     override fun saveEntity(entity: RawPerson) = rawPersonRepository.save(entity)
 
-    override fun process(resource: OparlResource, dto: OparlPersonDto): RawPerson {
+    override fun processRelationships(resource: OparlResource, dto: OparlPersonDto) {
         enqueueUrls(resource, OparlType.BODY, dto.body)
         enqueueUrls(resource, OparlType.LOCATION, dto.location)
-        processInline(resource, dto.locationObject, locationProcessor)
-            ?.personUrls
-            ?.addUrl(resource.url)
-        processInline(resource, dto.membership, membershipProcessor)
-            .forEach { it.personUrl = resource.url }
-
-        return super.process(resource, dto)
+        processInline(resource, dto.locationObject, locationProcessor) { it.personUrls.addUrl(resource.url) }
+        processInline(resource, dto.membership, membershipProcessor) { it.personUrl = resource.url }
     }
 
     override fun updateEntity(entity: RawPerson, dto: OparlPersonDto) {

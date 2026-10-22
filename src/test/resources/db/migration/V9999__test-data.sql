@@ -168,6 +168,47 @@ VALUES ('10000000-0000-4000-8000-000000000004',
         '9352fa21-68c6-4f4e-8832-08a0454ff179',
         'https://oparl-demo.example.org/oparl/v1.1/person/unresolved');
 
+-- List-derived people remain incomplete until their own resource URL is crawled.
+INSERT INTO public.oparl_raw_person
+    (id, body_url, name, family_name, title, phone, email, status, keyword,
+     created, modified, deleted, system_id, url)
+VALUES ('40000000-0000-4000-8000-000000000001', null, 'Initial list name', null, '{}', '{}', '{}', '{}', '{}',
+        '2026-07-22 14:30:55.000000', '2026-07-22 14:30:55.000000', false,
+        '9352fa21-68c6-4f4e-8832-08a0454ff179',
+        'https://oparl-demo.example.org/oparl/v1.1/person/list-seed'),
+       ('40000000-0000-4000-8000-000000000002', 'https://oparl-demo.example.org/oparl/v1.1/body/123',
+        'Complete person', 'Example', '{}', '{"+49 123 456"}', '{"person@example.org"}', '{}', '{}',
+        '2026-07-22 14:30:55.000000', '2026-07-22 14:30:55.000000', false,
+        '9352fa21-68c6-4f4e-8832-08a0454ff179',
+        'https://oparl-demo.example.org/oparl/v1.1/person/complete');
+
+INSERT INTO crawl_target
+    (id, system_id, url, entity_type, created_at, last_crawled_at, modified_at, reference_count)
+VALUES ('40000000-0000-4000-8000-000000000003', '9352fa21-68c6-4f4e-8832-08a0454ff179',
+        'https://oparl-demo.example.org/oparl/v1.1/person/list-seed', 'PERSON',
+        '2026-07-22 14:30:55.000000', null, '2026-07-22 14:30:55.000000', 1),
+       ('40000000-0000-4000-8000-000000000004', '9352fa21-68c6-4f4e-8832-08a0454ff179',
+        'https://oparl-demo.example.org/oparl/v1.1/person/complete', 'PERSON',
+        '2026-07-22 14:30:55.000000', '2026-07-22 14:30:55.000000', '2026-07-22 14:30:55.000000', 0);
+
+-- Historical completed targets must become due again, including list pages without a known type.
+-- A pending scheduled target keeps its existing queue state during the recrawl migration.
+INSERT INTO crawl_target
+    (id, system_id, url, entity_type, created_at, last_crawled_at, modified_at,
+     reference_count, scheduled_at, job_id)
+VALUES ('60000000-0000-4000-8000-000000000001', '9352fa21-68c6-4f4e-8832-08a0454ff179',
+        'https://oparl-demo.example.org/oparl/v1.1/body/123/person?page=2', null,
+        '2026-07-22 14:30:55.000000', '2026-07-22 14:30:55.000000', '2026-07-22 14:30:55.000000',
+        0, '2099-01-01 00:00:00.000000', '60000000-0000-4000-8000-000000000011'),
+       ('60000000-0000-4000-8000-000000000002', '9352fa21-68c6-4f4e-8832-08a0454ff179',
+        'https://oparl-demo.example.org/oparl/v1.1/file/previously-crawled', 'FILE',
+        '2026-07-22 14:30:55.000000', '2026-07-22 14:30:55.000000', '2026-07-22 14:30:55.000000',
+        7, '2099-01-01 00:00:00.000000', '60000000-0000-4000-8000-000000000012'),
+       ('60000000-0000-4000-8000-000000000003', '9352fa21-68c6-4f4e-8832-08a0454ff179',
+        'https://oparl-demo.example.org/oparl/v1.1/person/already-scheduled', 'PERSON',
+        '2026-07-22 14:30:55.000000', null, '2026-07-22 14:30:55.000000',
+        5, '2099-01-01 00:00:00.000000', '60000000-0000-4000-8000-000000000013');
+
 -- OParl paper
 INSERT INTO public.oparl_resolved_paper (id, body_id, name, reference, date, paper_type, license, keyword, web,
                                          system_id, url, created, modified, deleted)
