@@ -171,6 +171,9 @@ class EmbeddedEntityCrawlingTest(
             votingRight = true,
         ))
         crawler.run(memberTarget.id)
+        // Compare persisted timestamps, since PostgreSQL stores only microsecond precision.
+        entityManager.flush()
+        entityManager.clear()
         val completedAt = crawlTargets.findByResource(member)!!.lastCrawledAt
         assertNotNull(completedAt)
 
