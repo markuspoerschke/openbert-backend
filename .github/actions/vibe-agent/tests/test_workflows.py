@@ -11,7 +11,7 @@ ROOT = Path(__file__).resolve().parents[4]
 
 class TrustedCheckoutTest(unittest.TestCase):
     def test_missing_default_branch_action_skips_and_installed_action_runs(self):
-        for mode in ['review', 'ci-monitor']:
+        for mode in ['ci-monitor']:
             source = (ROOT / f'.github/workflows/vibe-agent-{mode}.yml').read_text()
             preflight = source.index('      - name: Check trusted agent availability')
             start = source.index('        run: |\n', preflight) + len('        run: |\n')

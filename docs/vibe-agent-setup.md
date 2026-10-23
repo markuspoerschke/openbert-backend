@@ -1,7 +1,7 @@
 # Mistral Vibe Agent Setup for OpenBert Backend
 
-The agent implements issues labeled `vibe`, creates draft PRs, responds to
-review feedback, and attempts CI repairs. A person must review and merge the PRs.
+The agent implements issues labeled `vibe`, creates draft PRs, and attempts CI
+repairs. A person must review and merge the PRs.
 
 ## Requirements
 
@@ -13,7 +13,7 @@ review feedback, and attempts CI repairs. A person must review and merge the PRs
 - For Projects status updates, a bot PAT with the `project` scope and write
   access to each linked project. Repository write access alone is insufficient.
 - The agent workflows and scripts merged into the default branch before using
-  scheduled, review, or `workflow_run` triggers.
+  scheduled or `workflow_run` triggers.
 
 The composite action sets up Python 3.12, Java 25, jq, rsync, and Mistral Vibe
 3.0.1. It uses the supported headless CLI rather than a shell installer.
@@ -62,7 +62,7 @@ The `project` scope allows Projects queries and mutations; `read:project` alone
 cannot update a status. The built-in `GITHUB_TOKEN` does not provide this Projects
 access. See [GitHub's Projects API authentication requirements](https://docs.github.com/en/issues/planning-and-tracking-with-projects/automating-your-project/using-the-api-to-manage-projects#authentication).
 
-All four agent workflows use the same selected token for checkout/Git pushes and
+All three agent workflows use the same selected token for checkout/Git pushes and
 GitHub CLI operations. A bot token takes precedence over `GH_TOKEN` and
 `GITHUB_TOKEN`; an invalid bot token fails rather than falling back to another
 identity. The agent resolves the token's login and numeric ID before running Vibe
@@ -161,26 +161,18 @@ changes, or the limit is reached, manual intervention is required.
 
 ## Review feedback
 
-The review workflow accepts comments from repository owners, members,
-collaborators, and `chatgpt-codex-connector[bot]`. It skips fork PRs and non-Vibe
-branches. Actionable comments are handled on the current remote branch head.
-Changes are committed, pushed, and built before a response is posted.
-Comments from the authenticated bot itself and `github-actions[bot]` are ignored
-to prevent the bot's own responses from starting another review cycle.
+Automatic review handling is permanently disabled. The
+`vibe-agent-review.yml` workflow has been removed so PR conversation and inline
+comments do not create review workflow runs. Do not restore its triggers.
 
-Review and CI workflows always check out trusted default-branch scripts. If that
+The CI workflow always checks out trusted default-branch scripts. If that
 checkout does not contain the local action yet (for example, while reviewing the
-PR that first introduces the agent), they skip with an explicit notice. They do
+PR that first introduces the agent), it skips with an explicit notice. It does
 not load the PR's agent scripts as a fallback.
-
-Inline feedback gets a reply in its original review thread, including when the
-triggering comment was itself a reply. PR conversation comments receive a
-conversation response. A run that produces no changes reports that manual review
-is still needed; it does not claim to have fixed the feedback.
 
 ## Concurrency
 
-All four agent workflows use the same concurrency group:
+All three agent workflows use the same concurrency group:
 
 ```yaml
 concurrency:
@@ -188,11 +180,11 @@ concurrency:
   cancel-in-progress: false
 ```
 
-This prevents competing implementations, review fixes, and CI repairs from
+This prevents competing implementations and CI repairs from
 running simultaneously on separate runners. There is no repository-local lock
 file. Custom workflows using the composite action must use the same group.
 GitHub Actions retains one pending run per group; a newer event may replace an
-older pending event. Retrigger feedback whose pending run was superseded.
+older pending event.
 
 ## Diagnostics and validation
 
