@@ -61,15 +61,16 @@ class OparlUrlGenerator {
     }
 
     fun fileAccess(bodyId: UUID, fileId: UUID): String {
+        // The servlet response argument is ignored when contributing URI components.
         return MvcUriComponentsBuilder
-            .fromMethodName(OparlFileController::class.java, "access", bodyId, fileId)
+            .fromMethodName(OparlFileController::class.java, "access", bodyId, fileId, Unit)
             .build()
             .toString()
     }
 
     fun fileDownload(bodyId: UUID, fileId: UUID): String {
         return MvcUriComponentsBuilder
-            .fromMethodName(OparlFileController::class.java, "download", bodyId, fileId)
+            .fromMethodName(OparlFileController::class.java, "download", bodyId, fileId, Unit)
             .build()
             .toString()
     }
