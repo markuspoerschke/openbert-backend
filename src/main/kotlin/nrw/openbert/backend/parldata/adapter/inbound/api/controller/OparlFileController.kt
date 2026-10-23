@@ -139,6 +139,7 @@ class OparlFileController(
         response.status = content.statusCode
         response.contentType = content.contentType ?: file.mimeType ?: MediaType.APPLICATION_OCTET_STREAM_VALUE
         content.contentLength?.let(response::setContentLengthLong)
+        content.contentEncoding?.let { response.setHeader(HttpHeaders.CONTENT_ENCODING, it) }
         if (attachment) {
             response.setHeader(
                 HttpHeaders.CONTENT_DISPOSITION,

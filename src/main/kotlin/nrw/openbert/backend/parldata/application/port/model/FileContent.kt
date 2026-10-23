@@ -6,5 +6,6 @@ data class FileContent(
     val statusCode: Int,
     val contentType: String?,
     val contentLength: Long?,
+    val contentEncoding: String?,
     val body: InputStream,
 )

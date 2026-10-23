@@ -5,6 +5,8 @@ import nrw.openbert.backend.parldata.adapter.outbound.client.oparl.OparlFileCont
 import nrw.openbert.backend.parldata.domain.valueObject.OparlUrl
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.ValueSource
 import org.springframework.boot.http.client.ClientHttpRequestFactoryBuilder
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
@@ -13,14 +15,18 @@ import org.springframework.mock.http.client.MockClientHttpResponse
 import org.springframework.test.web.client.MockRestServiceServer
 import org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo
 import org.springframework.web.client.RestClient
+import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStream
 import java.net.InetSocketAddress
+import java.util.zip.GZIPInputStream
+import java.util.zip.GZIPOutputStream
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class OparlFileContentClientTest {
@@ -59,6 +65,7 @@ class OparlFileContentClientTest {
             assertEquals(200, content.statusCode)
             assertEquals("application/pdf", content.contentType)
             assertEquals(source.size.toLong(), content.contentLength)
+            assertNull(content.contentEncoding)
             content.body.copyTo(sink)
             assertFalse(source.closed)
         }
@@ -134,6 +141,49 @@ class OparlFileContentClientTest {
             redirectClient.fetch(OparlUrl("http://127.0.0.1:${upstream.address.port}/redirect")) { content ->
                 assertEquals(200, content.statusCode)
                 assertContentEquals(bytes, content.body.readBytes())
+            }
+        } finally {
+            upstream.stop(0)
+        }
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = [false, true])
+    fun `keeps gzip headers consistent with the body using the JDK request factory`(decompressionEnabled: Boolean) {
+        val bytes = "Original document content".toByteArray()
+        val compressedBytes = ByteArrayOutputStream().apply {
+            GZIPOutputStream(this).use { it.write(bytes) }
+        }.toByteArray()
+        val upstream = HttpServer.create(InetSocketAddress("127.0.0.1", 0), 0)
+        upstream.createContext("/document") { exchange ->
+            exchange.responseHeaders.set(HttpHeaders.CONTENT_TYPE, "text/plain")
+            exchange.responseHeaders.set(HttpHeaders.CONTENT_ENCODING, "gzip")
+            exchange.sendResponseHeaders(200, compressedBytes.size.toLong())
+            exchange.responseBody.use { it.write(compressedBytes) }
+            exchange.close()
+        }
+        upstream.start()
+
+        try {
+            val requestFactory = ClientHttpRequestFactoryBuilder.jdk().build().apply {
+                enableCompression(decompressionEnabled)
+            }
+            val gzipClient = OparlFileContentClient(
+                RestClient.builder().requestFactory(requestFactory)
+            )
+            gzipClient.fetch(OparlUrl("http://127.0.0.1:${upstream.address.port}/document")) { content ->
+                assertEquals(200, content.statusCode)
+                assertEquals("text/plain", content.contentType)
+                assertEquals(if (decompressionEnabled) null else "gzip", content.contentEncoding)
+                assertEquals(if (decompressionEnabled) null else compressedBytes.size.toLong(), content.contentLength)
+                val receivedBytes = content.body.readBytes()
+                assertContentEquals(if (decompressionEnabled) bytes else compressedBytes, receivedBytes)
+                val documentBytes = if (decompressionEnabled) {
+                    receivedBytes
+                } else {
+                    GZIPInputStream(receivedBytes.inputStream()).use { it.readBytes() }
+                }
+                assertContentEquals(bytes, documentBytes)
             }
         } finally {
             upstream.stop(0)

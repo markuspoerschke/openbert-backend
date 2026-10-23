@@ -31,6 +31,7 @@ class OparlFileContentClient(restClientBuilder: RestClient.Builder) : FileConten
                         statusCode = response.statusCode.value(),
                         contentType = response.headers.getFirst(HttpHeaders.CONTENT_TYPE),
                         contentLength = response.headers.contentLength.takeIf { it >= 0 },
+                        contentEncoding = response.headers[HttpHeaders.CONTENT_ENCODING]?.joinToString(", "),
                         body = response.body,
                     )
                 )

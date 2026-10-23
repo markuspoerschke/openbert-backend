@@ -30,8 +30,10 @@ import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.get
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.client.RestClient
+import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.io.InputStream
+import java.util.zip.GZIPOutputStream
 
 @Import(TestcontainersConfiguration::class, OparlFileControllerTest.UpstreamConfiguration::class)
 @SpringBootTest
@@ -166,6 +168,7 @@ class OparlFileControllerTest(
                 content { contentType("application/pdf") }
                 content { bytes(fileBytes) }
                 header { longValue(HttpHeaders.CONTENT_LENGTH, fileBytes.size.toLong()) }
+                header { doesNotExist(HttpHeaders.CONTENT_ENCODING) }
                 header { doesNotExist(HttpHeaders.CONTENT_DISPOSITION) }
                 header { doesNotExist(HttpHeaders.SET_COOKIE) }
                 header { doesNotExist("X-OpenBERT-Mock-File") }
@@ -196,6 +199,30 @@ class OparlFileControllerTest(
                 }
                 header { doesNotExist("X-OpenBERT-Mock-File") }
             }
+    }
+
+    @Test
+    fun `preserves gzip encoding and compressed content length for access and download`() {
+        val compressedBytes = ByteArrayOutputStream().apply {
+            GZIPOutputStream(this).use { it.write(fileBytes) }
+        }.toByteArray()
+        for (url in listOf(upstreamAccessUrl, upstreamDownloadUrl)) {
+            upstream.server.expect(requestTo(url)).andRespond(
+                withSuccess(compressedBytes, MediaType.APPLICATION_PDF)
+                    .header(HttpHeaders.CONTENT_ENCODING, "gzip")
+                    .header(HttpHeaders.CONTENT_LENGTH, compressedBytes.size.toString())
+            )
+        }
+
+        for (endpoint in listOf("access", "download")) {
+            mockMvc.get("$fileUrl/$endpoint").andExpect {
+                status { isOk() }
+                content { contentType("application/pdf") }
+                content { bytes(compressedBytes) }
+                header { string(HttpHeaders.CONTENT_ENCODING, "gzip") }
+                header { longValue(HttpHeaders.CONTENT_LENGTH, compressedBytes.size.toLong()) }
+            }
+        }
     }
 
     @Test
@@ -317,6 +344,7 @@ class OparlFileControllerTest(
             ).apply {
                 headers.contentType = MediaType.APPLICATION_PDF
                 headers.contentLength = 1024
+                headers.set(HttpHeaders.CONTENT_ENCODING, "gzip")
             }
         }
 
@@ -325,6 +353,7 @@ class OparlFileControllerTest(
             header { doesNotExist(HttpHeaders.CONTENT_DISPOSITION) }
             header { doesNotExist(HttpHeaders.CONTENT_LENGTH) }
             header { doesNotExist(HttpHeaders.CONTENT_TYPE) }
+            header { doesNotExist(HttpHeaders.CONTENT_ENCODING) }
         }
     }
 
