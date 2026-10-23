@@ -109,6 +109,9 @@ class OparlFileController(
         }
 
         try {
+            // Pass through file downloads from the original OParl server URLs
+            // This implements a proxy that fetches files directly from the source
+            // without any caching, as requested in issue #111
             fileContentFetcher.fetch(url) { content ->
                 writeContent(content, file, response, attachment)
             }
