@@ -10,8 +10,7 @@ import java.util.UUID
 class OparlSystem(
     @Column(nullable = false, updatable = false, length = OparlUrl.MAX_LENGTH)
     val url: OparlUrl,
-
     @Id
     @Column(nullable = false, updatable = false)
-    val id: UUID = UUID.randomUUID()
+    val id: UUID = UUID.randomUUID(),
 )

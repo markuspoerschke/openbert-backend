@@ -20,25 +20,31 @@ class ConsultationResolver(
     override val entityType = OparlType.CONSULTATION
 
     override fun resolve(rawEntityId: UUID) {
-        val raw = rawRepository.findById(rawEntityId).orElseThrow {
-            IllegalArgumentException("Raw consultation with id $rawEntityId does not exist")
-        }
+        val raw =
+            rawRepository.findById(rawEntityId).orElseThrow {
+                IllegalArgumentException("Raw consultation with id $rawEntityId does not exist")
+            }
         val paper = paperResolver.resolve(relatedResource(raw.resource, required(raw.paperUrl, "paper", raw.resource)))
-        val agendaItem = agendaItemResolver.resolve(
-            relatedResource(raw.resource, required(raw.agendaItemUrl, "agenda item", raw.resource)),
-        )
-        val meeting = meetingResolver.resolve(
-            relatedResource(raw.resource, required(raw.meetingUrl, "meeting", raw.resource)),
-        )
-        val organizations = raw.organizationUrls.map {
-            organizationResolver.resolve(relatedResource(raw.resource, OparlUrl(it)))
-        }
-        val body = commonBody(
-            raw.resource,
-            listOf(paper.body, agendaItem.body, meeting.body) + organizations.map { it.body },
-        )
-        val resolved = resolvedRepository.findByResource(raw.resource)
-            ?: ResolvedConsultation.fromRaw(raw, body, paper, agendaItem, meeting, organizations)
+        val agendaItem =
+            agendaItemResolver.resolve(
+                relatedResource(raw.resource, required(raw.agendaItemUrl, "agenda item", raw.resource)),
+            )
+        val meeting =
+            meetingResolver.resolve(
+                relatedResource(raw.resource, required(raw.meetingUrl, "meeting", raw.resource)),
+            )
+        val organizations =
+            raw.organizationUrls.map {
+                organizationResolver.resolve(relatedResource(raw.resource, OparlUrl(it)))
+            }
+        val body =
+            commonBody(
+                raw.resource,
+                listOf(paper.body, agendaItem.body, meeting.body) + organizations.map { it.body },
+            )
+        val resolved =
+            resolvedRepository.findByResource(raw.resource)
+                ?: ResolvedConsultation.fromRaw(raw, body, paper, agendaItem, meeting, organizations)
 
         requireRelation("body", raw.resource, resolved.body.id, body.id)
         requireRelation("paper", raw.resource, resolved.paper.id, paper.id)

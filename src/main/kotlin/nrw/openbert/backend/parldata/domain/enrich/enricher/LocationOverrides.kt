@@ -10,55 +10,37 @@ data class LocationOverrides(
     val overrideDescription: Boolean = false,
     val description: String? = null,
     val overrideLocality: Boolean = false,
-    val locality: String? = null
+    val locality: String? = null,
 ) {
     // street address
-    fun withStreetAddressOverride(newStreetAddress: String?): LocationOverrides {
-        return copy(overrideStreetAddress = true, streetAddress = newStreetAddress)
-    }
+    fun withStreetAddressOverride(newStreetAddress: String?): LocationOverrides =
+        copy(overrideStreetAddress = true, streetAddress = newStreetAddress)
 
-    fun getStreetAddressOverrideOrOriginalValue(originalValue: String?): String?
-    {
-        return if (overrideStreetAddress) streetAddress else originalValue
-    }
+    fun getStreetAddressOverrideOrOriginalValue(originalValue: String?): String? =
+        if (overrideStreetAddress) streetAddress else originalValue
 
     // postal code
-    fun withPostalCodeOverride(normalizedPostalCode: String?): LocationOverrides {
-        return copy(overridePostalCode = true, postalCode = normalizedPostalCode)
-    }
+    fun withPostalCodeOverride(normalizedPostalCode: String?): LocationOverrides =
+        copy(overridePostalCode = true, postalCode = normalizedPostalCode)
 
-    fun getPostalCodeOverrideOrOriginalValue(originalValue: String?): String?
-    {
-        return if (overridePostalCode) postalCode else originalValue
-    }
+    fun getPostalCodeOverrideOrOriginalValue(originalValue: String?): String? =
+        if (overridePostalCode) postalCode else originalValue
 
     // room
-    fun withRoomOverride(room: String?): LocationOverrides {
-        return copy(overrideRoom = true, room = room)
-    }
+    fun withRoomOverride(room: String?): LocationOverrides = copy(overrideRoom = true, room = room)
 
-    fun getRoomOverrideOrOriginalValue(originalValue: String?): String?
-    {
-        return if (overrideRoom) room else originalValue
-    }
+    fun getRoomOverrideOrOriginalValue(originalValue: String?): String? = if (overrideRoom) room else originalValue
 
     // description
-    fun withDescriptionOverride(description: String?): LocationOverrides {
-        return copy(overrideDescription = true, description = description)
-    }
+    fun withDescriptionOverride(description: String?): LocationOverrides =
+        copy(overrideDescription = true, description = description)
 
-    fun getDescriptionOverrideOrOriginalValue(originalValue: String?): String?
-    {
-        return if (overrideDescription) description else originalValue
-    }
+    fun getDescriptionOverrideOrOriginalValue(originalValue: String?): String? =
+        if (overrideDescription) description else originalValue
 
     // locality
-    fun withLocalityOverride(locality: String?): LocationOverrides {
-        return copy(overrideLocality = true, locality = locality)
-    }
+    fun withLocalityOverride(locality: String?): LocationOverrides = copy(overrideLocality = true, locality = locality)
 
-    fun getLocalityOverrideOrOriginalValue(originalValue: String?): String?
-    {
-        return if (overrideLocality) locality else originalValue
-    }
+    fun getLocalityOverrideOrOriginalValue(originalValue: String?): String? =
+        if (overrideLocality) locality else originalValue
 }

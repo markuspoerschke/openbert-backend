@@ -1,6 +1,8 @@
 package nrw.openbert.backend.parldata.domain.enums
 
-enum class OparlType(val url: String) {
+enum class OparlType(
+    val url: String,
+) {
     AGENDA_ITEM("https://schema.oparl.org/1.1/AgendaItem"),
     BODY("https://schema.oparl.org/1.1/Body"),
     CONSULTATION("https://schema.oparl.org/1.1/Consultation"),

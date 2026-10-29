@@ -15,7 +15,6 @@ import nrw.openbert.backend.parldata.domain.entity.raw.RawLocation
 @Table(uniqueConstraints = [UniqueConstraint(columnNames = ["system_id", "url"])])
 class ResolvedLocation(
     resource: OparlResource,
-
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "body_id", nullable = false, updatable = false)
     val body: ResolvedBody,
@@ -29,8 +28,9 @@ class ResolvedLocation(
     }
 
     companion object {
-        fun fromRaw(raw: RawLocation, body: ResolvedBody): ResolvedLocation {
-            return ResolvedLocation(raw.resource, body).apply { applyValuesFrom(raw) }
-        }
+        fun fromRaw(
+            raw: RawLocation,
+            body: ResolvedBody,
+        ): ResolvedLocation = ResolvedLocation(raw.resource, body).apply { applyValuesFrom(raw) }
     }
 }

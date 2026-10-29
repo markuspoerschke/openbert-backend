@@ -1,12 +1,12 @@
 package nrw.openbert.backend.parldata.adapter.inbound.crawler.processor
 
-import nrw.openbert.backend.parldata.application.crawl.CrawlTargetEnqueuer
-import nrw.openbert.backend.parldata.domain.enums.OparlType
 import nrw.openbert.backend.parldata.adapter.outbound.client.oparl.dto.OparlConsultationDto
+import nrw.openbert.backend.parldata.application.crawl.CrawlTargetEnqueuer
 import nrw.openbert.backend.parldata.application.enrich.EnrichTargetEnqueuer
+import nrw.openbert.backend.parldata.application.port.outbound.repository.RawConsultationRepository
 import nrw.openbert.backend.parldata.domain.entity.embeddable.OparlResource
 import nrw.openbert.backend.parldata.domain.entity.raw.RawConsultation
-import nrw.openbert.backend.parldata.application.port.outbound.repository.RawConsultationRepository
+import nrw.openbert.backend.parldata.domain.enums.OparlType
 import org.springframework.stereotype.Service
 
 @Service
@@ -22,14 +22,20 @@ class ConsultationProcessor(
 
     override fun saveEntity(entity: RawConsultation) = rawConsultationRepository.save(entity)
 
-    override fun processRelationships(resource: OparlResource, dto: OparlConsultationDto) {
+    override fun processRelationships(
+        resource: OparlResource,
+        dto: OparlConsultationDto,
+    ) {
         enqueueUrls(resource, OparlType.PAPER, dto.paper)
         enqueueUrls(resource, OparlType.AGENDA_ITEM, dto.agendaItem)
         enqueueUrls(resource, OparlType.MEETING, dto.meeting)
         enqueueUrls(resource, OparlType.ORGANIZATION, dto.organization.orEmpty())
     }
 
-    override fun updateEntity(entity: RawConsultation, dto: OparlConsultationDto) {
+    override fun updateEntity(
+        entity: RawConsultation,
+        dto: OparlConsultationDto,
+    ) {
         entity.paperUrl = dto.paper?.toOparlUrl()
         entity.agendaItemUrl = dto.agendaItem?.toOparlUrl()
         entity.meetingUrl = dto.meeting?.toOparlUrl()

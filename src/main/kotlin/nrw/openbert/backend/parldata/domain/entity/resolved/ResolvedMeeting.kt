@@ -7,8 +7,8 @@ import jakarta.persistence.JoinTable
 import jakarta.persistence.ManyToMany
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.OneToMany
-import jakarta.persistence.OrderColumn
 import jakarta.persistence.OrderBy
+import jakarta.persistence.OrderColumn
 import jakarta.persistence.Table
 import jakarta.persistence.UniqueConstraint
 import nrw.openbert.backend.parldata.domain.entity.AbstractMeeting
@@ -19,7 +19,6 @@ import nrw.openbert.backend.parldata.domain.entity.raw.RawMeeting
 @Table(uniqueConstraints = [UniqueConstraint(columnNames = ["system_id", "url"])])
 class ResolvedMeeting(
     resource: OparlResource,
-
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "body_id", nullable = false, updatable = false)
     val body: ResolvedBody,
@@ -47,11 +46,10 @@ class ResolvedMeeting(
             raw: RawMeeting,
             body: ResolvedBody,
             organizations: Collection<ResolvedOrganization> = emptyList(),
-        ): ResolvedMeeting {
-            return ResolvedMeeting(raw.resource, body).apply {
+        ): ResolvedMeeting =
+            ResolvedMeeting(raw.resource, body).apply {
                 applyValuesFrom(raw)
                 applyRelationsFrom(organizations)
             }
-        }
     }
 }

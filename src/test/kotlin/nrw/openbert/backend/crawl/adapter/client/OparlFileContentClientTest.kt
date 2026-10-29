@@ -48,16 +48,21 @@ class OparlFileContentClientTest {
         response.headers.contentLength = source.size.toLong()
         server.expect(requestTo(url.value)).andRespond { response }
         var bytesWritten = 0
-        val sink = object : OutputStream() {
-            override fun write(value: Int) {
-                bytesWritten++
-            }
+        val sink =
+            object : OutputStream() {
+                override fun write(value: Int) {
+                    bytesWritten++
+                }
 
-            override fun write(bytes: ByteArray, offset: Int, length: Int) {
-                assertTrue(length <= DEFAULT_BUFFER_SIZE)
-                bytesWritten += length
+                override fun write(
+                    bytes: ByteArray,
+                    offset: Int,
+                    length: Int,
+                ) {
+                    assertTrue(length <= DEFAULT_BUFFER_SIZE)
+                    bytesWritten += length
+                }
             }
-        }
 
         client.fetch(url) { content ->
             assertFalse(source.closed)
@@ -77,16 +82,17 @@ class OparlFileContentClientTest {
     @Test
     fun `closes upstream when the downstream client disconnects`() {
         val source = GeneratedStream(1024 * 1024)
-        server.expect(requestTo(url.value))
+        server
+            .expect(requestTo(url.value))
             .andRespond { MockClientHttpResponse(source, HttpStatus.OK) }
 
         assertFailsWith<IOException> {
             client.fetch(url) { content ->
-                content.body.copyTo(object : OutputStream() {
-                    override fun write(value: Int) {
-                        throw IOException("Client disconnected")
-                    }
-                })
+                content.body.copyTo(
+                    object : OutputStream() {
+                        override fun write(value: Int): Unit = throw IOException("Client disconnected")
+                    },
+                )
             }
         }
 
@@ -97,7 +103,8 @@ class OparlFileContentClientTest {
     @Test
     fun `exposes error status without buffering the upstream error body`() {
         val source = GeneratedStream(1024 * 1024)
-        server.expect(requestTo(url.value))
+        server
+            .expect(requestTo(url.value))
             .andRespond { MockClientHttpResponse(source, HttpStatus.GONE) }
 
         client.fetch(url) { content ->
@@ -135,9 +142,10 @@ class OparlFileContentClientTest {
         upstream.start()
 
         try {
-            val redirectClient = OparlFileContentClient(
-                RestClient.builder().requestFactory(ClientHttpRequestFactoryBuilder.jdk().build())
-            )
+            val redirectClient =
+                OparlFileContentClient(
+                    RestClient.builder().requestFactory(ClientHttpRequestFactoryBuilder.jdk().build()),
+                )
             redirectClient.fetch(OparlUrl("http://127.0.0.1:${upstream.address.port}/redirect")) { content ->
                 assertEquals(200, content.statusCode)
                 assertContentEquals(bytes, content.body.readBytes())
@@ -151,9 +159,11 @@ class OparlFileContentClientTest {
     @ValueSource(booleans = [false, true])
     fun `keeps gzip headers consistent with the body using the JDK request factory`(decompressionEnabled: Boolean) {
         val bytes = "Original document content".toByteArray()
-        val compressedBytes = ByteArrayOutputStream().apply {
-            GZIPOutputStream(this).use { it.write(bytes) }
-        }.toByteArray()
+        val compressedBytes =
+            ByteArrayOutputStream()
+                .apply {
+                    GZIPOutputStream(this).use { it.write(bytes) }
+                }.toByteArray()
         val upstream = HttpServer.create(InetSocketAddress("127.0.0.1", 0), 0)
         upstream.createContext("/document") { exchange ->
             exchange.responseHeaders.set(HttpHeaders.CONTENT_TYPE, "text/plain")
@@ -165,12 +175,14 @@ class OparlFileContentClientTest {
         upstream.start()
 
         try {
-            val requestFactory = ClientHttpRequestFactoryBuilder.jdk().build().apply {
-                enableCompression(decompressionEnabled)
-            }
-            val gzipClient = OparlFileContentClient(
-                RestClient.builder().requestFactory(requestFactory)
-            )
+            val requestFactory =
+                ClientHttpRequestFactoryBuilder.jdk().build().apply {
+                    enableCompression(decompressionEnabled)
+                }
+            val gzipClient =
+                OparlFileContentClient(
+                    RestClient.builder().requestFactory(requestFactory),
+                )
             gzipClient.fetch(OparlUrl("http://127.0.0.1:${upstream.address.port}/document")) { content ->
                 assertEquals(200, content.statusCode)
                 assertEquals("text/plain", content.contentType)
@@ -178,11 +190,12 @@ class OparlFileContentClientTest {
                 assertEquals(if (decompressionEnabled) null else compressedBytes.size.toLong(), content.contentLength)
                 val receivedBytes = content.body.readBytes()
                 assertContentEquals(if (decompressionEnabled) bytes else compressedBytes, receivedBytes)
-                val documentBytes = if (decompressionEnabled) {
-                    receivedBytes
-                } else {
-                    GZIPInputStream(receivedBytes.inputStream()).use { it.readBytes() }
-                }
+                val documentBytes =
+                    if (decompressionEnabled) {
+                        receivedBytes
+                    } else {
+                        GZIPInputStream(receivedBytes.inputStream()).use { it.readBytes() }
+                    }
                 assertContentEquals(bytes, documentBytes)
             }
         } finally {
@@ -190,18 +203,25 @@ class OparlFileContentClientTest {
         }
     }
 
-    private class GeneratedStream(val size: Int) : InputStream() {
+    private class GeneratedStream(
+        val size: Int,
+    ) : InputStream() {
         var bytesRead = 0
         var closed = false
 
-        override fun read(): Int = if (bytesRead < size) {
-            bytesRead++
-            0x42
-        } else {
-            -1
-        }
+        override fun read(): Int =
+            if (bytesRead < size) {
+                bytesRead++
+                0x42
+            } else {
+                -1
+            }
 
-        override fun read(bytes: ByteArray, offset: Int, length: Int): Int {
+        override fun read(
+            bytes: ByteArray,
+            offset: Int,
+            length: Int,
+        ): Int {
             val count = minOf(length, size - bytesRead)
             if (count == 0) return -1
             bytes.fill(0x42, offset, offset + count)

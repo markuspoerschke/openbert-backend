@@ -8,22 +8,23 @@ import org.springframework.stereotype.Component
 @Component
 class OparlListLinksMapper {
     fun toDto(
-        page: Page<*>, listUrlGenerator: (page: Int) -> String
-    ): OparlListLinksDto {
-        return OparlListLinksDto(
+        page: Page<*>,
+        listUrlGenerator: (page: Int) -> String,
+    ): OparlListLinksDto =
+        OparlListLinksDto(
             first(listUrlGenerator),
             prev(page, listUrlGenerator),
             self(page, listUrlGenerator),
             next(page, listUrlGenerator),
             last(page, listUrlGenerator),
         )
-    }
 
-    private fun first(listUrlGenerator: (page: Int) -> String): String {
-        return listUrlGenerator(1)
-    }
+    private fun first(listUrlGenerator: (page: Int) -> String): String = listUrlGenerator(1)
 
-    private fun prev(page: Page<*>, listUrlGenerator: (page: Int) -> String): String? {
+    private fun prev(
+        page: Page<*>,
+        listUrlGenerator: (page: Int) -> String,
+    ): String? {
         if (page.hasPrevious()) {
             return listUrlGenerator(page.numberOneBased - 1)
         }
@@ -31,11 +32,15 @@ class OparlListLinksMapper {
         return null
     }
 
-    private fun self(page: Page<*>, listUrlGenerator: (page: Int) -> String): String {
-        return listUrlGenerator(page.numberOneBased)
-    }
+    private fun self(
+        page: Page<*>,
+        listUrlGenerator: (page: Int) -> String,
+    ): String = listUrlGenerator(page.numberOneBased)
 
-    private fun next(page: Page<*>, listUrlGenerator: (page: Int) -> String): String? {
+    private fun next(
+        page: Page<*>,
+        listUrlGenerator: (page: Int) -> String,
+    ): String? {
         if (page.hasNext()) {
             return listUrlGenerator(page.numberOneBased + 1)
         }
@@ -43,7 +48,8 @@ class OparlListLinksMapper {
         return null
     }
 
-    private fun last(page: Page<*>, listUrlGenerator: (page: Int) -> String): String {
-        return listUrlGenerator(page.totalPages.coerceAtLeast(1))
-    }
+    private fun last(
+        page: Page<*>,
+        listUrlGenerator: (page: Int) -> String,
+    ): String = listUrlGenerator(page.totalPages.coerceAtLeast(1))
 }

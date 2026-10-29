@@ -9,8 +9,10 @@ import org.springframework.context.annotation.Configuration
 class JobRunrFilterConfiguration(
     private val jobFilters: List<JobFilter>,
 ) : BeanPostProcessor {
-
-    override fun postProcessAfterInitialization(bean: Any, beanName: String): Any {
+    override fun postProcessAfterInitialization(
+        bean: Any,
+        beanName: String,
+    ): Any {
         if (bean is BackgroundJobServer) {
             bean.setJobFilters(jobFilters)
         }

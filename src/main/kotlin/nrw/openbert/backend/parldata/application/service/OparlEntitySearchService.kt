@@ -1,8 +1,8 @@
 package nrw.openbert.backend.parldata.application.service
 
 import nrw.openbert.backend.parldata.application.port.inbound.OparlEntitySearchServiceInterface
-import nrw.openbert.backend.parldata.application.port.outbound.repository.OparlSearchRepository
 import nrw.openbert.backend.parldata.application.port.model.SearchCriteria
+import nrw.openbert.backend.parldata.application.port.outbound.repository.OparlSearchRepository
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -14,6 +14,6 @@ class OparlEntitySearchService(
     @Transactional(readOnly = true)
     override fun search(
         criteria: SearchCriteria,
-        pageable: Pageable
+        pageable: Pageable,
     ) = searchRepository.search(criteria, pageable)
 }

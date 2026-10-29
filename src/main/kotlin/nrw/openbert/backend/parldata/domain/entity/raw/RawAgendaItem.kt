@@ -10,7 +10,9 @@ import nrw.openbert.backend.parldata.domain.valueObject.OparlUrl
 
 @Entity(name = "oparl_raw_agendaItem")
 @Table(uniqueConstraints = [UniqueConstraint(columnNames = ["system_id", "url"])])
-class RawAgendaItem(resource: OparlResource) : AbstractAgendaItem(resource) {
+class RawAgendaItem(
+    resource: OparlResource,
+) : AbstractAgendaItem(resource) {
     @Column(name = "meeting_url", length = OparlUrl.MAX_LENGTH)
     var meetingUrl: OparlUrl? = null
 

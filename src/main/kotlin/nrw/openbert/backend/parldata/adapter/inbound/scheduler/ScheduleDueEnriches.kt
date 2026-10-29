@@ -25,13 +25,15 @@ class ScheduleDueEnriches(
     fun run() {
         logger.info("Running enrichment scheduler")
 
-        val targets = enrichTargetRepository.findDue(
-            Instant.now(),
-            PageRequest.of(0, BATCH_SIZE),
-        ).onEach { target ->
-            val jobId = jobScheduler.enqueue { enricher.run(target.id) }
-            target.markAsScheduled(jobId.asUUID())
-        }
+        val targets =
+            enrichTargetRepository
+                .findDue(
+                    Instant.now(),
+                    PageRequest.of(0, BATCH_SIZE),
+                ).onEach { target ->
+                    val jobId = jobScheduler.enqueue { enricher.run(target.id) }
+                    target.markAsScheduled(jobId.asUUID())
+                }
 
         enrichTargetRepository.saveAll(targets)
         logger.info("Scheduled {} enrich targets", targets.size)

@@ -2,22 +2,22 @@ package nrw.openbert.backend.resolve.application
 
 import jakarta.persistence.EntityManager
 import nrw.openbert.backend.TestcontainersConfiguration
-import nrw.openbert.backend.parldata.domain.entity.OparlSystem
-import nrw.openbert.backend.parldata.domain.entity.embeddable.OparlResource
-import nrw.openbert.backend.parldata.domain.entity.raw.RawBody
-import nrw.openbert.backend.parldata.domain.entity.raw.RawSystem
 import nrw.openbert.backend.parldata.application.port.outbound.repository.RawBodyRepository
-import nrw.openbert.backend.parldata.domain.entity.ResolveTarget
-import nrw.openbert.backend.parldata.domain.enums.OparlType
-import nrw.openbert.backend.parldata.application.port.outbound.repository.ResolveTargetRepository
 import nrw.openbert.backend.parldata.application.port.outbound.repository.RawOrganizationRepository
 import nrw.openbert.backend.parldata.application.port.outbound.repository.RawPaperRepository
 import nrw.openbert.backend.parldata.application.port.outbound.repository.RawSystemRepository
-import nrw.openbert.backend.parldata.domain.valueObject.OparlUrl
+import nrw.openbert.backend.parldata.application.port.outbound.repository.ResolveTargetRepository
 import nrw.openbert.backend.parldata.application.port.outbound.repository.ResolvedBodyRepository
 import nrw.openbert.backend.parldata.application.port.outbound.repository.ResolvedOrganizationRepository
 import nrw.openbert.backend.parldata.application.port.outbound.repository.ResolvedSystemRepository
 import nrw.openbert.backend.parldata.application.resolve.Resolver
+import nrw.openbert.backend.parldata.domain.entity.OparlSystem
+import nrw.openbert.backend.parldata.domain.entity.ResolveTarget
+import nrw.openbert.backend.parldata.domain.entity.embeddable.OparlResource
+import nrw.openbert.backend.parldata.domain.entity.raw.RawBody
+import nrw.openbert.backend.parldata.domain.entity.raw.RawSystem
+import nrw.openbert.backend.parldata.domain.enums.OparlType
+import nrw.openbert.backend.parldata.domain.valueObject.OparlUrl
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -46,12 +46,13 @@ class ResolverPersistenceTest(
 ) {
     @Test
     fun `resolves a system`() {
-        val raw = rawSystemRepository.save(
-            RawSystem(resource("system/source")).apply {
-                name = "Source system"
-                oparlVersion = "https://schema.oparl.org/1.1/"
-            },
-        )
+        val raw =
+            rawSystemRepository.save(
+                RawSystem(resource("system/source")).apply {
+                    name = "Source system"
+                    oparlVersion = "https://schema.oparl.org/1.1/"
+                },
+            )
         val target = targetRepository.save(ResolveTarget.create(raw).enqueue())
 
         resolver.run(target.id)
@@ -65,9 +66,10 @@ class ResolverPersistenceTest(
 
     @Test
     fun `resolves a body`() {
-        val raw = rawBodyRepository.save(
-            RawBody(resource("body/source")).apply { name = "Source body" },
-        )
+        val raw =
+            rawBodyRepository.save(
+                RawBody(resource("body/source")).apply { name = "Source body" },
+            )
         val target = targetRepository.save(ResolveTarget.create(raw).enqueue())
 
         resolver.run(target.id)
@@ -81,9 +83,10 @@ class ResolverPersistenceTest(
 
     @Test
     fun `resolves an organization with its real body relation`() {
-        val raw = rawOrganizationRepository
-            .findById(UUID.fromString("10000000-0000-4000-8000-000000000002"))
-            .orElseThrow()
+        val raw =
+            rawOrganizationRepository
+                .findById(UUID.fromString("10000000-0000-4000-8000-000000000002"))
+                .orElseThrow()
         val target = targetRepository.save(ResolveTarget.create(raw).enqueue())
 
         resolver.run(target.id)
@@ -103,52 +106,60 @@ class ResolverPersistenceTest(
     @Test
     fun `all supported entity types become due`() {
         val rawSystem = rawSystemRepository.save(RawSystem(resource("system/due")))
-        val rawPaper = rawPaperRepository
-            .findById(UUID.fromString("10000000-0000-4000-8000-000000000003"))
-            .orElseThrow()
+        val rawPaper =
+            rawPaperRepository
+                .findById(UUID.fromString("10000000-0000-4000-8000-000000000003"))
+                .orElseThrow()
         val systemTarget = targetRepository.save(ResolveTarget.create(rawSystem).enqueue())
         val paperTarget = targetRepository.save(ResolveTarget.create(rawPaper).enqueue())
 
-        val dueTargets = targetRepository.findDue(
-            Instant.now(),
-            resolver.supportedEntityTypes,
-            PageRequest.of(0, 3),
-        )
+        val dueTargets =
+            targetRepository.findDue(
+                Instant.now(),
+                resolver.supportedEntityTypes,
+                PageRequest.of(0, 3),
+            )
 
         assertEquals(setOf(systemTarget.id, paperTarget.id), dueTargets.map { it.id }.toSet())
     }
 
     @Test
     fun `orders organization and person before membership regardless of reference count`() {
-        val organizationTarget = targetRepository.save(
-            ResolveTarget(
-                rawEntityId = UUID.randomUUID(),
-                entityType = OparlType.ORGANIZATION,
-                referenceCount = 1,
-            ),
-        )
-        val personTarget = targetRepository.save(
-            ResolveTarget(
-                rawEntityId = UUID.randomUUID(),
-                entityType = OparlType.PERSON,
-                referenceCount = 10,
-            ),
-        )
-        val membershipTarget = targetRepository.save(
-            ResolveTarget(
-                rawEntityId = UUID.randomUUID(),
-                entityType = OparlType.MEMBERSHIP,
-                referenceCount = 100,
-            ),
-        )
+        val organizationTarget =
+            targetRepository.save(
+                ResolveTarget(
+                    rawEntityId = UUID.randomUUID(),
+                    entityType = OparlType.ORGANIZATION,
+                    referenceCount = 1,
+                ),
+            )
+        val personTarget =
+            targetRepository.save(
+                ResolveTarget(
+                    rawEntityId = UUID.randomUUID(),
+                    entityType = OparlType.PERSON,
+                    referenceCount = 10,
+                ),
+            )
+        val membershipTarget =
+            targetRepository.save(
+                ResolveTarget(
+                    rawEntityId = UUID.randomUUID(),
+                    entityType = OparlType.MEMBERSHIP,
+                    referenceCount = 100,
+                ),
+            )
 
-        val dependencyTargets = targetRepository.findDue(
-            Instant.now(),
-            resolver.supportedEntityTypes,
-            PageRequest.of(0, 100),
-        ).map(ResolveTarget::id).filter {
-            it in setOf(organizationTarget.id, personTarget.id, membershipTarget.id)
-        }
+        val dependencyTargets =
+            targetRepository
+                .findDue(
+                    Instant.now(),
+                    resolver.supportedEntityTypes,
+                    PageRequest.of(0, 100),
+                ).map(ResolveTarget::id)
+                .filter {
+                    it in setOf(organizationTarget.id, personTarget.id, membershipTarget.id)
+                }
 
         assertEquals(
             listOf(organizationTarget.id, personTarget.id, membershipTarget.id),
@@ -163,10 +174,11 @@ class ResolverPersistenceTest(
     }
 
     private fun resource(path: String): OparlResource {
-        val system = entityManager.find(
-            OparlSystem::class.java,
-            UUID.fromString("9352fa21-68c6-4f4e-8832-08a0454ff179"),
-        )
+        val system =
+            entityManager.find(
+                OparlSystem::class.java,
+                UUID.fromString("9352fa21-68c6-4f4e-8832-08a0454ff179"),
+            )
         return OparlResource(system, OparlUrl("https://oparl-demo.example.org/oparl/v1.1/$path"))
     }
 }

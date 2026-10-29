@@ -18,9 +18,10 @@ class Enricher(
 
     @Transactional
     fun run(targetId: UUID) {
-        val target = targetRepository.findById(targetId).orElseThrow {
-            IllegalArgumentException("Enrich target with id $targetId does not exist")
-        }
+        val target =
+            targetRepository.findById(targetId).orElseThrow {
+                IllegalArgumentException("Enrich target with id $targetId does not exist")
+            }
 
         logger.info("Enriching {} raw entity {}", target.entityType, target.rawEntityId)
         // Entity types without an enricher pass through until enrichment is implemented.

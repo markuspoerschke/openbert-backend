@@ -5,5 +5,6 @@ import java.util.UUID
 
 interface EntityEnricher {
     val entityType: OparlType
+
     fun enrich(rawEntityId: UUID)
 }

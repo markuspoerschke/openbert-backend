@@ -1,7 +1,7 @@
 package nrw.openbert.backend.parldata.domain.valueObject
 
 data class OparlUrl(
-    val value: String
+    val value: String,
 ) {
     companion object {
         const val MAX_LENGTH = 1024

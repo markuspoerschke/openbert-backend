@@ -14,7 +14,6 @@ import org.junit.jupiter.api.Test
 import java.time.Instant
 
 class EnrichedLocationTest {
-
     private fun createRawLocation(): RawLocation {
         val system = OparlSystem(OparlUrl("https://example.com/oparl/v1/system"))
         val resource = OparlResource(system, OparlUrl("https://example.com/oparl/v1/location/1"))
@@ -30,18 +29,19 @@ class EnrichedLocationTest {
     @Test
     fun `creates EnrichedLocation from RawLocation and LocationOverrides using static constructor`() {
         val raw = createRawLocation()
-        val overrides = LocationOverrides(
-            overrideStreetAddress = true,
-            streetAddress = "Enriched Street 42",
-            overridePostalCode = true,
-            postalCode = "54321",
-            overrideRoom = true,
-            room = "Room 202",
-            overrideDescription = true,
-            description = "Enriched Description",
-            overrideLocality = true,
-            locality = "Enriched City"
-        )
+        val overrides =
+            LocationOverrides(
+                overrideStreetAddress = true,
+                streetAddress = "Enriched Street 42",
+                overridePostalCode = true,
+                postalCode = "54321",
+                overrideRoom = true,
+                room = "Room 202",
+                overrideDescription = true,
+                description = "Enriched Description",
+                overrideLocality = true,
+                locality = "Enriched City",
+            )
 
         val enriched = EnrichedLocation.fromRaw(raw, overrides)
 
@@ -61,7 +61,6 @@ class EnrichedLocationTest {
         assertNotNull(enriched.modified)
     }
 
-
     @Test
     fun `applyValuesFrom updates override values and modified timestamp`() {
         val raw = createRawLocation()
@@ -71,18 +70,19 @@ class EnrichedLocationTest {
         val previousModified = enriched.modified.minusSeconds(10)
         enriched.modified = previousModified
 
-        val newOverrides = LocationOverrides(
-            overrideStreetAddress = true,
-            streetAddress = "Updated Street 99",
-            overridePostalCode = true,
-            postalCode = "99999",
-            overrideRoom = true,
-            room = "Room 303",
-            overrideDescription = true,
-            description = "Updated Description",
-            overrideLocality = true,
-            locality = "Updated City"
-        )
+        val newOverrides =
+            LocationOverrides(
+                overrideStreetAddress = true,
+                streetAddress = "Updated Street 99",
+                overridePostalCode = true,
+                postalCode = "99999",
+                overrideRoom = true,
+                room = "Room 303",
+                overrideDescription = true,
+                description = "Updated Description",
+                overrideLocality = true,
+                locality = "Updated City",
+            )
 
         enriched.applyValuesFrom(newOverrides)
 
@@ -117,18 +117,19 @@ class EnrichedLocationTest {
     @Test
     fun `toLocationOverrides returns LocationOverrides with matching values`() {
         val raw = createRawLocation()
-        val originalOverrides = LocationOverrides(
-            overrideStreetAddress = true,
-            streetAddress = "Target Street 123",
-            overridePostalCode = true,
-            postalCode = "10115",
-            overrideRoom = true,
-            room = "Conference Room A",
-            overrideDescription = true,
-            description = "Main Office Building",
-            overrideLocality = true,
-            locality = "Berlin"
-        )
+        val originalOverrides =
+            LocationOverrides(
+                overrideStreetAddress = true,
+                streetAddress = "Target Street 123",
+                overridePostalCode = true,
+                postalCode = "10115",
+                overrideRoom = true,
+                room = "Conference Room A",
+                overrideDescription = true,
+                description = "Main Office Building",
+                overrideLocality = true,
+                locality = "Berlin",
+            )
         val enriched = EnrichedLocation.fromRaw(raw, originalOverrides)
 
         val extractedOverrides = enriched.toLocationOverrides()

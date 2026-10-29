@@ -16,7 +16,6 @@ import nrw.openbert.backend.parldata.domain.entity.raw.RawPaper
 @Table(uniqueConstraints = [UniqueConstraint(columnNames = ["system_id", "url"])])
 class ResolvedPaper(
     resource: OparlResource,
-
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "body_id", nullable = false, updatable = false)
     val body: ResolvedBody,
@@ -26,8 +25,9 @@ class ResolvedPaper(
     val consultations: MutableList<ResolvedConsultation> = mutableListOf()
 
     companion object {
-        fun fromRaw(raw: RawPaper, body: ResolvedBody): ResolvedPaper {
-            return ResolvedPaper(raw.resource, body).apply { applyValuesFrom(raw) }
-        }
+        fun fromRaw(
+            raw: RawPaper,
+            body: ResolvedBody,
+        ): ResolvedPaper = ResolvedPaper(raw.resource, body).apply { applyValuesFrom(raw) }
     }
 }

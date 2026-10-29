@@ -4,10 +4,12 @@ import jakarta.persistence.Column
 import jakarta.persistence.MappedSuperclass
 import nrw.openbert.backend.parldata.domain.entity.embeddable.OparlResource
 import nrw.openbert.backend.parldata.domain.enums.OparlType
-import java.util.*
+import java.util.Date
 
 @MappedSuperclass
-abstract class AbstractLegislativeTerm(resource: OparlResource) : AbstractOparlEntity(resource) {
+abstract class AbstractLegislativeTerm(
+    resource: OparlResource,
+) : AbstractOparlEntity(resource) {
     @Column(length = 500)
     var name: String? = null
 

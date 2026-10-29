@@ -19,7 +19,8 @@ class OparlBodyControllerTest(
 
     @Test
     fun `lists only resolved bodies`() {
-        mockMvc.get("https://example.org:8443/oparl/v1.1/body")
+        mockMvc
+            .get("https://example.org:8443/oparl/v1.1/body")
             .andExpect {
                 status { isOk() }
                 jsonPath("$.id") { value("https://example.org:8443/oparl/v1.1/body?page=1") }
@@ -35,7 +36,7 @@ class OparlBodyControllerTest(
                 jsonPath("$.data[0].legislativeTerm.length()") { value(1) }
                 jsonPath("$.data[0].legislativeTerm[0].id") {
                     value(
-                        "$bodyUrl/legislativeterm/20ae1f2f-991a-4ea1-a546-27869c8c542a"
+                        "$bodyUrl/legislativeterm/20ae1f2f-991a-4ea1-a546-27869c8c542a",
                     )
                 }
                 jsonPath("$.data[0].legislativeTerm[0].type") { value("https://schema.oparl.org/1.1/LegislativeTerm") }
@@ -62,7 +63,8 @@ class OparlBodyControllerTest(
 
     @Test
     fun `paginates bodies and returns empty page when out of range`() {
-        mockMvc.get("https://example.org:8443/oparl/v1.1/body?page=2")
+        mockMvc
+            .get("https://example.org:8443/oparl/v1.1/body?page=2")
             .andExpect {
                 status { isOk() }
                 jsonPath("$.id") { value("https://example.org:8443/oparl/v1.1/body?page=2") }
@@ -81,12 +83,14 @@ class OparlBodyControllerTest(
 
     @Test
     fun `returns bad request when page number is less than 1`() {
-        mockMvc.get("https://example.org:8443/oparl/v1.1/body?page=0")
+        mockMvc
+            .get("https://example.org:8443/oparl/v1.1/body?page=0")
             .andExpect {
                 status { isBadRequest() }
             }
 
-        mockMvc.get("https://example.org:8443/oparl/v1.1/body?page=-1")
+        mockMvc
+            .get("https://example.org:8443/oparl/v1.1/body?page=-1")
             .andExpect {
                 status { isBadRequest() }
             }

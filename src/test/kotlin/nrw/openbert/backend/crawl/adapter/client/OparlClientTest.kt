@@ -1,5 +1,6 @@
 package nrw.openbert.backend.crawl.adapter.client
 
+import nrw.openbert.backend.parldata.adapter.outbound.client.oparl.OparlClient
 import nrw.openbert.backend.parldata.adapter.outbound.client.oparl.dto.OparlAgendaItemDto
 import nrw.openbert.backend.parldata.adapter.outbound.client.oparl.dto.OparlBodyDto
 import nrw.openbert.backend.parldata.adapter.outbound.client.oparl.dto.OparlConsultationDto
@@ -13,7 +14,6 @@ import nrw.openbert.backend.parldata.adapter.outbound.client.oparl.dto.OparlOrga
 import nrw.openbert.backend.parldata.adapter.outbound.client.oparl.dto.OparlPaperDto
 import nrw.openbert.backend.parldata.adapter.outbound.client.oparl.dto.OparlPersonDto
 import nrw.openbert.backend.parldata.adapter.outbound.client.oparl.dto.OparlSystemDto
-import nrw.openbert.backend.parldata.adapter.outbound.client.oparl.OparlClient
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.restclient.test.autoconfigure.RestClientTest
@@ -36,7 +36,8 @@ class OparlClientTest(
     fun `preserves the provider body extension on meetings`() {
         val url = "https://oparl.example.org/meeting/1"
         val bodyUrl = "https://oparl.example.org/body/1"
-        mockServer.expect(requestTo(url))
+        mockServer
+            .expect(requestTo(url))
             .andRespond(
                 withSuccess(
                     """
@@ -61,7 +62,8 @@ class OparlClientTest(
     @Test
     fun `gets a single OParl object`() {
         val url = "https://oparl.example.org/system"
-        mockServer.expect(requestTo(url))
+        mockServer
+            .expect(requestTo(url))
             .andExpect(method(HttpMethod.GET))
             .andRespond(
                 withSuccess(
@@ -88,24 +90,27 @@ class OparlClientTest(
     @Test
     fun `gets a polymorphic OParl list with nullable metadata`() {
         val url = "https://oparl.example.org/objects"
-        val objectTypes = listOf(
-            "AgendaItem",
-            "Body",
-            "Consultation",
-            "File",
-            "LegislativeTerm",
-            "Location",
-            "Meeting",
-            "Membership",
-            "Organization",
-            "Paper",
-            "Person",
-            "System",
-        )
-        val data = objectTypes.joinToString(",") { type ->
-            """{"id":"https://oparl.example.org/$type","type":"https://schema.oparl.org/1.1/$type"}"""
-        }
-        mockServer.expect(requestTo(url))
+        val objectTypes =
+            listOf(
+                "AgendaItem",
+                "Body",
+                "Consultation",
+                "File",
+                "LegislativeTerm",
+                "Location",
+                "Meeting",
+                "Membership",
+                "Organization",
+                "Paper",
+                "Person",
+                "System",
+            )
+        val data =
+            objectTypes.joinToString(",") { type ->
+                """{"id":"https://oparl.example.org/$type","type":"https://schema.oparl.org/1.1/$type"}"""
+            }
+        mockServer
+            .expect(requestTo(url))
             .andRespond(
                 withSuccess(
                     """
@@ -149,7 +154,8 @@ class OparlClientTest(
     @Test
     fun `recognizes an untyped OParl 1_0 list and infers types of deleted items`() {
         val url = "https://oparl.example.org/body/1/organization"
-        mockServer.expect(requestTo(url))
+        mockServer
+            .expect(requestTo(url))
             .andRespond(
                 withSuccess(
                     """
@@ -194,7 +200,8 @@ class OparlClientTest(
     @Test
     fun `infers the item type from an all-deleted list URL`() {
         val url = "https://oparl.example.org/webservice/oparl/v1.0/body/1/organization"
-        mockServer.expect(requestTo(url))
+        mockServer
+            .expect(requestTo(url))
             .andRespond(
                 withSuccess(
                     """

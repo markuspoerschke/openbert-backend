@@ -8,7 +8,9 @@ import org.hibernate.annotations.JdbcTypeCode
 import org.hibernate.type.SqlTypes
 
 @MappedSuperclass
-abstract class AbstractLocation(resource: OparlResource) : AbstractOparlEntity(resource) {
+abstract class AbstractLocation(
+    resource: OparlResource,
+) : AbstractOparlEntity(resource) {
     @Column(columnDefinition = "TEXT")
     var description: String? = null
 

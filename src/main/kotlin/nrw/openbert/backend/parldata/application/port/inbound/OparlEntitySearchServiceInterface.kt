@@ -1,10 +1,13 @@
 package nrw.openbert.backend.parldata.application.port.inbound
 
-import nrw.openbert.backend.parldata.domain.valueObject.OparlSearchReference
 import nrw.openbert.backend.parldata.application.port.model.SearchCriteria
+import nrw.openbert.backend.parldata.domain.valueObject.OparlSearchReference
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 
 interface OparlEntitySearchServiceInterface {
-    fun search(criteria: SearchCriteria, pageable: Pageable): Page<OparlSearchReference>
+    fun search(
+        criteria: SearchCriteria,
+        pageable: Pageable,
+    ): Page<OparlSearchReference>
 }

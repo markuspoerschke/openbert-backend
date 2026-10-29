@@ -7,12 +7,11 @@ import org.springframework.stereotype.Component
 
 @Component
 class OparlListPaginationMapper {
-    fun toDto(page: Page<*>): OparlListPaginationDto {
-        return OparlListPaginationDto(
+    fun toDto(page: Page<*>): OparlListPaginationDto =
+        OparlListPaginationDto(
             page.totalElements.toInt(),
             page.size,
             page.numberOneBased,
             page.totalPages,
         )
-    }
 }

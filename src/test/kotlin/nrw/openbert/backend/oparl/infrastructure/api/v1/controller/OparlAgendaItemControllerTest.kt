@@ -25,7 +25,8 @@ class OparlAgendaItemControllerTest(
 
     @Test
     fun `lists resolved agenda items belonging to a body`() {
-        mockMvc.get("$bodyUrl/agendaitem")
+        mockMvc
+            .get("$bodyUrl/agendaitem")
             .andExpect {
                 status { isOk() }
                 jsonPath("$.id") { value("$bodyUrl/agendaitem?page=1") }
@@ -57,7 +58,7 @@ class OparlAgendaItemControllerTest(
                 jsonPath("$.data[1].web") {
                     value(
                         "https://neuoffenstadt.example.com/" +
-                            "sitzungen/finanzausschuss-4/top-10-1"
+                            "sitzungen/finanzausschuss-4/top-10-1",
                     )
                 }
                 jsonPath("$.pagination.currentPage") { value(1) }
@@ -74,7 +75,8 @@ class OparlAgendaItemControllerTest(
 
     @Test
     fun `paginates agenda items and returns empty page when out of range`() {
-        mockMvc.get("$bodyUrl/agendaitem?page=2")
+        mockMvc
+            .get("$bodyUrl/agendaitem?page=2")
             .andExpect {
                 status { isOk() }
                 jsonPath("$.id") { value("$bodyUrl/agendaitem?page=2") }
@@ -93,12 +95,14 @@ class OparlAgendaItemControllerTest(
 
     @Test
     fun `returns bad request when page number is less than 1`() {
-        mockMvc.get("$bodyUrl/agendaitem?page=0")
+        mockMvc
+            .get("$bodyUrl/agendaitem?page=0")
             .andExpect {
                 status { isBadRequest() }
             }
 
-        mockMvc.get("$bodyUrl/agendaitem?page=-1")
+        mockMvc
+            .get("$bodyUrl/agendaitem?page=-1")
             .andExpect {
                 status { isBadRequest() }
             }
@@ -106,7 +110,8 @@ class OparlAgendaItemControllerTest(
 
     @Test
     fun `returns a single resolved agenda item with its mandatory order`() {
-        mockMvc.get(agendaItemUrl)
+        mockMvc
+            .get(agendaItemUrl)
             .andExpect {
                 status { isOk() }
                 jsonPath("$.id") { value(agendaItemUrl) }
@@ -122,7 +127,8 @@ class OparlAgendaItemControllerTest(
 
     @Test
     fun `returns not found for an unknown agenda item`() {
-        mockMvc.get("$bodyUrl/agendaitem/00000000-0000-0000-0000-000000000000")
+        mockMvc
+            .get("$bodyUrl/agendaitem/00000000-0000-0000-0000-000000000000")
             .andExpect {
                 status { isNotFound() }
             }
@@ -130,35 +136,35 @@ class OparlAgendaItemControllerTest(
 
     @Test
     fun `returns not found for an agenda item requested through an unknown body`() {
-        mockMvc.get(
-            "https://example.org:8443/oparl/v1.1/body/" +
-                "00000000-0000-0000-0000-000000000000/agendaitem/" +
-                "7b728a96-ae9a-40d1-b010-cc909ab2dd87"
-        )
-            .andExpect {
+        mockMvc
+            .get(
+                "https://example.org:8443/oparl/v1.1/body/" +
+                    "00000000-0000-0000-0000-000000000000/agendaitem/" +
+                    "7b728a96-ae9a-40d1-b010-cc909ab2dd87",
+            ).andExpect {
                 status { isNotFound() }
             }
     }
 
     @Test
     fun `returns not found for an agenda item belonging to another body`() {
-        mockMvc.get(
-            "https://example.org:8443/oparl/v1.1/body/" +
-                "ffffffff-ffff-4fff-afff-ffffffffffff/agendaitem/" +
-                "7b728a96-ae9a-40d1-b010-cc909ab2dd87"
-        )
-            .andExpect {
+        mockMvc
+            .get(
+                "https://example.org:8443/oparl/v1.1/body/" +
+                    "ffffffff-ffff-4fff-afff-ffffffffffff/agendaitem/" +
+                    "7b728a96-ae9a-40d1-b010-cc909ab2dd87",
+            ).andExpect {
                 status { isNotFound() }
             }
     }
 
     @Test
     fun `returns not found when listing agenda items for an unknown body`() {
-        mockMvc.get(
-            "https://example.org:8443/oparl/v1.1/body/" +
-                "00000000-0000-0000-0000-000000000000/agendaitem"
-        )
-            .andExpect {
+        mockMvc
+            .get(
+                "https://example.org:8443/oparl/v1.1/body/" +
+                    "00000000-0000-0000-0000-000000000000/agendaitem",
+            ).andExpect {
                 status { isNotFound() }
             }
     }

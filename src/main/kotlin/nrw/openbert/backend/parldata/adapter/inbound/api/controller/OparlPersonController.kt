@@ -21,10 +21,11 @@ import java.util.UUID
 
 @Tag(
     name = "Oparl Person",
-    externalDocs = ExternalDocumentation(
-        "Oparl Specs",
-        "https://oparl.org/spezifikation/online-ansicht/#entity-person",
-    ),
+    externalDocs =
+        ExternalDocumentation(
+            "Oparl Specs",
+            "https://oparl.org/spezifikation/online-ansicht/#entity-person",
+        ),
 )
 @RestController
 class OparlPersonController(
@@ -44,20 +45,22 @@ class OparlPersonController(
             return ResponseEntity.notFound().build()
         }
 
-        val persons = resolvedPersonRepository
-            .findAllByBodyIdOrderById(bodyId, pagination.toPageable())
-            .map(personMapper::toDto)
+        val persons =
+            resolvedPersonRepository
+                .findAllByBodyIdOrderById(bodyId, pagination.toPageable())
+                .map(personMapper::toDto)
 
         return ResponseEntity.ok(
             OparlListDto(
                 id = urlGenerator.person.list(bodyId, pagination.page),
                 data = persons.toList(),
                 pagination = listPaginationMapper.toDto(persons),
-                links = listLinksMapper.toDto(
-                    persons,
-                    { page -> urlGenerator.person.list(bodyId, page) }
-                ),
-            )
+                links =
+                    listLinksMapper.toDto(
+                        persons,
+                        { page -> urlGenerator.person.list(bodyId, page) },
+                    ),
+            ),
         )
     }
 

@@ -23,7 +23,8 @@ class OparlPaperControllerTest(
 
     @Test
     fun `lists resolved papers belonging to a body`() {
-        mockMvc.get("$bodyUrl/paper")
+        mockMvc
+            .get("$bodyUrl/paper")
             .andExpect {
                 status { isOk() }
                 jsonPath("$.id") { value("$bodyUrl/paper?page=1") }
@@ -62,7 +63,8 @@ class OparlPaperControllerTest(
 
     @Test
     fun `paginates papers and returns empty page when out of range`() {
-        mockMvc.get("$bodyUrl/paper?page=2")
+        mockMvc
+            .get("$bodyUrl/paper?page=2")
             .andExpect {
                 status { isOk() }
                 jsonPath("$.id") { value("$bodyUrl/paper?page=2") }
@@ -81,12 +83,14 @@ class OparlPaperControllerTest(
 
     @Test
     fun `returns bad request when page number is less than 1`() {
-        mockMvc.get("$bodyUrl/paper?page=0")
+        mockMvc
+            .get("$bodyUrl/paper?page=0")
             .andExpect {
                 status { isBadRequest() }
             }
 
-        mockMvc.get("$bodyUrl/paper?page=-1")
+        mockMvc
+            .get("$bodyUrl/paper?page=-1")
             .andExpect {
                 status { isBadRequest() }
             }
@@ -94,7 +98,8 @@ class OparlPaperControllerTest(
 
     @Test
     fun `returns a single resolved paper`() {
-        mockMvc.get(paperUrl)
+        mockMvc
+            .get(paperUrl)
             .andExpect {
                 status { isOk() }
                 jsonPath("$.id") { value(paperUrl) }
@@ -110,7 +115,8 @@ class OparlPaperControllerTest(
 
     @Test
     fun `returns not found for an unknown paper`() {
-        mockMvc.get("$bodyUrl/paper/00000000-0000-0000-0000-000000000000")
+        mockMvc
+            .get("$bodyUrl/paper/00000000-0000-0000-0000-000000000000")
             .andExpect {
                 status { isNotFound() }
             }
@@ -118,35 +124,35 @@ class OparlPaperControllerTest(
 
     @Test
     fun `returns not found for a paper requested through an unknown body`() {
-        mockMvc.get(
-            "https://example.org:8443/oparl/v1.1/body/" +
-                "00000000-0000-0000-0000-000000000000/paper/" +
-                "f6d47f4c-e5db-4dab-91f8-3bafc825d30c"
-        )
-            .andExpect {
+        mockMvc
+            .get(
+                "https://example.org:8443/oparl/v1.1/body/" +
+                    "00000000-0000-0000-0000-000000000000/paper/" +
+                    "f6d47f4c-e5db-4dab-91f8-3bafc825d30c",
+            ).andExpect {
                 status { isNotFound() }
             }
     }
 
     @Test
     fun `returns not found for a paper belonging to another body`() {
-        mockMvc.get(
-            "https://example.org:8443/oparl/v1.1/body/" +
-                "ffffffff-ffff-4fff-afff-ffffffffffff/paper/" +
-                "f6d47f4c-e5db-4dab-91f8-3bafc825d30c"
-        )
-            .andExpect {
+        mockMvc
+            .get(
+                "https://example.org:8443/oparl/v1.1/body/" +
+                    "ffffffff-ffff-4fff-afff-ffffffffffff/paper/" +
+                    "f6d47f4c-e5db-4dab-91f8-3bafc825d30c",
+            ).andExpect {
                 status { isNotFound() }
             }
     }
 
     @Test
     fun `returns not found when listing papers for an unknown body`() {
-        mockMvc.get(
-            "https://example.org:8443/oparl/v1.1/body/" +
-                "00000000-0000-0000-0000-000000000000/paper"
-        )
-            .andExpect {
+        mockMvc
+            .get(
+                "https://example.org:8443/oparl/v1.1/body/" +
+                    "00000000-0000-0000-0000-000000000000/paper",
+            ).andExpect {
                 status { isNotFound() }
             }
     }

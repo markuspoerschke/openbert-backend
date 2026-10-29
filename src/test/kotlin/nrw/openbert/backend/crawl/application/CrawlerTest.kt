@@ -1,5 +1,6 @@
 package nrw.openbert.backend.crawl.application
 
+import nrw.openbert.backend.parldata.adapter.inbound.crawler.Crawler
 import nrw.openbert.backend.parldata.adapter.inbound.crawler.processor.AgendaItemProcessor
 import nrw.openbert.backend.parldata.adapter.inbound.crawler.processor.BodyProcessor
 import nrw.openbert.backend.parldata.adapter.inbound.crawler.processor.ConsultationProcessor
@@ -12,11 +13,6 @@ import nrw.openbert.backend.parldata.adapter.inbound.crawler.processor.Organizat
 import nrw.openbert.backend.parldata.adapter.inbound.crawler.processor.PaperProcessor
 import nrw.openbert.backend.parldata.adapter.inbound.crawler.processor.PersonProcessor
 import nrw.openbert.backend.parldata.adapter.inbound.crawler.processor.SystemProcessor
-import nrw.openbert.backend.parldata.application.crawl.CrawlTargetEnqueuer
-import nrw.openbert.backend.parldata.adapter.inbound.crawler.Crawler
-import nrw.openbert.backend.parldata.domain.enums.OparlType
-import nrw.openbert.backend.parldata.domain.entity.CrawlTarget
-import nrw.openbert.backend.parldata.application.port.outbound.repository.CrawlTargetRepository
 import nrw.openbert.backend.parldata.adapter.outbound.client.oparl.OparlClient
 import nrw.openbert.backend.parldata.adapter.outbound.client.oparl.dto.OparlAgendaItemDto
 import nrw.openbert.backend.parldata.adapter.outbound.client.oparl.dto.OparlBodyDto
@@ -34,8 +30,12 @@ import nrw.openbert.backend.parldata.adapter.outbound.client.oparl.dto.OparlPape
 import nrw.openbert.backend.parldata.adapter.outbound.client.oparl.dto.OparlPersonDto
 import nrw.openbert.backend.parldata.adapter.outbound.client.oparl.dto.OparlResponseDto
 import nrw.openbert.backend.parldata.adapter.outbound.client.oparl.dto.OparlSystemDto
+import nrw.openbert.backend.parldata.application.crawl.CrawlTargetEnqueuer
+import nrw.openbert.backend.parldata.application.port.outbound.repository.CrawlTargetRepository
+import nrw.openbert.backend.parldata.domain.entity.CrawlTarget
 import nrw.openbert.backend.parldata.domain.entity.OparlSystem
 import nrw.openbert.backend.parldata.domain.entity.embeddable.OparlResource
+import nrw.openbert.backend.parldata.domain.enums.OparlType
 import nrw.openbert.backend.parldata.domain.valueObject.OparlUrl
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.doThrow
@@ -73,20 +73,21 @@ class CrawlerTest {
         fixture.respondWith(
             target,
             OparlListDto(
-                data = listOf(
-                    agendaItem,
-                    body,
-                    consultation,
-                    file,
-                    legislativeTerm,
-                    location,
-                    meeting,
-                    membership,
-                    organization,
-                    paper,
-                    person,
-                    systemDto,
-                ),
+                data =
+                    listOf(
+                        agendaItem,
+                        body,
+                        consultation,
+                        file,
+                        legislativeTerm,
+                        location,
+                        meeting,
+                        membership,
+                        organization,
+                        paper,
+                        person,
+                        systemDto,
+                    ),
                 links = OparlListLinksDto(next = nextPage),
             ),
         )
@@ -151,11 +152,18 @@ class CrawlerTest {
         verify(fixture.crawlTargetRepository, never()).save(target)
     }
 
-    private fun verifyEmbedded(processor: Any, resource: OparlResource, dto: OparlObjectDto) {
+    private fun verifyEmbedded(
+        processor: Any,
+        resource: OparlResource,
+        dto: OparlObjectDto,
+    ) {
         val invocations = mockingDetails(processor).invocations
-        assertEquals(1, invocations.count {
-            it.method.name == "processEmbedded" && it.arguments[0] == resource && it.arguments[1] == dto
-        })
+        assertEquals(
+            1,
+            invocations.count {
+                it.method.name == "processEmbedded" && it.arguments[0] == resource && it.arguments[1] == dto
+            },
+        )
         assertEquals(0, invocations.count { it.method.name == "process" })
     }
 
@@ -177,38 +185,42 @@ class CrawlerTest {
         val systemProcessor: SystemProcessor = mock(SystemProcessor::class.java)
         val system = OparlSystem(OparlUrl("https://oparl.example.org/system"))
 
-        val crawler = Crawler(
-            crawlTargetRepository = crawlTargetRepository,
-            oparlClient = oparlClient,
-            crawlTargetEnqueuer = crawlTargetEnqueuer,
-            agendaItemProcessor = agendaItemProcessor,
-            bodyProcessor = bodyProcessor,
-            consultationProcessor = consultationProcessor,
-            fileProcessor = fileProcessor,
-            legislativeTermProcessor = legislativeTermProcessor,
-            locationProcessor = locationProcessor,
-            meetingProcessor = meetingProcessor,
-            membershipProcessor = membershipProcessor,
-            organizationProcessor = organizationProcessor,
-            paperProcessor = paperProcessor,
-            personProcessor = personProcessor,
-            systemProcessor = systemProcessor,
-        )
+        val crawler =
+            Crawler(
+                crawlTargetRepository = crawlTargetRepository,
+                oparlClient = oparlClient,
+                crawlTargetEnqueuer = crawlTargetEnqueuer,
+                agendaItemProcessor = agendaItemProcessor,
+                bodyProcessor = bodyProcessor,
+                consultationProcessor = consultationProcessor,
+                fileProcessor = fileProcessor,
+                legislativeTermProcessor = legislativeTermProcessor,
+                locationProcessor = locationProcessor,
+                meetingProcessor = meetingProcessor,
+                membershipProcessor = membershipProcessor,
+                organizationProcessor = organizationProcessor,
+                paperProcessor = paperProcessor,
+                personProcessor = personProcessor,
+                systemProcessor = systemProcessor,
+            )
 
-        fun target(url: String) = CrawlTarget(
-            resource = resource(url),
-            referenceCount = 3,
-            scheduledAt = Instant.parse("2026-07-31T08:00:00Z"),
-            jobId = UUID.randomUUID(),
-        )
+        fun target(url: String) =
+            CrawlTarget(
+                resource = resource(url),
+                referenceCount = 3,
+                scheduledAt = Instant.parse("2026-07-31T08:00:00Z"),
+                jobId = UUID.randomUUID(),
+            )
 
         fun respondWith(
             target: CrawlTarget,
             response: OparlResponseDto,
         ) {
-            org.mockito.Mockito.`when`(crawlTargetRepository.findById(target.id))
+            org.mockito.Mockito
+                .`when`(crawlTargetRepository.findById(target.id))
                 .thenReturn(Optional.of(target))
-            org.mockito.Mockito.`when`(oparlClient.get(target.resource.url.value))
+            org.mockito.Mockito
+                .`when`(oparlClient.get(target.resource.url.value))
                 .thenReturn(response)
         }
 

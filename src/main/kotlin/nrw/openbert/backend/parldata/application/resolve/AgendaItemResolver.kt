@@ -20,9 +20,10 @@ class AgendaItemResolver(
     override val entityType = OparlType.AGENDA_ITEM
 
     override fun resolve(rawEntityId: UUID) {
-        val raw = rawRepository.findById(rawEntityId).orElseThrow {
-            IllegalArgumentException("Raw agenda item with id $rawEntityId does not exist")
-        }
+        val raw =
+            rawRepository.findById(rawEntityId).orElseThrow {
+                IllegalArgumentException("Raw agenda item with id $rawEntityId does not exist")
+            }
         resolve(raw)
     }
 
@@ -34,17 +35,21 @@ class AgendaItemResolver(
     }
 
     private fun resolve(raw: RawAgendaItem): ResolvedAgendaItem {
-        val meeting = meetingResolver.resolve(
-            relatedResource(raw.resource, required(raw.meetingUrl, "meeting", raw.resource)),
-        )
-        val resolutionFile = raw.resolutionFileUrl?.let {
-            fileResolver.resolve(relatedResource(raw.resource, it), meeting.body)
-        }
-        val auxiliaryFiles = raw.auxiliaryFileUrls.map {
-            fileResolver.resolve(relatedResource(raw.resource, OparlUrl(it)), meeting.body)
-        }
-        val resolved = resolvedRepository.findByResource(raw.resource)
-            ?: ResolvedAgendaItem.fromRaw(raw, meeting.body, meeting, resolutionFile, auxiliaryFiles)
+        val meeting =
+            meetingResolver.resolve(
+                relatedResource(raw.resource, required(raw.meetingUrl, "meeting", raw.resource)),
+            )
+        val resolutionFile =
+            raw.resolutionFileUrl?.let {
+                fileResolver.resolve(relatedResource(raw.resource, it), meeting.body)
+            }
+        val auxiliaryFiles =
+            raw.auxiliaryFileUrls.map {
+                fileResolver.resolve(relatedResource(raw.resource, OparlUrl(it)), meeting.body)
+            }
+        val resolved =
+            resolvedRepository.findByResource(raw.resource)
+                ?: ResolvedAgendaItem.fromRaw(raw, meeting.body, meeting, resolutionFile, auxiliaryFiles)
 
         requireRelation("body", raw.resource, resolved.body.id, meeting.body.id)
         requireRelation("meeting", raw.resource, resolved.meeting.id, meeting.id)

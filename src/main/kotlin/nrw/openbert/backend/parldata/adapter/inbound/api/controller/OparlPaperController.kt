@@ -17,14 +17,15 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RestController
-import java.util.*
+import java.util.UUID
 
 @Tag(
     name = "Oparl Paper",
-    externalDocs = ExternalDocumentation(
-        "Oparl Specs",
-        "https://oparl.org/spezifikation/online-ansicht/#entity-paper",
-    ),
+    externalDocs =
+        ExternalDocumentation(
+            "Oparl Specs",
+            "https://oparl.org/spezifikation/online-ansicht/#entity-paper",
+        ),
 )
 @RestController
 class OparlPaperController(
@@ -44,20 +45,22 @@ class OparlPaperController(
             return ResponseEntity.notFound().build()
         }
 
-        val papers = resolvedPaperRepository
-            .findAllByBodyIdOrderById(bodyId, pagination.toPageable())
-            .map(paperMapper::toDto)
+        val papers =
+            resolvedPaperRepository
+                .findAllByBodyIdOrderById(bodyId, pagination.toPageable())
+                .map(paperMapper::toDto)
 
         return ResponseEntity.ok(
             OparlListDto(
                 id = urlGenerator.paper.list(bodyId, pagination.page),
                 data = papers.toList(),
                 pagination = listPaginationMapper.toDto(papers),
-                links = listLinksMapper.toDto(
-                    papers,
-                    { page -> urlGenerator.paper.list(bodyId, page) }
-                ),
-            )
+                links =
+                    listLinksMapper.toDto(
+                        papers,
+                        { page -> urlGenerator.paper.list(bodyId, page) },
+                    ),
+            ),
         )
     }
 

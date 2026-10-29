@@ -20,8 +20,8 @@ import nrw.openbert.backend.parldata.domain.entity.embeddable.OparlResource
 import nrw.openbert.backend.parldata.domain.enums.OparlType
 import nrw.openbert.backend.parldata.domain.valueObject.OparlUrl
 import org.junit.jupiter.api.Test
-import org.mockito.Mockito.`when`
 import org.mockito.Mockito.verify
+import org.mockito.Mockito.`when`
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.annotation.Import
@@ -55,14 +55,18 @@ class EmbeddedEntityCrawlingTest(
         val personResource = resource("person/new-from-list")
         val completeResource = resource("person/complete")
         val completedAt = crawlTargets.findByResource(completeResource)!!.lastCrawledAt
-        val listTarget = crawlTargets.saveAndFlush(
-            CrawlTarget.create(resource("body/123/person"), OparlType.PERSON).increaseReferenceCounter(),
-        )
+        val listTarget =
+            crawlTargets.saveAndFlush(
+                CrawlTarget.create(resource("body/123/person"), OparlType.PERSON).increaseReferenceCounter(),
+            )
         `when`(oparlClient.get(listTarget.resource.url.value)).thenReturn(
-            OparlListDto(data = listOf(
-                OparlPersonDto(id = personResource.url.value, name = "List name"),
-                OparlPersonDto(id = completeResource.url.value, name = "Partial name"),
-            )),
+            OparlListDto(
+                data =
+                    listOf(
+                        OparlPersonDto(id = personResource.url.value, name = "List name"),
+                        OparlPersonDto(id = completeResource.url.value, name = "Partial name"),
+                    ),
+            ),
         )
 
         crawler.run(listTarget.id)
@@ -120,15 +124,21 @@ class EmbeddedEntityCrawlingTest(
     fun `repeated list data neither updates a seed nor completes its pending crawl`() {
         val personResource = resource("person/list-seed")
         val target = assertDue(personResource, OparlType.PERSON)
-        val listTarget = crawlTargets.saveAndFlush(
-            CrawlTarget.create(resource("body/123/person"), OparlType.PERSON).increaseReferenceCounter(),
-        )
+        val listTarget =
+            crawlTargets.saveAndFlush(
+                CrawlTarget.create(resource("body/123/person"), OparlType.PERSON).increaseReferenceCounter(),
+            )
         `when`(oparlClient.get(listTarget.resource.url.value)).thenReturn(
-            OparlListDto(data = listOf(OparlPersonDto(
-                id = personResource.url.value,
-                name = "Another list name",
-                email = listOf("partial@example.org"),
-            ))),
+            OparlListDto(
+                data =
+                    listOf(
+                        OparlPersonDto(
+                            id = personResource.url.value,
+                            name = "Another list name",
+                            email = listOf("partial@example.org"),
+                        ),
+                    ),
+            ),
         )
 
         crawler.run(listTarget.id)
@@ -151,11 +161,14 @@ class EmbeddedEntityCrawlingTest(
         val embeddedMembership = OparlMembershipDto(id = member.url.value, role = "Initial role")
         val embeddedLocation = OparlLocationDto(id = location.url.value, streetAddress = "Main Street 1")
 
-        personProcessor.process(parent, OparlPersonDto(
-            id = parent.url.value,
-            membership = listOf(embeddedMembership),
-            locationObject = embeddedLocation,
-        ))
+        personProcessor.process(
+            parent,
+            OparlPersonDto(
+                id = parent.url.value,
+                membership = listOf(embeddedMembership),
+                locationObject = embeddedLocation,
+            ),
+        )
         entityManager.flush()
         entityManager.clear()
 
@@ -163,13 +176,15 @@ class EmbeddedEntityCrawlingTest(
         assertEquals(listOf(parent.url.value), locations.findByResource(location)!!.personUrls)
         val memberTarget = assertDue(member, OparlType.MEMBERSHIP)
         assertDue(location, OparlType.LOCATION)
-        `when`(oparlClient.get(member.url.value)).thenReturn(OparlMembershipDto(
-            id = member.url.value,
-            person = parent.url.value,
-            organization = resource("organization/1").url.value,
-            role = "Complete role",
-            votingRight = true,
-        ))
+        `when`(oparlClient.get(member.url.value)).thenReturn(
+            OparlMembershipDto(
+                id = member.url.value,
+                person = parent.url.value,
+                organization = resource("organization/1").url.value,
+                role = "Complete role",
+                votingRight = true,
+            ),
+        )
         crawler.run(memberTarget.id)
         // Compare persisted timestamps, since PostgreSQL stores only microsecond precision.
         entityManager.flush()
@@ -178,10 +193,13 @@ class EmbeddedEntityCrawlingTest(
         assertNotNull(completedAt)
 
         // Even inferred back references must not mutate existing embedded entities.
-        personProcessor.process(resource("person/another"), OparlPersonDto(
-            membership = listOf(embeddedMembership),
-            locationObject = embeddedLocation.copy(streetAddress = "Incomplete address"),
-        ))
+        personProcessor.process(
+            resource("person/another"),
+            OparlPersonDto(
+                membership = listOf(embeddedMembership),
+                locationObject = embeddedLocation.copy(streetAddress = "Incomplete address"),
+            ),
+        )
         entityManager.flush()
         entityManager.clear()
 
@@ -196,7 +214,10 @@ class EmbeddedEntityCrawlingTest(
         assertDue(location, OparlType.LOCATION)
     }
 
-    private fun assertDue(resource: OparlResource, type: OparlType): CrawlTarget {
+    private fun assertDue(
+        resource: OparlResource,
+        type: OparlType,
+    ): CrawlTarget {
         val target = assertNotNull(crawlTargets.findByResource(resource))
         assertNull(target.lastCrawledAt)
         assertEquals(type, target.entityType)
@@ -206,10 +227,11 @@ class EmbeddedEntityCrawlingTest(
     }
 
     private fun resource(path: String): OparlResource {
-        val system = entityManager.find(
-            OparlSystem::class.java,
-            UUID.fromString("9352fa21-68c6-4f4e-8832-08a0454ff179"),
-        )
+        val system =
+            entityManager.find(
+                OparlSystem::class.java,
+                UUID.fromString("9352fa21-68c6-4f4e-8832-08a0454ff179"),
+            )
         return OparlResource(system, OparlUrl("https://oparl-demo.example.org/oparl/v1.1/$path"))
     }
 }

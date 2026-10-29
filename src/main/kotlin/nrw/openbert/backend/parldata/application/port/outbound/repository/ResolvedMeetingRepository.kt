@@ -11,7 +11,10 @@ import java.util.UUID
 interface ResolvedMeetingRepository : JpaRepository<ResolvedMeeting, UUID> {
     fun findByResource(resource: OparlResource): ResolvedMeeting?
 
-    fun findAllByBodyIdOrderById(bodyId: UUID, pageable: Pageable): Page<ResolvedMeeting>
+    fun findAllByBodyIdOrderById(
+        bodyId: UUID,
+        pageable: Pageable,
+    ): Page<ResolvedMeeting>
 
     fun findAllDistinctByOrganizationsIdAndBodyIdOrderById(
         organizationId: UUID,
@@ -19,5 +22,8 @@ interface ResolvedMeetingRepository : JpaRepository<ResolvedMeeting, UUID> {
         pageable: Pageable,
     ): Page<ResolvedMeeting>
 
-    fun findByIdAndBodyId(id: UUID, bodyId: UUID): Optional<ResolvedMeeting>
+    fun findByIdAndBodyId(
+        id: UUID,
+        bodyId: UUID,
+    ): Optional<ResolvedMeeting>
 }

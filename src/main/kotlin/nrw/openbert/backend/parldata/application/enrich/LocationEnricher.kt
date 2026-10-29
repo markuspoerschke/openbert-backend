@@ -20,9 +20,10 @@ class LocationEnricher(
         get() = OparlType.LOCATION
 
     override fun enrich(rawEntityId: UUID) {
-        val rawLocation = rawLocationRepository.findById(rawEntityId).orElseThrow {
-            IllegalArgumentException("Raw location with id $rawEntityId not found")
-        }
+        val rawLocation =
+            rawLocationRepository.findById(rawEntityId).orElseThrow {
+                IllegalArgumentException("Raw location with id $rawEntityId not found")
+            }
 
         val enrichedLocation = findOrCreateEnrichedEntity(rawLocation)
         val overrides = simpleEnricher.enrich(rawLocation, LocationOverrides())
@@ -31,9 +32,8 @@ class LocationEnricher(
         enrichedLocationRepository.save(enrichedLocation)
     }
 
-    private fun findOrCreateEnrichedEntity(rawLocation: RawLocation): EnrichedLocation {
-        return enrichedLocationRepository.findById(rawLocation.id).orElseGet {
+    private fun findOrCreateEnrichedEntity(rawLocation: RawLocation): EnrichedLocation =
+        enrichedLocationRepository.findById(rawLocation.id).orElseGet {
             EnrichedLocation.fromRaw(rawLocation)
         }
-    }
 }

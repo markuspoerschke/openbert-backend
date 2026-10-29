@@ -21,10 +21,11 @@ import java.util.UUID
 
 @Tag(
     name = "Oparl Consultation",
-    externalDocs = ExternalDocumentation(
-        "Oparl Specs",
-        "https://oparl.org/spezifikation/online-ansicht/#entity-consultation",
-    ),
+    externalDocs =
+        ExternalDocumentation(
+            "Oparl Specs",
+            "https://oparl.org/spezifikation/online-ansicht/#entity-consultation",
+        ),
 )
 @RestController
 class OparlConsultationController(
@@ -44,20 +45,22 @@ class OparlConsultationController(
             return ResponseEntity.notFound().build()
         }
 
-        val consultations = resolvedConsultationRepository
-            .findAllByBodyIdOrderById(bodyId, pagination.toPageable())
-            .map(consultationMapper::toDto)
+        val consultations =
+            resolvedConsultationRepository
+                .findAllByBodyIdOrderById(bodyId, pagination.toPageable())
+                .map(consultationMapper::toDto)
 
         return ResponseEntity.ok(
             OparlListDto(
                 id = urlGenerator.consultation.list(bodyId, pagination.page),
                 data = consultations.toList(),
                 pagination = listPaginationMapper.toDto(consultations),
-                links = listLinksMapper.toDto(
-                    consultations,
-                    { page -> urlGenerator.consultation.list(bodyId, page) }
-                ),
-            )
+                links =
+                    listLinksMapper.toDto(
+                        consultations,
+                        { page -> urlGenerator.consultation.list(bodyId, page) },
+                    ),
+            ),
         )
     }
 
@@ -66,10 +69,11 @@ class OparlConsultationController(
         @PathVariable bodyId: UUID,
         @PathVariable consultationId: UUID,
     ): ResponseEntity<OparlConsultationDto> {
-        val consultation = resolvedConsultationRepository.findByIdAndBodyId(
-            consultationId,
-            bodyId,
-        )
+        val consultation =
+            resolvedConsultationRepository.findByIdAndBodyId(
+                consultationId,
+                bodyId,
+            )
 
         if (!consultation.isPresent) {
             return ResponseEntity.notFound().build()

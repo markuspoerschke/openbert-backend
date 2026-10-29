@@ -12,10 +12,8 @@ import kotlin.test.assertNotNull
 class OpenbertBackendApplicationTests(
     @Autowired private val context: ApplicationContext,
 ) {
-
     @Test
     fun contextLoads() {
         assertNotNull(context.getBean(OpenbertBackendApplication::class.java))
     }
-
 }

@@ -42,10 +42,12 @@ class LocationEnrichmentMigrationTest(
     private val existingTargetId = UUID.fromString("40000000-0000-4000-8000-000000000002")
 
     @ParameterizedTest
-    @ValueSource(strings = [
-        "V11__enqueue_existing_locations_for_enrichment.sql",
-        "V13__reenrich_location_addresses.sql",
-    ])
+    @ValueSource(
+        strings = [
+            "V11__enqueue_existing_locations_for_enrichment.sql",
+            "V13__reenrich_location_addresses.sql",
+        ],
+    )
     fun `queues every existing location and updates resolved values through enrichment`(migration: String) {
         val rawIds = rawLocationRepository.findAll().map { it.id }.toSet()
         val existingTarget = targetRepository.findById(existingTargetId).orElseThrow()
@@ -64,14 +66,17 @@ class LocationEnrichmentMigrationTest(
         assertEquals(existingTarget.rawEntityId, requeued.rawEntityId)
         assertEquals(existingTarget.createdAt, requeued.createdAt)
         assertEquals(existingTarget.lastEnrichedAt, requeued.lastEnrichedAt)
-        val unrelatedTarget = targetRepository.findById(
-            UUID.fromString("40000000-0000-4000-8000-000000000001"),
-        ).orElseThrow()
+        val unrelatedTarget =
+            targetRepository
+                .findById(
+                    UUID.fromString("40000000-0000-4000-8000-000000000001"),
+                ).orElseThrow()
         assertEquals(0, unrelatedTarget.referenceCount)
 
         enricher.run(requeued.id)
-        val resolveTarget = resolveTargetRepository
-            .findByRawEntityIdAndEntityType(requeued.rawEntityId, OparlType.LOCATION)
+        val resolveTarget =
+            resolveTargetRepository
+                .findByRawEntityIdAndEntityType(requeued.rawEntityId, OparlType.LOCATION)
         assertNotNull(resolveTarget)
         resolver.run(resolveTarget.id)
         entityManager.flush()
@@ -86,10 +91,12 @@ class LocationEnrichmentMigrationTest(
     }
 
     @ParameterizedTest
-    @ValueSource(strings = [
-        "V11__enqueue_existing_locations_for_enrichment.sql",
-        "V13__reenrich_location_addresses.sql",
-    ])
+    @ValueSource(
+        strings = [
+            "V11__enqueue_existing_locations_for_enrichment.sql",
+            "V13__reenrich_location_addresses.sql",
+        ],
+    )
     fun `clears old scheduling markers so previously scheduled locations become due again`(migration: String) {
         val existingTarget = targetRepository.findById(existingTargetId).orElseThrow()
         existingTarget.enqueue().markAsScheduled(UUID.randomUUID())

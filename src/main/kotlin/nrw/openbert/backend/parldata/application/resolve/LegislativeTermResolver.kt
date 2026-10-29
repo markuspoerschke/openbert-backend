@@ -16,12 +16,14 @@ class LegislativeTermResolver(
     override val entityType = OparlType.LEGISLATIVE_TERM
 
     override fun resolve(rawEntityId: UUID) {
-        val raw = rawRepository.findById(rawEntityId).orElseThrow {
-            IllegalArgumentException("Raw legislative term with id $rawEntityId does not exist")
-        }
+        val raw =
+            rawRepository.findById(rawEntityId).orElseThrow {
+                IllegalArgumentException("Raw legislative term with id $rawEntityId does not exist")
+            }
         val body = bodyResolver.resolve(relatedResource(raw.resource, required(raw.bodyUrl, "body", raw.resource)))
-        val resolved = resolvedRepository.findByResource(raw.resource)
-            ?: ResolvedLegislativeTerm.fromRaw(raw, body)
+        val resolved =
+            resolvedRepository.findByResource(raw.resource)
+                ?: ResolvedLegislativeTerm.fromRaw(raw, body)
 
         requireRelation("body", raw.resource, resolved.body.id, body.id)
         resolved.applyValuesFrom(raw)

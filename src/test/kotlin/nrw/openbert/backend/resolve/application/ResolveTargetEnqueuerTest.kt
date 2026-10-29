@@ -1,12 +1,12 @@
 package nrw.openbert.backend.resolve.application
 
-import nrw.openbert.backend.parldata.domain.enums.OparlType
-import nrw.openbert.backend.parldata.domain.entity.ResolveTarget
 import nrw.openbert.backend.parldata.application.port.outbound.repository.ResolveTargetRepository
 import nrw.openbert.backend.parldata.application.resolve.ResolveTargetEnqueuer
 import nrw.openbert.backend.parldata.domain.entity.OparlSystem
+import nrw.openbert.backend.parldata.domain.entity.ResolveTarget
 import nrw.openbert.backend.parldata.domain.entity.embeddable.OparlResource
 import nrw.openbert.backend.parldata.domain.entity.raw.RawPaper
+import nrw.openbert.backend.parldata.domain.enums.OparlType
 import nrw.openbert.backend.parldata.domain.valueObject.OparlUrl
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentCaptor

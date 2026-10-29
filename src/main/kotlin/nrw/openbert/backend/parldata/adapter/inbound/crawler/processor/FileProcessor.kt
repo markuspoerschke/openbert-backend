@@ -1,12 +1,12 @@
 package nrw.openbert.backend.parldata.adapter.inbound.crawler.processor
 
-import nrw.openbert.backend.parldata.application.crawl.CrawlTargetEnqueuer
-import nrw.openbert.backend.parldata.domain.enums.OparlType
 import nrw.openbert.backend.parldata.adapter.outbound.client.oparl.dto.OparlFileDto
+import nrw.openbert.backend.parldata.application.crawl.CrawlTargetEnqueuer
 import nrw.openbert.backend.parldata.application.enrich.EnrichTargetEnqueuer
+import nrw.openbert.backend.parldata.application.port.outbound.repository.RawFileRepository
 import nrw.openbert.backend.parldata.domain.entity.embeddable.OparlResource
 import nrw.openbert.backend.parldata.domain.entity.raw.RawFile
-import nrw.openbert.backend.parldata.application.port.outbound.repository.RawFileRepository
+import nrw.openbert.backend.parldata.domain.enums.OparlType
 import org.springframework.stereotype.Service
 
 @Service
@@ -21,7 +21,10 @@ class FileProcessor(
 
     override fun saveEntity(entity: RawFile) = rawFileRepository.save(entity)
 
-    override fun processRelationships(resource: OparlResource, dto: OparlFileDto) {
+    override fun processRelationships(
+        resource: OparlResource,
+        dto: OparlFileDto,
+    ) {
         enqueueUrls(resource, OparlType.FILE, dto.masterFile)
         enqueueUrls(resource, OparlType.FILE, dto.derivativeFile.orEmpty())
         enqueueUrls(resource, OparlType.MEETING, dto.meeting.orEmpty())
@@ -29,7 +32,10 @@ class FileProcessor(
         enqueueUrls(resource, OparlType.PAPER, dto.paper.orEmpty())
     }
 
-    override fun updateEntity(entity: RawFile, dto: OparlFileDto) {
+    override fun updateEntity(
+        entity: RawFile,
+        dto: OparlFileDto,
+    ) {
         entity.meetingUrls = dto.meeting.orEmpty().toMutableList()
         entity.agendaItemUrls = dto.agendaItem.orEmpty().toMutableList()
         entity.paperUrls = dto.paper.orEmpty().toMutableList()

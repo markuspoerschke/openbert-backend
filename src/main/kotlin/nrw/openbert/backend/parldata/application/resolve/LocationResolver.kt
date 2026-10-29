@@ -23,21 +23,26 @@ class LocationResolver(
     override val entityType = OparlType.LOCATION
 
     override fun resolve(rawEntityId: UUID) {
-        val raw = rawRepository.findById(rawEntityId).orElseThrow {
-            IllegalArgumentException("Raw location with id $rawEntityId does not exist")
-        }
-        val bodies = buildList {
-            raw.bodyUrls.mapTo(this) { bodyResolver.resolve(relatedResource(raw.resource, OparlUrl(it))) }
-            raw.organizationUrls.mapTo(this) {
-                organizationResolver.resolve(relatedResource(raw.resource, OparlUrl(it))).body
+        val raw =
+            rawRepository.findById(rawEntityId).orElseThrow {
+                IllegalArgumentException("Raw location with id $rawEntityId does not exist")
             }
-            raw.personUrls.mapTo(this) { personResolver.resolve(relatedResource(raw.resource, OparlUrl(it))).body }
-            raw.meetingUrls.mapTo(this) { meetingResolver.resolve(relatedResource(raw.resource, OparlUrl(it))).body }
-            raw.paperUrls.mapTo(this) { paperResolver.resolve(relatedResource(raw.resource, OparlUrl(it))).body }
-        }
+        val bodies =
+            buildList {
+                raw.bodyUrls.mapTo(this) { bodyResolver.resolve(relatedResource(raw.resource, OparlUrl(it))) }
+                raw.organizationUrls.mapTo(this) {
+                    organizationResolver.resolve(relatedResource(raw.resource, OparlUrl(it))).body
+                }
+                raw.personUrls.mapTo(this) { personResolver.resolve(relatedResource(raw.resource, OparlUrl(it))).body }
+                raw.meetingUrls.mapTo(
+                    this,
+                ) { meetingResolver.resolve(relatedResource(raw.resource, OparlUrl(it))).body }
+                raw.paperUrls.mapTo(this) { paperResolver.resolve(relatedResource(raw.resource, OparlUrl(it))).body }
+            }
         val body = commonBody(raw.resource, bodies)
-        val resolved = resolvedRepository.findByResource(raw.resource)
-            ?: ResolvedLocation.fromRaw(raw, body)
+        val resolved =
+            resolvedRepository.findByResource(raw.resource)
+                ?: ResolvedLocation.fromRaw(raw, body)
 
         requireRelation("body", raw.resource, resolved.body.id, body.id)
         resolved.applyValuesFrom(raw)

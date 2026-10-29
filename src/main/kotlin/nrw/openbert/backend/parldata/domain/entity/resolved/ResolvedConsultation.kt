@@ -18,19 +18,15 @@ import nrw.openbert.backend.parldata.domain.entity.raw.RawConsultation
 @Table(uniqueConstraints = [UniqueConstraint(columnNames = ["system_id", "url"])])
 class ResolvedConsultation(
     resource: OparlResource,
-
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "body_id", nullable = false, updatable = false)
     val body: ResolvedBody,
-
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "paper_id", nullable = false, updatable = false)
     val paper: ResolvedPaper,
-
     @OneToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "agenda_item_id", nullable = false, updatable = false, unique = true)
     val agendaItem: ResolvedAgendaItem,
-
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "meeting_id", nullable = false, updatable = false)
     val meeting: ResolvedMeeting,
@@ -57,8 +53,8 @@ class ResolvedConsultation(
             agendaItem: ResolvedAgendaItem,
             meeting: ResolvedMeeting,
             organizations: Collection<ResolvedOrganization> = emptyList(),
-        ): ResolvedConsultation {
-            return ResolvedConsultation(
+        ): ResolvedConsultation =
+            ResolvedConsultation(
                 raw.resource,
                 body,
                 paper,
@@ -68,6 +64,5 @@ class ResolvedConsultation(
                 applyValuesFrom(raw)
                 applyRelationsFrom(organizations)
             }
-        }
     }
 }

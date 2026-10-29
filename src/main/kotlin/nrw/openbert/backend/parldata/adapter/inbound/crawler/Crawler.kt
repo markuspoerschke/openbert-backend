@@ -1,7 +1,7 @@
 package nrw.openbert.backend.parldata.adapter.inbound.crawler
 
-import nrw.openbert.backend.parldata.adapter.inbound.crawler.processor.AgendaItemProcessor
 import nrw.openbert.backend.parldata.adapter.inbound.crawler.processor.AbstractProcessor
+import nrw.openbert.backend.parldata.adapter.inbound.crawler.processor.AgendaItemProcessor
 import nrw.openbert.backend.parldata.adapter.inbound.crawler.processor.BodyProcessor
 import nrw.openbert.backend.parldata.adapter.inbound.crawler.processor.ConsultationProcessor
 import nrw.openbert.backend.parldata.adapter.inbound.crawler.processor.FileProcessor
@@ -13,8 +13,6 @@ import nrw.openbert.backend.parldata.adapter.inbound.crawler.processor.Organizat
 import nrw.openbert.backend.parldata.adapter.inbound.crawler.processor.PaperProcessor
 import nrw.openbert.backend.parldata.adapter.inbound.crawler.processor.PersonProcessor
 import nrw.openbert.backend.parldata.adapter.inbound.crawler.processor.SystemProcessor
-import nrw.openbert.backend.parldata.domain.enums.OparlType
-import nrw.openbert.backend.parldata.application.port.outbound.repository.CrawlTargetRepository
 import nrw.openbert.backend.parldata.adapter.outbound.client.oparl.OparlClient
 import nrw.openbert.backend.parldata.adapter.outbound.client.oparl.dto.OparlAgendaItemDto
 import nrw.openbert.backend.parldata.adapter.outbound.client.oparl.dto.OparlBodyDto
@@ -32,8 +30,10 @@ import nrw.openbert.backend.parldata.adapter.outbound.client.oparl.dto.OparlPers
 import nrw.openbert.backend.parldata.adapter.outbound.client.oparl.dto.OparlResponseDto
 import nrw.openbert.backend.parldata.adapter.outbound.client.oparl.dto.OparlSystemDto
 import nrw.openbert.backend.parldata.application.crawl.CrawlTargetEnqueuer
+import nrw.openbert.backend.parldata.application.port.outbound.repository.CrawlTargetRepository
 import nrw.openbert.backend.parldata.domain.entity.OparlSystem
 import nrw.openbert.backend.parldata.domain.entity.embeddable.OparlResource
+import nrw.openbert.backend.parldata.domain.enums.OparlType
 import nrw.openbert.backend.parldata.domain.valueObject.OparlUrl
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
@@ -60,11 +60,12 @@ class Crawler(
     private val logger = LoggerFactory.getLogger(javaClass)
 
     fun run(targetId: UUID) {
-        val crawlTarget = crawlTargetRepository
-            .findById(targetId)
-            .orElseThrow {
-                throw IllegalArgumentException("Target with id $targetId does not exist")
-            }
+        val crawlTarget =
+            crawlTargetRepository
+                .findById(targetId)
+                .orElseThrow {
+                    throw IllegalArgumentException("Target with id $targetId does not exist")
+                }
 
         logger.info("Crawling OParl resource {} (target {})", crawlTarget.resource.url.value, targetId)
 
@@ -97,16 +98,26 @@ class Crawler(
                     )
                 }
                 response.links?.next?.let { next ->
-                    val listEntityType = entityType ?: response.data.orEmpty().firstOrNull()?.let(::entityTypeOf)
+                    val listEntityType =
+                        entityType ?: response.data
+                            .orEmpty()
+                            .firstOrNull()
+                            ?.let(::entityTypeOf)
                     crawlTargetEnqueuer.enqueue(resource(system, next), listEntityType)
                 }
             }
 
-            is OparlObjectDto -> process(response, resource(system, response.id ?: fallbackUrl))
+            is OparlObjectDto -> {
+                process(response, resource(system, response.id ?: fallbackUrl))
+            }
         }
     }
 
-    private fun process(dto: OparlObjectDto, resource: OparlResource, embedded: Boolean = false) {
+    private fun process(
+        dto: OparlObjectDto,
+        resource: OparlResource,
+        embedded: Boolean = false,
+    ) {
         when (dto) {
             is OparlAgendaItemDto -> process(agendaItemProcessor, resource, dto, embedded)
             is OparlBodyDto -> process(bodyProcessor, resource, dto, embedded)
@@ -136,20 +147,24 @@ class Crawler(
         }
     }
 
-    private fun entityTypeOf(dto: OparlObjectDto): OparlType = when (dto) {
-        is OparlAgendaItemDto -> OparlType.AGENDA_ITEM
-        is OparlBodyDto -> OparlType.BODY
-        is OparlConsultationDto -> OparlType.CONSULTATION
-        is OparlFileDto -> OparlType.FILE
-        is OparlLegislativeTermDto -> OparlType.LEGISLATIVE_TERM
-        is OparlLocationDto -> OparlType.LOCATION
-        is OparlMeetingDto -> OparlType.MEETING
-        is OparlMembershipDto -> OparlType.MEMBERSHIP
-        is OparlOrganizationDto -> OparlType.ORGANIZATION
-        is OparlPaperDto -> OparlType.PAPER
-        is OparlPersonDto -> OparlType.PERSON
-        is OparlSystemDto -> OparlType.SYSTEM
-    }
+    private fun entityTypeOf(dto: OparlObjectDto): OparlType =
+        when (dto) {
+            is OparlAgendaItemDto -> OparlType.AGENDA_ITEM
+            is OparlBodyDto -> OparlType.BODY
+            is OparlConsultationDto -> OparlType.CONSULTATION
+            is OparlFileDto -> OparlType.FILE
+            is OparlLegislativeTermDto -> OparlType.LEGISLATIVE_TERM
+            is OparlLocationDto -> OparlType.LOCATION
+            is OparlMeetingDto -> OparlType.MEETING
+            is OparlMembershipDto -> OparlType.MEMBERSHIP
+            is OparlOrganizationDto -> OparlType.ORGANIZATION
+            is OparlPaperDto -> OparlType.PAPER
+            is OparlPersonDto -> OparlType.PERSON
+            is OparlSystemDto -> OparlType.SYSTEM
+        }
 
-    private fun resource(system: OparlSystem, url: String) = OparlResource(system, OparlUrl(url))
+    private fun resource(
+        system: OparlSystem,
+        url: String,
+    ) = OparlResource(system, OparlUrl(url))
 }

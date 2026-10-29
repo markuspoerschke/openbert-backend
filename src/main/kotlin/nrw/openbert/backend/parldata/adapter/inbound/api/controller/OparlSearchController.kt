@@ -19,10 +19,11 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder
 
 @Tag(
     name = "Search",
-    externalDocs = ExternalDocumentation(
-        "Oparl Specs",
-        "https://oparl.org/spezifikation/online-ansicht/",
-    ),
+    externalDocs =
+        ExternalDocumentation(
+            "Oparl Specs",
+            "https://oparl.org/spezifikation/online-ansicht/",
+        ),
 )
 @RestController
 class OparlSearchController(
@@ -47,49 +48,56 @@ class OparlSearchController(
         }
 
         // Convert string types to OparlType enum values
-        val typeEnums = types?.let { typeStrings ->
-            typeStrings.mapNotNull { typeString ->
-                OparlType.entries.find { it.name == typeString.uppercase() }
-            }
-        } ?: OparlType.entries.toList()
+        val typeEnums =
+            types?.let { typeStrings ->
+                typeStrings.mapNotNull { typeString ->
+                    OparlType.entries.find { it.name == typeString.uppercase() }
+                }
+            } ?: OparlType.entries.toList()
 
-        val resultPage = searchService.search(
-            SearchCriteria(
-                term = searchText,
-                bodies = bodies ?: emptyList(),
-                types = typeEnums
-            ),
-            PageRequest.of(page - 1, size),
-        ).map(mapper::toDto)
+        val resultPage =
+            searchService
+                .search(
+                    SearchCriteria(
+                        term = searchText,
+                        bodies = bodies ?: emptyList(),
+                        types = typeEnums,
+                    ),
+                    PageRequest.of(page - 1, size),
+                ).map(mapper::toDto)
 
-        val baseUrl = ServletUriComponentsBuilder
-            .fromCurrentRequestUri()
-            .build()
-            .toUriString()
+        val baseUrl =
+            ServletUriComponentsBuilder
+                .fromCurrentRequestUri()
+                .build()
+                .toUriString()
         val totalPages = resultPage.totalPages
 
         return ResponseEntity.ok(
             OparlSearchResultListDto(
                 id = baseUrl,
                 data = resultPage.content,
-                pagination = OparlListPaginationDto(
-                    totalElements = Math.toIntExact(resultPage.totalElements),
-                    elementsPerPage = size,
-                    currentPage = page,
-                    totalPages = totalPages,
-                ),
-                links = OparlListLinksDto(
-                    first = pageUrl(baseUrl, searchText, bodies, types, 1, size),
-                    prev = if (page > 1) pageUrl(baseUrl, searchText, bodies, types, page - 1, size) else null,
-                    self = pageUrl(baseUrl, searchText, bodies, types, page, size),
-                    next = if (page < totalPages) {
-                        pageUrl(baseUrl, searchText, bodies, types, page + 1, size)
-                    } else {
-                        null
-                    },
-                    last = pageUrl(baseUrl, searchText, bodies, types, totalPages.coerceAtLeast(1), size),
-                ),
-            )
+                pagination =
+                    OparlListPaginationDto(
+                        totalElements = Math.toIntExact(resultPage.totalElements),
+                        elementsPerPage = size,
+                        currentPage = page,
+                        totalPages = totalPages,
+                    ),
+                links =
+                    OparlListLinksDto(
+                        first = pageUrl(baseUrl, searchText, bodies, types, 1, size),
+                        prev = if (page > 1) pageUrl(baseUrl, searchText, bodies, types, page - 1, size) else null,
+                        self = pageUrl(baseUrl, searchText, bodies, types, page, size),
+                        next =
+                            if (page < totalPages) {
+                                pageUrl(baseUrl, searchText, bodies, types, page + 1, size)
+                            } else {
+                                null
+                            },
+                        last = pageUrl(baseUrl, searchText, bodies, types, totalPages.coerceAtLeast(1), size),
+                    ),
+            ),
         )
     }
 
@@ -101,16 +109,18 @@ class OparlSearchController(
         page: Int,
         size: Int,
     ): String {
-        val builder = ServletUriComponentsBuilder
-            .fromUriString(baseUrl)
-            .queryParam("page", page)
-            .queryParam("size", size)
-        
+        val builder =
+            ServletUriComponentsBuilder
+                .fromUriString(baseUrl)
+                .queryParam("page", page)
+                .queryParam("size", size)
+
         text?.let { builder.queryParam("text", it) }
         bodies?.let { if (it.isNotEmpty()) builder.queryParam("bodies", it.joinToString(",")) }
         types?.let { if (it.isNotEmpty()) builder.queryParam("types", it.joinToString(",")) }
-        
-        return builder.build()
+
+        return builder
+            .build()
             .encode()
             .toUriString()
     }

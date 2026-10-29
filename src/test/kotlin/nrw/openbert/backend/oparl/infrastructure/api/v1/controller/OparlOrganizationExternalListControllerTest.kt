@@ -28,7 +28,8 @@ class OparlOrganizationExternalListControllerTest(
 
     @Test
     fun `lists meetings linked to an organization`() {
-        mockMvc.get("$organizationUrl/meeting")
+        mockMvc
+            .get("$organizationUrl/meeting")
             .andExpect {
                 status { isOk() }
                 jsonPath("$.id") { value("$organizationUrl/meeting?page=1") }
@@ -51,7 +52,8 @@ class OparlOrganizationExternalListControllerTest(
 
     @Test
     fun `paginates organization meetings and returns empty page when out of range`() {
-        mockMvc.get("$organizationUrl/meeting?page=2")
+        mockMvc
+            .get("$organizationUrl/meeting?page=2")
             .andExpect {
                 status { isOk() }
                 jsonPath("$.id") { value("$organizationUrl/meeting?page=2") }
@@ -73,7 +75,8 @@ class OparlOrganizationExternalListControllerTest(
         val organizationWithoutMeetings =
             "$bodyUrl/organization/b6b1f18d-3147-4a2b-af0e-34f6204dc1d9"
 
-        mockMvc.get("$organizationWithoutMeetings/meeting")
+        mockMvc
+            .get("$organizationWithoutMeetings/meeting")
             .andExpect {
                 status { isOk() }
                 jsonPath("$.id") { value("$organizationWithoutMeetings/meeting?page=1") }
@@ -92,7 +95,8 @@ class OparlOrganizationExternalListControllerTest(
 
     @Test
     fun `returns not found when listing meetings for an unknown organization`() {
-        mockMvc.get("$bodyUrl/organization/$unknownId/meeting")
+        mockMvc
+            .get("$bodyUrl/organization/$unknownId/meeting")
             .andExpect {
                 status { isNotFound() }
             }
@@ -100,18 +104,19 @@ class OparlOrganizationExternalListControllerTest(
 
     @Test
     fun `returns not found when listing organization meetings for an unknown body`() {
-        mockMvc.get(
-            "https://example.org:8443/oparl/v1.1/body/$unknownId/" +
-                "organization/$organizationId/meeting"
-        )
-            .andExpect {
+        mockMvc
+            .get(
+                "https://example.org:8443/oparl/v1.1/body/$unknownId/" +
+                    "organization/$organizationId/meeting",
+            ).andExpect {
                 status { isNotFound() }
             }
     }
 
     @Test
     fun `returns not found when listing meetings through a different body`() {
-        mockMvc.get("$otherBodyUrl/organization/$organizationId/meeting")
+        mockMvc
+            .get("$otherBodyUrl/organization/$organizationId/meeting")
             .andExpect {
                 status { isNotFound() }
             }
@@ -119,7 +124,8 @@ class OparlOrganizationExternalListControllerTest(
 
     @Test
     fun `lists consultations linked to an organization`() {
-        mockMvc.get("$organizationUrl/consultation")
+        mockMvc
+            .get("$organizationUrl/consultation")
             .andExpect {
                 status { isOk() }
                 jsonPath("$.id") { value("$organizationUrl/consultation?page=1") }
@@ -142,7 +148,8 @@ class OparlOrganizationExternalListControllerTest(
 
     @Test
     fun `paginates organization consultations and returns empty page when out of range`() {
-        mockMvc.get("$organizationUrl/consultation?page=2")
+        mockMvc
+            .get("$organizationUrl/consultation?page=2")
             .andExpect {
                 status { isOk() }
                 jsonPath("$.id") { value("$organizationUrl/consultation?page=2") }
@@ -164,7 +171,8 @@ class OparlOrganizationExternalListControllerTest(
         val organizationWithoutConsultations =
             "$bodyUrl/organization/b6b1f18d-3147-4a2b-af0e-34f6204dc1d9"
 
-        mockMvc.get("$organizationWithoutConsultations/consultation")
+        mockMvc
+            .get("$organizationWithoutConsultations/consultation")
             .andExpect {
                 status { isOk() }
                 jsonPath("$.id") { value("$organizationWithoutConsultations/consultation?page=1") }
@@ -183,12 +191,14 @@ class OparlOrganizationExternalListControllerTest(
 
     @Test
     fun `returns bad request when page number is less than 1 for organization meetings`() {
-        mockMvc.get("$organizationUrl/meeting?page=0")
+        mockMvc
+            .get("$organizationUrl/meeting?page=0")
             .andExpect {
                 status { isBadRequest() }
             }
 
-        mockMvc.get("$organizationUrl/meeting?page=-1")
+        mockMvc
+            .get("$organizationUrl/meeting?page=-1")
             .andExpect {
                 status { isBadRequest() }
             }
@@ -196,12 +206,14 @@ class OparlOrganizationExternalListControllerTest(
 
     @Test
     fun `returns bad request when page number is less than 1 for organization consultations`() {
-        mockMvc.get("$organizationUrl/consultation?page=0")
+        mockMvc
+            .get("$organizationUrl/consultation?page=0")
             .andExpect {
                 status { isBadRequest() }
             }
 
-        mockMvc.get("$organizationUrl/consultation?page=-1")
+        mockMvc
+            .get("$organizationUrl/consultation?page=-1")
             .andExpect {
                 status { isBadRequest() }
             }
@@ -209,7 +221,8 @@ class OparlOrganizationExternalListControllerTest(
 
     @Test
     fun `returns not found when listing consultations for an unknown organization`() {
-        mockMvc.get("$bodyUrl/organization/$unknownId/consultation")
+        mockMvc
+            .get("$bodyUrl/organization/$unknownId/consultation")
             .andExpect {
                 status { isNotFound() }
             }
@@ -217,18 +230,19 @@ class OparlOrganizationExternalListControllerTest(
 
     @Test
     fun `returns not found when listing organization consultations for an unknown body`() {
-        mockMvc.get(
-            "https://example.org:8443/oparl/v1.1/body/$unknownId/" +
-                "organization/$organizationId/consultation"
-        )
-            .andExpect {
+        mockMvc
+            .get(
+                "https://example.org:8443/oparl/v1.1/body/$unknownId/" +
+                    "organization/$organizationId/consultation",
+            ).andExpect {
                 status { isNotFound() }
             }
     }
 
     @Test
     fun `returns not found when listing consultations through a different body`() {
-        mockMvc.get("$otherBodyUrl/organization/$organizationId/consultation")
+        mockMvc
+            .get("$otherBodyUrl/organization/$organizationId/consultation")
             .andExpect {
                 status { isNotFound() }
             }

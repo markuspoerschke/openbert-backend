@@ -1,6 +1,5 @@
 package nrw.openbert.backend.crawl.application.processor
 
-import nrw.openbert.backend.parldata.application.crawl.CrawlTargetEnqueuer
 import nrw.openbert.backend.parldata.adapter.inbound.crawler.processor.AgendaItemProcessor
 import nrw.openbert.backend.parldata.adapter.inbound.crawler.processor.BodyProcessor
 import nrw.openbert.backend.parldata.adapter.inbound.crawler.processor.ConsultationProcessor
@@ -26,9 +25,8 @@ import nrw.openbert.backend.parldata.adapter.outbound.client.oparl.dto.OparlOrga
 import nrw.openbert.backend.parldata.adapter.outbound.client.oparl.dto.OparlPaperDto
 import nrw.openbert.backend.parldata.adapter.outbound.client.oparl.dto.OparlPersonDto
 import nrw.openbert.backend.parldata.adapter.outbound.client.oparl.dto.OparlSystemDto
+import nrw.openbert.backend.parldata.application.crawl.CrawlTargetEnqueuer
 import nrw.openbert.backend.parldata.application.enrich.EnrichTargetEnqueuer
-import nrw.openbert.backend.parldata.domain.entity.OparlSystem
-import nrw.openbert.backend.parldata.domain.entity.embeddable.OparlResource
 import nrw.openbert.backend.parldata.application.port.outbound.repository.RawAgendaItemRepository
 import nrw.openbert.backend.parldata.application.port.outbound.repository.RawBodyRepository
 import nrw.openbert.backend.parldata.application.port.outbound.repository.RawConsultationRepository
@@ -41,6 +39,8 @@ import nrw.openbert.backend.parldata.application.port.outbound.repository.RawOrg
 import nrw.openbert.backend.parldata.application.port.outbound.repository.RawPaperRepository
 import nrw.openbert.backend.parldata.application.port.outbound.repository.RawPersonRepository
 import nrw.openbert.backend.parldata.application.port.outbound.repository.RawSystemRepository
+import nrw.openbert.backend.parldata.domain.entity.OparlSystem
+import nrw.openbert.backend.parldata.domain.entity.embeddable.OparlResource
 import nrw.openbert.backend.parldata.domain.valueObject.OparlUrl
 import org.junit.jupiter.api.Test
 import org.mockito.Answers
@@ -104,10 +104,11 @@ class ProcessorRelationshipTest {
                 paper = ref("consultation-paper"),
                 agendaItem = ref("consultation-agenda-item"),
                 meeting = ref("consultation-meeting"),
-                organization = listOf(
-                    ref("consultation-organization-1"),
-                    ref("consultation-organization-2"),
-                ),
+                organization =
+                    listOf(
+                        ref("consultation-organization-1"),
+                        ref("consultation-organization-2"),
+                    ),
             ),
         )
 
@@ -355,112 +356,134 @@ class ProcessorRelationshipTest {
     private fun ref(name: String) = "https://oparl.example.org/references/$name".also(expectedReferences::add)
 
     private fun assertEnqueuedReferences() {
-        val actual = mockingDetails(crawlTargetEnqueuer).invocations
-            .filter { it.method.name == "enqueue" }
-            .map { (it.arguments[0] as OparlResource).url.value }
+        val actual =
+            mockingDetails(crawlTargetEnqueuer)
+                .invocations
+                .filter { it.method.name == "enqueue" }
+                .map { (it.arguments[0] as OparlResource).url.value }
 
         assertEquals(expectedReferences, actual.toSet())
         assertEquals(expectedReferences.size, actual.size)
     }
 
-    private fun verifyEmbedded(processor: Any, resource: OparlResource, dto: OparlObjectDto) {
+    private fun verifyEmbedded(
+        processor: Any,
+        resource: OparlResource,
+        dto: OparlObjectDto,
+    ) {
         val invocations = mockingDetails(processor).invocations
-        assertEquals(1, invocations.count {
-            it.method.name == "processEmbedded" && it.arguments[0] == resource && it.arguments[1] == dto
-        })
+        assertEquals(
+            1,
+            invocations.count {
+                it.method.name == "processEmbedded" && it.arguments[0] == resource && it.arguments[1] == dto
+            },
+        )
         assertEquals(0, invocations.count { it.method.name == "process" })
     }
 
-    private fun agendaItemProcessor() = AgendaItemProcessor(
-        processorRepository(RawAgendaItemRepository::class.java),
-        crawlTargetEnqueuer,
-        fileProcessor,
-        enrichTargetEnqueuer,
-    )
+    private fun agendaItemProcessor() =
+        AgendaItemProcessor(
+            processorRepository(RawAgendaItemRepository::class.java),
+            crawlTargetEnqueuer,
+            fileProcessor,
+            enrichTargetEnqueuer,
+        )
 
-    private fun bodyProcessor() = BodyProcessor(
-        processorRepository(RawBodyRepository::class.java),
-        crawlTargetEnqueuer,
-        legislativeTermProcessor,
-        locationProcessor,
-        enrichTargetEnqueuer,
-    )
+    private fun bodyProcessor() =
+        BodyProcessor(
+            processorRepository(RawBodyRepository::class.java),
+            crawlTargetEnqueuer,
+            legislativeTermProcessor,
+            locationProcessor,
+            enrichTargetEnqueuer,
+        )
 
-    private fun consultationProcessor() = ConsultationProcessor(
-        processorRepository(RawConsultationRepository::class.java),
-        crawlTargetEnqueuer,
-        enrichTargetEnqueuer,
-    )
+    private fun consultationProcessor() =
+        ConsultationProcessor(
+            processorRepository(RawConsultationRepository::class.java),
+            crawlTargetEnqueuer,
+            enrichTargetEnqueuer,
+        )
 
-    private fun fileProcessor() = FileProcessor(
-        processorRepository(RawFileRepository::class.java),
-        crawlTargetEnqueuer,
-        enrichTargetEnqueuer,
-    )
+    private fun fileProcessor() =
+        FileProcessor(
+            processorRepository(RawFileRepository::class.java),
+            crawlTargetEnqueuer,
+            enrichTargetEnqueuer,
+        )
 
-    private fun legislativeTermProcessor() = LegislativeTermProcessor(
-        processorRepository(RawLegislativeTermRepository::class.java),
-        crawlTargetEnqueuer,
-        enrichTargetEnqueuer,
-    )
+    private fun legislativeTermProcessor() =
+        LegislativeTermProcessor(
+            processorRepository(RawLegislativeTermRepository::class.java),
+            crawlTargetEnqueuer,
+            enrichTargetEnqueuer,
+        )
 
-    private fun locationProcessor() = LocationProcessor(
-        processorRepository(RawLocationRepository::class.java),
-        crawlTargetEnqueuer,
-        enrichTargetEnqueuer,
-    )
+    private fun locationProcessor() =
+        LocationProcessor(
+            processorRepository(RawLocationRepository::class.java),
+            crawlTargetEnqueuer,
+            enrichTargetEnqueuer,
+        )
 
-    private fun meetingProcessor() = MeetingProcessor(
-        processorRepository(RawMeetingRepository::class.java),
-        crawlTargetEnqueuer,
-        locationProcessor,
-        fileProcessor,
-        agendaItemProcessor,
-        enrichTargetEnqueuer,
-    )
+    private fun meetingProcessor() =
+        MeetingProcessor(
+            processorRepository(RawMeetingRepository::class.java),
+            crawlTargetEnqueuer,
+            locationProcessor,
+            fileProcessor,
+            agendaItemProcessor,
+            enrichTargetEnqueuer,
+        )
 
-    private fun membershipProcessor() = MembershipProcessor(
-        processorRepository(RawMembershipRepository::class.java),
-        crawlTargetEnqueuer,
-        enrichTargetEnqueuer,
-    )
+    private fun membershipProcessor() =
+        MembershipProcessor(
+            processorRepository(RawMembershipRepository::class.java),
+            crawlTargetEnqueuer,
+            enrichTargetEnqueuer,
+        )
 
-    private fun organizationProcessor() = OrganizationProcessor(
-        processorRepository(RawOrganizationRepository::class.java),
-        crawlTargetEnqueuer,
-        locationProcessor,
-        enrichTargetEnqueuer,
-    )
+    private fun organizationProcessor() =
+        OrganizationProcessor(
+            processorRepository(RawOrganizationRepository::class.java),
+            crawlTargetEnqueuer,
+            locationProcessor,
+            enrichTargetEnqueuer,
+        )
 
-    private fun paperProcessor() = PaperProcessor(
-        processorRepository(RawPaperRepository::class.java),
-        crawlTargetEnqueuer,
-        fileProcessor,
-        locationProcessor,
-        consultationProcessor,
-        enrichTargetEnqueuer,
-    )
+    private fun paperProcessor() =
+        PaperProcessor(
+            processorRepository(RawPaperRepository::class.java),
+            crawlTargetEnqueuer,
+            fileProcessor,
+            locationProcessor,
+            consultationProcessor,
+            enrichTargetEnqueuer,
+        )
 
-    private fun personProcessor() = PersonProcessor(
-        processorRepository(RawPersonRepository::class.java),
-        crawlTargetEnqueuer,
-        locationProcessor,
-        membershipProcessor,
-        enrichTargetEnqueuer,
-    )
+    private fun personProcessor() =
+        PersonProcessor(
+            processorRepository(RawPersonRepository::class.java),
+            crawlTargetEnqueuer,
+            locationProcessor,
+            membershipProcessor,
+            enrichTargetEnqueuer,
+        )
 
-    private fun systemProcessor() = SystemProcessor(
-        processorRepository(RawSystemRepository::class.java),
-        crawlTargetEnqueuer,
-        enrichTargetEnqueuer,
-    )
+    private fun systemProcessor() =
+        SystemProcessor(
+            processorRepository(RawSystemRepository::class.java),
+            crawlTargetEnqueuer,
+            enrichTargetEnqueuer,
+        )
 
     private fun resource(pathOrUrl: String): OparlResource {
-        val url = if (pathOrUrl.startsWith("https://")) {
-            pathOrUrl
-        } else {
-            "https://oparl.example.org/$pathOrUrl"
-        }
+        val url =
+            if (pathOrUrl.startsWith("https://")) {
+                pathOrUrl
+            } else {
+                "https://oparl.example.org/$pathOrUrl"
+            }
         return OparlResource(system, OparlUrl(url))
     }
 

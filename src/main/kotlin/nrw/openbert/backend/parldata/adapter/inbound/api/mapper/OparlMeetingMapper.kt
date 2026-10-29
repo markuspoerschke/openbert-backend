@@ -11,8 +11,8 @@ class OparlMeetingMapper(
     private val urlGenerator: OparlUrlGenerator,
     private val agendaItemMapper: OparlAgendaItemMapper,
 ) {
-    fun toDto(meeting: ResolvedMeeting): OparlMeetingDto {
-        return OparlMeetingDto(
+    fun toDto(meeting: ResolvedMeeting): OparlMeetingDto =
+        OparlMeetingDto(
             id = urlGenerator.meeting.get(meeting.body.id, meeting.id),
             type = meeting.getType().url,
             name = meeting.name,
@@ -20,12 +20,14 @@ class OparlMeetingMapper(
             cancelled = meeting.cancelled,
             start = meeting.start?.toInstant()?.toString(),
             end = meeting.end?.toInstant()?.toString(),
-            organization = meeting.organizations
-                .map { urlGenerator.organization.get(it.body.id, it.id) }
-                .takeIf { it.isNotEmpty() },
-            agendaItem = meeting.agendaItems
-                .map(agendaItemMapper::toDto)
-                .takeIf { it.isNotEmpty() },
+            organization =
+                meeting.organizations
+                    .map { urlGenerator.organization.get(it.body.id, it.id) }
+                    .takeIf { it.isNotEmpty() },
+            agendaItem =
+                meeting.agendaItems
+                    .map(agendaItemMapper::toDto)
+                    .takeIf { it.isNotEmpty() },
             license = meeting.license,
             keyword = meeting.keyword.toList().takeIf { it.isNotEmpty() },
             created = meeting.created.toString(),
@@ -33,5 +35,4 @@ class OparlMeetingMapper(
             web = meeting.web,
             deleted = meeting.deleted,
         )
-    }
 }

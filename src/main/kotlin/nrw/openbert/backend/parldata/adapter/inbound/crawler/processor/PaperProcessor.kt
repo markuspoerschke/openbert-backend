@@ -1,12 +1,12 @@
 package nrw.openbert.backend.parldata.adapter.inbound.crawler.processor
 
-import nrw.openbert.backend.parldata.application.crawl.CrawlTargetEnqueuer
-import nrw.openbert.backend.parldata.domain.enums.OparlType
 import nrw.openbert.backend.parldata.adapter.outbound.client.oparl.dto.OparlPaperDto
+import nrw.openbert.backend.parldata.application.crawl.CrawlTargetEnqueuer
 import nrw.openbert.backend.parldata.application.enrich.EnrichTargetEnqueuer
+import nrw.openbert.backend.parldata.application.port.outbound.repository.RawPaperRepository
 import nrw.openbert.backend.parldata.domain.entity.embeddable.OparlResource
 import nrw.openbert.backend.parldata.domain.entity.raw.RawPaper
-import nrw.openbert.backend.parldata.application.port.outbound.repository.RawPaperRepository
+import nrw.openbert.backend.parldata.domain.enums.OparlType
 import org.springframework.stereotype.Service
 
 @Service
@@ -24,7 +24,10 @@ class PaperProcessor(
 
     override fun saveEntity(entity: RawPaper) = rawPaperRepository.save(entity)
 
-    override fun processRelationships(resource: OparlResource, dto: OparlPaperDto) {
+    override fun processRelationships(
+        resource: OparlResource,
+        dto: OparlPaperDto,
+    ) {
         enqueueUrls(resource, OparlType.BODY, dto.body)
         enqueueUrls(resource, OparlType.PAPER, dto.relatedPaper.orEmpty())
         enqueueUrls(resource, OparlType.PAPER, dto.superordinatedPaper.orEmpty())
@@ -38,7 +41,10 @@ class PaperProcessor(
         processInline(resource, dto.consultation, consultationProcessor) { it.paperUrl = resource.url }
     }
 
-    override fun updateEntity(entity: RawPaper, dto: OparlPaperDto) {
+    override fun updateEntity(
+        entity: RawPaper,
+        dto: OparlPaperDto,
+    ) {
         entity.bodyUrl = dto.body?.toOparlUrl()
         entity.name = dto.name
         entity.reference = dto.reference

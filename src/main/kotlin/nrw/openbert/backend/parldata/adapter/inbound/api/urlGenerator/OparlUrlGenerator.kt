@@ -29,38 +29,44 @@ class OparlUrlGenerator {
     val membership = OparlEntityUrlGenerator(OparlMembershipController::class.java)
     val location = OparlEntityUrlGenerator(OparlLocationController::class.java)
 
-    fun bodyList(page: Int = 1): String {
-        return paginatedList(OparlBodyController::class.java, "list", page)
-    }
+    fun bodyList(page: Int = 1): String = paginatedList(OparlBodyController::class.java, "list", page)
 
-    fun body(bodyId: UUID): String {
-        return MvcUriComponentsBuilder
+    fun body(bodyId: UUID): String =
+        MvcUriComponentsBuilder
             .fromMethodName(OparlBodyController::class.java, "get", bodyId)
             .build()
             .toString()
-    }
 
-    fun organizationMeetingList(bodyId: UUID, organizationId: UUID, page: Int = 1): String {
-        return paginatedList(
+    fun organizationMeetingList(
+        bodyId: UUID,
+        organizationId: UUID,
+        page: Int = 1,
+    ): String =
+        paginatedList(
             OparlOrganizationController::class.java,
             "listMeetings",
             page,
             bodyId,
             organizationId,
         )
-    }
 
-    fun organizationConsultationList(bodyId: UUID, organizationId: UUID, page: Int = 1): String {
-        return paginatedList(
+    fun organizationConsultationList(
+        bodyId: UUID,
+        organizationId: UUID,
+        page: Int = 1,
+    ): String =
+        paginatedList(
             OparlOrganizationController::class.java,
             "listConsultations",
             page,
             bodyId,
             organizationId,
         )
-    }
 
-    fun fileAccess(bodyId: UUID, fileId: UUID): String {
+    fun fileAccess(
+        bodyId: UUID,
+        fileId: UUID,
+    ): String {
         // The servlet response argument is ignored when contributing URI components.
         return MvcUriComponentsBuilder
             .fromMethodName(OparlFileController::class.java, "access", bodyId, fileId, Unit)
@@ -68,10 +74,12 @@ class OparlUrlGenerator {
             .toString()
     }
 
-    fun fileDownload(bodyId: UUID, fileId: UUID): String {
-        return MvcUriComponentsBuilder
+    fun fileDownload(
+        bodyId: UUID,
+        fileId: UUID,
+    ): String =
+        MvcUriComponentsBuilder
             .fromMethodName(OparlFileController::class.java, "download", bodyId, fileId, Unit)
             .build()
             .toString()
-    }
 }

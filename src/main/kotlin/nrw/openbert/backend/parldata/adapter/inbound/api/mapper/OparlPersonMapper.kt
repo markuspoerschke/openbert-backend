@@ -2,9 +2,9 @@ package nrw.openbert.backend.parldata.adapter.inbound.api.mapper
 
 import nrw.openbert.backend.parldata.adapter.inbound.api.dto.OparlPersonDto
 import nrw.openbert.backend.parldata.adapter.inbound.api.urlGenerator.OparlUrlGenerator
+import nrw.openbert.backend.parldata.application.port.outbound.repository.ResolvedMembershipRepository
 import nrw.openbert.backend.parldata.domain.entity.AbstractPerson
 import nrw.openbert.backend.parldata.domain.entity.resolved.ResolvedPerson
-import nrw.openbert.backend.parldata.application.port.outbound.repository.ResolvedMembershipRepository
 import org.springframework.stereotype.Component
 
 @Component
@@ -13,15 +13,16 @@ class OparlPersonMapper(
     private val membershipMapper: OparlMembershipMapper,
     private val resolvedMembershipRepository: ResolvedMembershipRepository,
 ) {
-    fun toDto(person: ResolvedPerson): OparlPersonDto {
-        return OparlPersonDto(
+    fun toDto(person: ResolvedPerson): OparlPersonDto =
+        OparlPersonDto(
             id = urlGenerator.person.get(person.body.id, person.id),
             type = person.getType().url,
             body = urlGenerator.body(person.body.id),
-            membership = resolvedMembershipRepository
-                .findAllByPersonIdAndBodyIdOrderById(person.id, person.body.id)
-                .map { membershipMapper.toDto(it, includePerson = false) }
-                .takeIf { it.isNotEmpty() },
+            membership =
+                resolvedMembershipRepository
+                    .findAllByPersonIdAndBodyIdOrderById(person.id, person.body.id)
+                    .map { membershipMapper.toDto(it, includePerson = false) }
+                    .takeIf { it.isNotEmpty() },
             name = person.name,
             familyName = person.familyName,
             givenName = person.givenName,
@@ -41,5 +42,4 @@ class OparlPersonMapper(
             web = person.web,
             deleted = person.deleted,
         )
-    }
 }

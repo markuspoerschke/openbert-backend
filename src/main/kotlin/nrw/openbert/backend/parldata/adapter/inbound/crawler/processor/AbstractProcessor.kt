@@ -1,11 +1,11 @@
 package nrw.openbert.backend.parldata.adapter.inbound.crawler.processor
 
-import nrw.openbert.backend.parldata.application.crawl.CrawlTargetEnqueuer
-import nrw.openbert.backend.parldata.domain.enums.OparlType
 import nrw.openbert.backend.parldata.adapter.outbound.client.oparl.dto.OparlObjectDto
+import nrw.openbert.backend.parldata.application.crawl.CrawlTargetEnqueuer
 import nrw.openbert.backend.parldata.application.enrich.EnrichTargetEnqueuer
 import nrw.openbert.backend.parldata.domain.entity.AbstractOparlEntity
 import nrw.openbert.backend.parldata.domain.entity.embeddable.OparlResource
+import nrw.openbert.backend.parldata.domain.enums.OparlType
 import nrw.openbert.backend.parldata.domain.valueObject.OparlUrl
 import org.slf4j.LoggerFactory
 import org.springframework.transaction.annotation.Transactional
@@ -17,14 +17,26 @@ abstract class AbstractProcessor<D : OparlObjectDto, E : AbstractOparlEntity>(
     private val logger = LoggerFactory.getLogger(javaClass)
 
     protected abstract fun findEntity(resource: OparlResource): E?
+
     protected abstract fun createEntity(resource: OparlResource): E
-    protected abstract fun updateEntity(entity: E, dto: D)
+
+    protected abstract fun updateEntity(
+        entity: E,
+        dto: D,
+    )
 
     protected abstract fun saveEntity(entity: E): E
-    protected abstract fun processRelationships(resource: OparlResource, dto: D)
+
+    protected abstract fun processRelationships(
+        resource: OparlResource,
+        dto: D,
+    )
 
     @Transactional
-    open fun process(resource: OparlResource, dto: D): E {
+    open fun process(
+        resource: OparlResource,
+        dto: D,
+    ): E {
         logger.info("Processing OParl resource {}", resource.url.value)
 
         val entity = findEntity(resource) ?: createEntity(resource)
@@ -43,7 +55,11 @@ abstract class AbstractProcessor<D : OparlObjectDto, E : AbstractOparlEntity>(
      * Use them only to seed new entities; only fetching the entity URL completes a crawl.
      */
     @Transactional
-    open fun processEmbedded(resource: OparlResource, dto: D, initialize: (E) -> Unit = {}): E {
+    open fun processEmbedded(
+        resource: OparlResource,
+        dto: D,
+        initialize: (E) -> Unit = {},
+    ): E {
         findEntity(resource)?.let { return it }
 
         val entity = createEntity(resource)
@@ -71,7 +87,8 @@ abstract class AbstractProcessor<D : OparlObjectDto, E : AbstractOparlEntity>(
         entityType: OparlType,
         urls: Iterable<String?>,
     ) {
-        urls.filterNotNull()
+        urls
+            .filterNotNull()
             .map { source.withUrl(it) }
             .forEach { crawlTargetEnqueuer.enqueue(it, entityType) }
     }

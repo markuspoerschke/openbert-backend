@@ -31,10 +31,11 @@ import java.util.UUID
 
 @Tag(
     name = "Oparl File",
-    externalDocs = ExternalDocumentation(
-        "Oparl Specs",
-        "https://oparl.org/spezifikation/online-ansicht/#entity-file",
-    ),
+    externalDocs =
+        ExternalDocumentation(
+            "Oparl Specs",
+            "https://oparl.org/spezifikation/online-ansicht/#entity-file",
+        ),
 )
 @RestController
 class OparlFileController(
@@ -55,20 +56,22 @@ class OparlFileController(
             return ResponseEntity.notFound().build()
         }
 
-        val files = resolvedFileRepository
-            .findAllByBodyIdOrderById(bodyId, pagination.toPageable())
-            .map(fileMapper::toDto)
+        val files =
+            resolvedFileRepository
+                .findAllByBodyIdOrderById(bodyId, pagination.toPageable())
+                .map(fileMapper::toDto)
 
         return ResponseEntity.ok(
             OparlListDto(
                 id = urlGenerator.file.list(bodyId, pagination.page),
                 data = files.toList(),
                 pagination = listPaginationMapper.toDto(files),
-                links = listLinksMapper.toDto(
-                    files,
-                    { page -> urlGenerator.file.list(bodyId, page) }
-                ),
-            )
+                links =
+                    listLinksMapper.toDto(
+                        files,
+                        { page -> urlGenerator.file.list(bodyId, page) },
+                    ),
+            ),
         )
     }
 
@@ -104,13 +107,19 @@ class OparlFileController(
         serveFile(bodyId, fileId, response, attachment = true)
     }
 
-    private fun serveFile(bodyId: UUID, fileId: UUID, response: HttpServletResponse, attachment: Boolean) {
+    private fun serveFile(
+        bodyId: UUID,
+        fileId: UUID,
+        response: HttpServletResponse,
+        attachment: Boolean,
+    ) {
         val file = resolvedFileRepository.findByIdAndBodyId(fileId, bodyId).orElse(null)
-        val url = if (attachment) {
-            file?.downloadUrl ?: file?.accessUrl
-        } else {
-            file?.accessUrl ?: file?.downloadUrl
-        }
+        val url =
+            if (attachment) {
+                file?.downloadUrl ?: file?.accessUrl
+            } else {
+                file?.accessUrl ?: file?.downloadUrl
+            }
 
         if (file == null || url == null) {
             response.sendError(HttpServletResponse.SC_NOT_FOUND)
@@ -137,10 +146,11 @@ class OparlFileController(
         attachment: Boolean,
     ) {
         if (!HttpStatusCode.valueOf(content.statusCode).is2xxSuccessful) {
-            val status = when (content.statusCode) {
-                HttpServletResponse.SC_NOT_FOUND, HttpServletResponse.SC_GONE -> content.statusCode
-                else -> HttpServletResponse.SC_BAD_GATEWAY
-            }
+            val status =
+                when (content.statusCode) {
+                    HttpServletResponse.SC_NOT_FOUND, HttpServletResponse.SC_GONE -> content.statusCode
+                    else -> HttpServletResponse.SC_BAD_GATEWAY
+                }
             response.sendError(status)
             return
         }
@@ -152,9 +162,11 @@ class OparlFileController(
         if (attachment) {
             response.setHeader(
                 HttpHeaders.CONTENT_DISPOSITION,
-                ContentDisposition.attachment()
+                ContentDisposition
+                    .attachment()
                     .filename(file.fileName ?: "file-${file.id}", StandardCharsets.UTF_8)
-                    .build().toString(),
+                    .build()
+                    .toString(),
             )
         }
         content.body.copyTo(response.outputStream)

@@ -35,9 +35,12 @@ interface CrawlTargetRepository : JpaRepository<CrawlTarget, UUID> {
             created_at ASC
             LIMIT ?2
         """,
-        nativeQuery = true
+        nativeQuery = true,
     )
-    fun findDue(now: Instant, limit: Int): List<CrawlTarget>
+    fun findDue(
+        now: Instant,
+        limit: Int,
+    ): List<CrawlTarget>
 
     fun findByResource(resource: OparlResource): CrawlTarget?
 }

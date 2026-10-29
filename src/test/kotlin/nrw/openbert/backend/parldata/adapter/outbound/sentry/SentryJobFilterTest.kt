@@ -1,7 +1,7 @@
 package nrw.openbert.backend.parldata.adapter.outbound.sentry
 
-import io.sentry.IScopes
 import io.sentry.IScope
+import io.sentry.IScopes
 import io.sentry.ScopeCallback
 import org.jobrunr.jobs.Job
 import org.jobrunr.jobs.JobDetails
@@ -15,7 +15,6 @@ import java.util.UUID
 import kotlin.test.assertEquals
 
 class SentryJobFilterTest {
-
     private val scopes = mock(IScopes::class.java)
     private val filter = SentryJobFilter(scopes)
 

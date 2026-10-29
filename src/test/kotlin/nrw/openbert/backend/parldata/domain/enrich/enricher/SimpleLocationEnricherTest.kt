@@ -17,12 +17,13 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class SimpleLocationEnricherTest {
-    private val subject = SimpleLocationEnricher(
-        NullableStringNormalizer(),
-        StreetAddressNormalizer(NullableStringNormalizer()),
-        RoomMatcher(),
-        StreetNameMatcher(),
-    )
+    private val subject =
+        SimpleLocationEnricher(
+            NullableStringNormalizer(),
+            StreetAddressNormalizer(NullableStringNormalizer()),
+            RoomMatcher(),
+            StreetNameMatcher(),
+        )
 
     @ParameterizedTest(name = "{0}")
     @MethodSource("enrichmentCases")
@@ -60,9 +61,10 @@ class SimpleLocationEnricherTest {
     @Test
     fun `uses existing overrides when applying rules`() {
         val raw = LocationValues(postalCode = "42553", locality = "Velbert").toRaw()
-        val previous = LocationOverrides()
-            .withStreetAddressOverride(" 42553 Velbert ")
-            .withRoomOverride("Nevigeser Str. 307")
+        val previous =
+            LocationOverrides()
+                .withStreetAddressOverride(" 42553 Velbert ")
+                .withRoomOverride("Nevigeser Str. 307")
         val overrides = subject.enrich(raw, previous)
         assertEquals("Nevigeser Straße 307", overrides.streetAddress)
         assertTrue(overrides.overrideRoom)
@@ -87,13 +89,14 @@ class SimpleLocationEnricherTest {
             }
         }
 
-        fun withOverrides(overrides: LocationOverrides) = LocationValues(
-            overrides.getDescriptionOverrideOrOriginalValue(description),
-            overrides.getStreetAddressOverrideOrOriginalValue(streetAddress),
-            overrides.getPostalCodeOverrideOrOriginalValue(postalCode),
-            overrides.getLocalityOverrideOrOriginalValue(locality),
-            overrides.getRoomOverrideOrOriginalValue(room),
-        )
+        fun withOverrides(overrides: LocationOverrides) =
+            LocationValues(
+                overrides.getDescriptionOverrideOrOriginalValue(description),
+                overrides.getStreetAddressOverrideOrOriginalValue(streetAddress),
+                overrides.getPostalCodeOverrideOrOriginalValue(postalCode),
+                overrides.getLocalityOverrideOrOriginalValue(locality),
+                overrides.getRoomOverrideOrOriginalValue(room),
+            )
     }
 
     companion object {
@@ -102,137 +105,149 @@ class SimpleLocationEnricherTest {
             normalizationCases() + streetAddressCases() + organizationAndRoomCases() + localityCases() +
                 roomCases()
 
-        private fun normalizationCases(): List<Arguments> = listOf(
-            Arguments.of(
-                "trims all supported fields",
-                LocationValues(" Description ", " Hauptstr. 12 ", " 01234 ", " Velbert ", " Raum 41 "),
-                LocationValues("Description", "Hauptstraße 12", "01234", "Velbert", "Raum 41"),
-            ),
-            Arguments.of(
-                "clears empty fields and dash placeholders",
-                LocationValues(" ", "-", "", "\t", " - "), LocationValues(),
-            ),
-            Arguments.of(
-                "removes repeated postal code and city and moves the street out of room",
-                LocationValues("Tagespflege Nitz", "42553 Velbert", "42553", "Velbert", "Nevigeser Str. 307"),
-                LocationValues("Tagespflege Nitz", "Nevigeser Straße 307", "42553", "Velbert"),
-            ),
-            Arguments.of(
-                "clears a repeated address even when no street can be recovered",
-                LocationValues(
-                    streetAddress = "42553 Velbert",
-                    postalCode = "42553",
-                    locality = "Velbert",
-                    room = "Aula",
+        private fun normalizationCases(): List<Arguments> =
+            listOf(
+                Arguments.of(
+                    "trims all supported fields",
+                    LocationValues(" Description ", " Hauptstr. 12 ", " 01234 ", " Velbert ", " Raum 41 "),
+                    LocationValues("Description", "Hauptstraße 12", "01234", "Velbert", "Raum 41"),
                 ),
-                LocationValues(postalCode = "42553", locality = "Velbert", room = "Aula"),
-            ),
-            Arguments.of(
-                "preserves a real street address containing postal code and city",
-                LocationValues(
-                    streetAddress = "Hauptstraße 12, 42553 Velbert",
-                    postalCode = "42553",
-                    locality = "Velbert",
+                Arguments.of(
+                    "clears empty fields and dash placeholders",
+                    LocationValues(" ", "-", "", "\t", " - "),
+                    LocationValues(),
                 ),
-                LocationValues(
-                    streetAddress = "Hauptstraße 12, 42553 Velbert",
-                    postalCode = "42553",
-                    locality = "Velbert",
+                Arguments.of(
+                    "removes repeated postal code and city and moves the street out of room",
+                    LocationValues("Tagespflege Nitz", "42553 Velbert", "42553", "Velbert", "Nevigeser Str. 307"),
+                    LocationValues("Tagespflege Nitz", "Nevigeser Straße 307", "42553", "Velbert"),
                 ),
-            ),
-        )
+                Arguments.of(
+                    "clears a repeated address even when no street can be recovered",
+                    LocationValues(
+                        streetAddress = "42553 Velbert",
+                        postalCode = "42553",
+                        locality = "Velbert",
+                        room = "Aula",
+                    ),
+                    LocationValues(postalCode = "42553", locality = "Velbert", room = "Aula"),
+                ),
+                Arguments.of(
+                    "preserves a real street address containing postal code and city",
+                    LocationValues(
+                        streetAddress = "Hauptstraße 12, 42553 Velbert",
+                        postalCode = "42553",
+                        locality = "Velbert",
+                    ),
+                    LocationValues(
+                        streetAddress = "Hauptstraße 12, 42553 Velbert",
+                        postalCode = "42553",
+                        locality = "Velbert",
+                    ),
+                ),
+            )
 
-        private fun streetAddressCases(): List<Arguments> = listOf(
-            Arguments.of(
-                "moves a street into an empty street address",
-                LocationValues(room = "Rathausplatz 1"), LocationValues(streetAddress = "Rathausplatz 1"),
-            ),
-            Arguments.of(
-                "swaps a room and a street address",
-                LocationValues("VHS", "Raum 41", "42555", "Velbert", "Donnerstraße 13"),
-                LocationValues("VHS", "Donnerstraße 13", "42555", "Velbert", "Raum 41"),
-            ),
-            Arguments.of(
-                "normalizes an abbreviated street after swapping",
-                LocationValues(streetAddress = "Raum 41", room = "Nevigeser Str. 307"),
-                LocationValues(streetAddress = "Nevigeser Straße 307", room = "Raum 41"),
-            ),
-            Arguments.of(
-                "does not swap when the street has no house number",
-                LocationValues(streetAddress = "Raum 41", room = "Donnerstraße"),
-                LocationValues(streetAddress = "Raum 41", room = "Donnerstraße"),
-            ),
-            Arguments.of(
-                "does not swap when only the room matcher matches",
-                LocationValues(streetAddress = "Raum 41", room = "Gebäude 13"),
-                LocationValues(streetAddress = "Raum 41", room = "Gebäude 13"),
-            ),
-        )
+        private fun streetAddressCases(): List<Arguments> =
+            listOf(
+                Arguments.of(
+                    "moves a street into an empty street address",
+                    LocationValues(room = "Rathausplatz 1"),
+                    LocationValues(streetAddress = "Rathausplatz 1"),
+                ),
+                Arguments.of(
+                    "swaps a room and a street address",
+                    LocationValues("VHS", "Raum 41", "42555", "Velbert", "Donnerstraße 13"),
+                    LocationValues("VHS", "Donnerstraße 13", "42555", "Velbert", "Raum 41"),
+                ),
+                Arguments.of(
+                    "normalizes an abbreviated street after swapping",
+                    LocationValues(streetAddress = "Raum 41", room = "Nevigeser Str. 307"),
+                    LocationValues(streetAddress = "Nevigeser Straße 307", room = "Raum 41"),
+                ),
+                Arguments.of(
+                    "does not swap when the street has no house number",
+                    LocationValues(streetAddress = "Raum 41", room = "Donnerstraße"),
+                    LocationValues(streetAddress = "Raum 41", room = "Donnerstraße"),
+                ),
+                Arguments.of(
+                    "does not swap when only the room matcher matches",
+                    LocationValues(streetAddress = "Raum 41", room = "Gebäude 13"),
+                    LocationValues(streetAddress = "Raum 41", room = "Gebäude 13"),
+                ),
+            )
 
-        private fun organizationAndRoomCases(): List<Arguments> = listOf(
-            Arguments.of(
-                "does not overwrite an existing street address",
-                LocationValues(streetAddress = "Hauptstraße 1", room = "Donnerstraße 13"),
-                LocationValues(streetAddress = "Hauptstraße 1", room = "Donnerstraße 13"),
-            ),
-            Arguments.of(
-                "clears the split organization name without inferring a city",
-                LocationValues(" AWO Ortsverein Velbert ", postalCode = " AWO ", locality = " Ortsverein Velbert "),
-                LocationValues("AWO Ortsverein Velbert"),
-            ),
-            Arguments.of(
-                "organization matching takes priority over room terms",
-                LocationValues("Neubau Velbert", postalCode = "Neubau", locality = "Velbert"),
-                LocationValues("Neubau Velbert"),
-            ),
-            Arguments.of(
-                "organization matching requires an exact description match",
-                LocationValues("AWO Ortsverein Velbert", postalCode = "AWO", locality = "Ortsverein Essen"),
-                LocationValues("AWO Ortsverein Velbert", locality = "AWO Ortsverein Essen"),
-            ),
-            Arguments.of(
-                "moves a room name from postal code without altering misplaced locality",
-                LocationValues(
-                    "Technische Betriebe Velbert",
-                    postalCode = "Sitzungssaal",
-                    locality = "1, Am Lindenkamp 33",
+        private fun organizationAndRoomCases(): List<Arguments> =
+            listOf(
+                Arguments.of(
+                    "does not overwrite an existing street address",
+                    LocationValues(streetAddress = "Hauptstraße 1", room = "Donnerstraße 13"),
+                    LocationValues(streetAddress = "Hauptstraße 1", room = "Donnerstraße 13"),
                 ),
-                LocationValues("Technische Betriebe Velbert", locality = "1, Am Lindenkamp 33", room = "Sitzungssaal"),
-            ),
-        )
+                Arguments.of(
+                    "clears the split organization name without inferring a city",
+                    LocationValues(" AWO Ortsverein Velbert ", postalCode = " AWO ", locality = " Ortsverein Velbert "),
+                    LocationValues("AWO Ortsverein Velbert"),
+                ),
+                Arguments.of(
+                    "organization matching takes priority over room terms",
+                    LocationValues("Neubau Velbert", postalCode = "Neubau", locality = "Velbert"),
+                    LocationValues("Neubau Velbert"),
+                ),
+                Arguments.of(
+                    "organization matching requires an exact description match",
+                    LocationValues("AWO Ortsverein Velbert", postalCode = "AWO", locality = "Ortsverein Essen"),
+                    LocationValues("AWO Ortsverein Velbert", locality = "AWO Ortsverein Essen"),
+                ),
+                Arguments.of(
+                    "moves a room name from postal code without altering misplaced locality",
+                    LocationValues(
+                        "Technische Betriebe Velbert",
+                        postalCode = "Sitzungssaal",
+                        locality = "1, Am Lindenkamp 33",
+                    ),
+                    LocationValues(
+                        "Technische Betriebe Velbert",
+                        locality = "1, Am Lindenkamp 33",
+                        room = "Sitzungssaal",
+                    ),
+                ),
+            )
 
-        private fun localityCases(): List<Arguments> = listOf(
-            Arguments.of(
-                "never overwrites an existing room or appends a room term to locality",
-                LocationValues(postalCode = "Sitzungssaal", locality = "Velbert", room = "Raum 41"),
-                LocationValues(postalCode = "Sitzungssaal", locality = "Velbert", room = "Raum 41"),
-            ),
-            Arguments.of(
-                "treats a blank room as empty",
-                LocationValues(postalCode = "AULA", room = " - "), LocationValues(room = "AULA"),
-            ),
-            Arguments.of(
-                "rejoins a sentence split across postal code and locality",
-                LocationValues(
-                    "wechselnder Sitzungsort",
-                    postalCode = "Den",
-                    locality = "Sitzungsort entnehmen Sie bitte der Einladung bzw. dem Newseintrag",
+        private fun localityCases(): List<Arguments> =
+            listOf(
+                Arguments.of(
+                    "never overwrites an existing room or appends a room term to locality",
+                    LocationValues(postalCode = "Sitzungssaal", locality = "Velbert", room = "Raum 41"),
+                    LocationValues(postalCode = "Sitzungssaal", locality = "Velbert", room = "Raum 41"),
                 ),
-                LocationValues(
-                    "wechselnder Sitzungsort",
-                    locality = "Den Sitzungsort entnehmen Sie bitte der Einladung bzw. dem Newseintrag",
+                Arguments.of(
+                    "treats a blank room as empty",
+                    LocationValues(postalCode = "AULA", room = " - "),
+                    LocationValues(room = "AULA"),
                 ),
-            ),
-            Arguments.of(
-                "does not reinterpret a valid postal code even if the description repeats it",
-                LocationValues("01234 Velbert", postalCode = "01234", locality = "Velbert"),
-                LocationValues("01234 Velbert", postalCode = "01234", locality = "Velbert"),
-            ),
-            Arguments.of(
-                "preserves invalid postal codes when there is no locality to rejoin",
-                LocationValues(postalCode = "AWO"), LocationValues(postalCode = "AWO"),
-            ),
-        )
+                Arguments.of(
+                    "rejoins a sentence split across postal code and locality",
+                    LocationValues(
+                        "wechselnder Sitzungsort",
+                        postalCode = "Den",
+                        locality = "Sitzungsort entnehmen Sie bitte der Einladung bzw. dem Newseintrag",
+                    ),
+                    LocationValues(
+                        "wechselnder Sitzungsort",
+                        locality = "Den Sitzungsort entnehmen Sie bitte der Einladung bzw. dem Newseintrag",
+                    ),
+                ),
+                Arguments.of(
+                    "does not reinterpret a valid postal code even if the description repeats it",
+                    LocationValues("01234 Velbert", postalCode = "01234", locality = "Velbert"),
+                    LocationValues("01234 Velbert", postalCode = "01234", locality = "Velbert"),
+                ),
+                Arguments.of(
+                    "preserves invalid postal codes when there is no locality to rejoin",
+                    LocationValues(postalCode = "AWO"),
+                    LocationValues(postalCode = "AWO"),
+                ),
+            )
 
         private fun roomCases(): List<Arguments> =
             listOf("RAUM 41", "Sitzungssaal", "Aula", "SportHALLE", "Neubau").map { room ->

@@ -18,11 +18,9 @@ import nrw.openbert.backend.parldata.domain.entity.raw.RawAgendaItem
 @Table(uniqueConstraints = [UniqueConstraint(columnNames = ["system_id", "url"])])
 class ResolvedAgendaItem(
     resource: OparlResource,
-
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "body_id", nullable = false, updatable = false)
     val body: ResolvedBody,
-
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "meeting_id", nullable = false, updatable = false)
     val meeting: ResolvedMeeting,
@@ -61,11 +59,10 @@ class ResolvedAgendaItem(
             meeting: ResolvedMeeting,
             resolutionFile: ResolvedFile? = null,
             auxiliaryFiles: Collection<ResolvedFile> = emptyList(),
-        ): ResolvedAgendaItem {
-            return ResolvedAgendaItem(raw.resource, body, meeting).apply {
+        ): ResolvedAgendaItem =
+            ResolvedAgendaItem(raw.resource, body, meeting).apply {
                 applyValuesFrom(raw)
                 applyRelationsFrom(resolutionFile, auxiliaryFiles)
             }
-        }
     }
 }

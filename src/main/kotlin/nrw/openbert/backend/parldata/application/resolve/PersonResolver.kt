@@ -17,15 +17,17 @@ class PersonResolver(
     override val entityType = OparlType.PERSON
 
     override fun resolve(rawEntityId: UUID) {
-        val raw = rawRepository.findById(rawEntityId).orElseThrow {
-            IllegalArgumentException("Raw person with id $rawEntityId does not exist")
-        }
+        val raw =
+            rawRepository.findById(rawEntityId).orElseThrow {
+                IllegalArgumentException("Raw person with id $rawEntityId does not exist")
+            }
         resolve(raw.resource)
     }
 
     fun resolve(resource: OparlResource): ResolvedPerson {
-        val raw = rawRepository.findByResource(resource)
-            ?: return resolvedRepository.findByResource(resource) ?: throw notCrawled("person", resource)
+        val raw =
+            rawRepository.findByResource(resource)
+                ?: return resolvedRepository.findByResource(resource) ?: throw notCrawled("person", resource)
         val body = bodyResolver.resolve(relatedResource(raw.resource, required(raw.bodyUrl, "body", raw.resource)))
         val resolved = resolvedRepository.findByResource(resource) ?: ResolvedPerson.fromRaw(raw, body)
 

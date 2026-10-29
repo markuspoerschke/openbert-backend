@@ -48,16 +48,18 @@ class MeetingResolverPersistenceTest(
     fun `resolves a recrawled meeting again using its changed values and organizations`() {
         val raw = rawMeeting()
         val organizationBaseUrl = "https://oparl-demo.example.org/oparl/v1.1/organization"
-        val originalDto = OparlMeetingDto(
-            body = raw.bodyUrl!!.value,
-            name = "Geplante Sitzung",
-            meetingState = "terminiert",
-            organization = listOf("$organizationBaseUrl/34"),
-        )
+        val originalDto =
+            OparlMeetingDto(
+                body = raw.bodyUrl!!.value,
+                name = "Geplante Sitzung",
+                meetingState = "terminiert",
+                organization = listOf("$organizationBaseUrl/34"),
+            )
         val firstCrawl = meetingProcessor.process(raw.resource, originalDto)
-        val enrichTarget = assertNotNull(
-            enrichTargetRepository.findByRawEntityIdAndEntityType(raw.id, OparlType.MEETING),
-        )
+        val enrichTarget =
+            assertNotNull(
+                enrichTargetRepository.findByRawEntityIdAndEntityType(raw.id, OparlType.MEETING),
+            )
         enricher.run(enrichTarget.id)
         val firstTarget = assertNotNull(targetRepository.findByRawEntityIdAndEntityType(raw.id, OparlType.MEETING))
         resolver.run(firstTarget.id)
@@ -65,11 +67,12 @@ class MeetingResolverPersistenceTest(
         entityManager.clear()
         val existingId = assertNotNull(meetingRepository.findByResource(raw.resource)).id
 
-        val updatedDto = originalDto.copy(
-            name = "Durchgeführte Sitzung",
-            meetingState = "durchgeführt",
-            organization = listOf("$organizationBaseUrl/unresolved", "$organizationBaseUrl/41"),
-        )
+        val updatedDto =
+            originalDto.copy(
+                name = "Durchgeführte Sitzung",
+                meetingState = "durchgeführt",
+                organization = listOf("$organizationBaseUrl/unresolved", "$organizationBaseUrl/41"),
+            )
         val secondCrawl = meetingProcessor.process(raw.resource, updatedDto)
         enricher.run(enrichTarget.id)
         val nextTarget = assertNotNull(targetRepository.findByRawEntityIdAndEntityType(raw.id, OparlType.MEETING))
@@ -107,9 +110,10 @@ class MeetingResolverPersistenceTest(
 
     @Test
     fun `resolves a referenced raw body before resolving the meeting`() {
-        val raw = rawMeeting().apply {
-            bodyUrl = OparlUrl("https://oparl-demo.example.org/oparl/v1.1/body/meeting-source")
-        }
+        val raw =
+            rawMeeting().apply {
+                bodyUrl = OparlUrl("https://oparl-demo.example.org/oparl/v1.1/body/meeting-source")
+            }
 
         resolve(raw)
         entityManager.flush()
@@ -154,10 +158,11 @@ class MeetingResolverPersistenceTest(
 
     @Test
     fun `infers the body from participants when the extension is absent`() {
-        val raw = rawMeeting().apply {
-            bodyUrl = null
-            participantUrls.add("https://oparl-demo.example.org/oparl/v1.1/person/29")
-        }
+        val raw =
+            rawMeeting().apply {
+                bodyUrl = null
+                participantUrls.add("https://oparl-demo.example.org/oparl/v1.1/person/29")
+            }
 
         resolve(raw)
 
@@ -173,11 +178,12 @@ class MeetingResolverPersistenceTest(
         entityManager.flush()
         entityManager.clear()
         val existingId = assertNotNull(meetingRepository.findByResource(raw.resource)).id
-        val incompleteRawMeeting = rawMeeting().apply {
-            bodyUrl = null
-            organizationUrls.clear()
-            name = "Aktualisierte Sitzung"
-        }
+        val incompleteRawMeeting =
+            rawMeeting().apply {
+                bodyUrl = null
+                organizationUrls.clear()
+                name = "Aktualisierte Sitzung"
+            }
 
         resolve(incompleteRawMeeting)
         entityManager.flush()
@@ -205,10 +211,11 @@ class MeetingResolverPersistenceTest(
 
     @Test
     fun `rejects a body that conflicts with an organization`() {
-        val raw = rawMeeting().apply {
-            bodyUrl = OparlUrl("https://oparl-demo.example.org/oparl/v1.1/body/456")
-            organizationUrls.add("https://oparl-demo.example.org/oparl/v1.1/organization/34")
-        }
+        val raw =
+            rawMeeting().apply {
+                bodyUrl = OparlUrl("https://oparl-demo.example.org/oparl/v1.1/body/456")
+                organizationUrls.add("https://oparl-demo.example.org/oparl/v1.1/organization/34")
+            }
 
         val error = assertFailsWith<UnresolvedRelationException> { resolve(raw) }
 
@@ -218,10 +225,11 @@ class MeetingResolverPersistenceTest(
 
     @Test
     fun `rejects a body that conflicts with a participant`() {
-        val raw = rawMeeting().apply {
-            bodyUrl = OparlUrl("https://oparl-demo.example.org/oparl/v1.1/body/456")
-            participantUrls.add("https://oparl-demo.example.org/oparl/v1.1/person/29")
-        }
+        val raw =
+            rawMeeting().apply {
+                bodyUrl = OparlUrl("https://oparl-demo.example.org/oparl/v1.1/body/456")
+                participantUrls.add("https://oparl-demo.example.org/oparl/v1.1/person/29")
+            }
 
         val error = assertFailsWith<UnresolvedRelationException> { resolve(raw) }
 
@@ -241,9 +249,10 @@ class MeetingResolverPersistenceTest(
 
     @Test
     fun `does not invent a body when the referenced body has not been crawled`() {
-        val raw = rawMeeting().apply {
-            bodyUrl = OparlUrl("https://oparl-demo.example.org/oparl/v1.1/body/not-crawled")
-        }
+        val raw =
+            rawMeeting().apply {
+                bodyUrl = OparlUrl("https://oparl-demo.example.org/oparl/v1.1/body/not-crawled")
+            }
 
         val error = assertFailsWith<UnresolvedRelationException> { resolve(raw) }
 
@@ -251,15 +260,17 @@ class MeetingResolverPersistenceTest(
         assertNull(meetingRepository.findByResource(raw.resource))
     }
 
-    private fun rawMeeting(): RawMeeting = rawMeetingRepository
-        .findById(UUID.fromString("10000000-0000-4000-8000-000000000007"))
-        .orElseThrow()
+    private fun rawMeeting(): RawMeeting =
+        rawMeetingRepository
+            .findById(UUID.fromString("10000000-0000-4000-8000-000000000007"))
+            .orElseThrow()
 
     private fun resolve(raw: RawMeeting): ResolveTarget {
         val candidate = ResolveTarget.create(raw)
-        val target = targetRepository.save(
-            (targetRepository.findByRawEntityIdAndEntityType(raw.id, candidate.entityType) ?: candidate).enqueue(),
-        )
+        val target =
+            targetRepository.save(
+                (targetRepository.findByRawEntityIdAndEntityType(raw.id, candidate.entityType) ?: candidate).enqueue(),
+            )
         resolver.run(target.id)
         return target
     }

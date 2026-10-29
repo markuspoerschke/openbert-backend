@@ -6,6 +6,8 @@ import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 
 interface OparlSearchRepository {
-    fun search(searchCriteria: SearchCriteria, pageable: Pageable): Page<OparlSearchReference>
+    fun search(
+        searchCriteria: SearchCriteria,
+        pageable: Pageable,
+    ): Page<OparlSearchReference>
 }
-

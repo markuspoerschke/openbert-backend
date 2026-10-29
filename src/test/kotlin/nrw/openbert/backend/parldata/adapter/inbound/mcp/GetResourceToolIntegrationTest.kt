@@ -31,10 +31,11 @@ class GetResourceToolIntegrationTest(
             ServletRequestAttributes(MockHttpServletRequest()),
         )
 
-        val result = tool.getResource(
-            "https://example.org/oparl/v1.1/body/903c26aa-dc8f-4d34-afd6-afdc5040dbd3" +
-                "/person/5e4cb965-6c76-4b31-a6ce-e8b26e68fb8b",
-        )
+        val result =
+            tool.getResource(
+                "https://example.org/oparl/v1.1/body/903c26aa-dc8f-4d34-afd6-afdc5040dbd3" +
+                    "/person/5e4cb965-6c76-4b31-a6ce-e8b26e68fb8b",
+            )
 
         assertTrue(result is OparlPersonDto)
         val person = result as OparlPersonDto

@@ -28,28 +28,32 @@ class ResolveTarget(
     var scheduledAt: Instant? = null,
     var jobId: UUID? = null,
 ) {
-    fun enqueue() = apply {
-        referenceCount++
-        modifiedAt = Instant.now()
-    }
+    fun enqueue() =
+        apply {
+            referenceCount++
+            modifiedAt = Instant.now()
+        }
 
-    fun markAsScheduled(jobId: UUID) = apply {
-        scheduledAt = Instant.now()
-        this.jobId = jobId
-    }
+    fun markAsScheduled(jobId: UUID) =
+        apply {
+            scheduledAt = Instant.now()
+            this.jobId = jobId
+        }
 
-    fun markAsResolved() = apply {
-        modifiedAt = Instant.now()
-        lastResolvedAt = modifiedAt
-        referenceCount = 0
-        scheduledAt = null
-        jobId = null
-    }
+    fun markAsResolved() =
+        apply {
+            modifiedAt = Instant.now()
+            lastResolvedAt = modifiedAt
+            referenceCount = 0
+            scheduledAt = null
+            jobId = null
+        }
 
     companion object {
-        fun create(entity: AbstractOparlEntity) = ResolveTarget(
-            rawEntityId = entity.id,
-            entityType = entity.getType(),
-        )
+        fun create(entity: AbstractOparlEntity) =
+            ResolveTarget(
+                rawEntityId = entity.id,
+                entityType = entity.getType(),
+            )
     }
 }

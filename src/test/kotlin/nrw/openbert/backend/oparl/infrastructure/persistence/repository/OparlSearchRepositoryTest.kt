@@ -1,9 +1,9 @@
 package nrw.openbert.backend.oparl.infrastructure.persistence.repository
 
 import nrw.openbert.backend.TestcontainersConfiguration
-import nrw.openbert.backend.parldata.domain.enums.OparlType
 import nrw.openbert.backend.parldata.adapter.outbound.persistence.repository.JpaOparlSearchRepository
 import nrw.openbert.backend.parldata.application.port.model.SearchCriteria
+import nrw.openbert.backend.parldata.domain.enums.OparlType
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -24,22 +24,23 @@ class OparlSearchRepositoryTest(
     @Autowired private val jdbcTemplate: NamedParameterJdbcTemplate,
 ) {
     companion object {
-        val SEARCHABLE_TYPES = listOf(
-            OparlType.AGENDA_ITEM,
-            OparlType.BODY,
-            OparlType.CONSULTATION,
-            OparlType.FILE,
-            OparlType.LEGISLATIVE_TERM,
-            OparlType.LOCATION,
-            OparlType.MEETING,
-            OparlType.MEMBERSHIP,
-            OparlType.ORGANIZATION,
-            OparlType.PAPER,
-            OparlType.PERSON,
-        )
+        val SEARCHABLE_TYPES =
+            listOf(
+                OparlType.AGENDA_ITEM,
+                OparlType.BODY,
+                OparlType.CONSULTATION,
+                OparlType.FILE,
+                OparlType.LEGISLATIVE_TERM,
+                OparlType.LOCATION,
+                OparlType.MEETING,
+                OparlType.MEMBERSHIP,
+                OparlType.ORGANIZATION,
+                OparlType.PAPER,
+                OparlType.PERSON,
+            )
     }
 
-    private val page = PageRequest.of (0, 100)
+    private val page = PageRequest.of(0, 100)
 
     private fun search(
         term: String,
@@ -73,7 +74,7 @@ class OparlSearchRepositoryTest(
                 UPDATE oparl_resolved_file
                    SET text = 'Revised bicycle network', keyword = ARRAY['cycleways']
                  WHERE id = '22222222-2222-4222-a222-222222222222'
-            """
+            """,
         )
 
         assertEquals(0, search("public transport").totalElements)
@@ -81,7 +82,7 @@ class OparlSearchRepositoryTest(
         assertEquals(1, search("cycleways").totalElements)
 
         jdbcTemplate.jdbcTemplate.update(
-            "UPDATE oparl_resolved_file SET keyword = '{}' WHERE id = '22222222-2222-4222-a222-222222222222'"
+            "UPDATE oparl_resolved_file SET keyword = '{}' WHERE id = '22222222-2222-4222-a222-222222222222'",
         )
         assertEquals(0, search("cycleways").totalElements)
     }
@@ -89,12 +90,12 @@ class OparlSearchRepositoryTest(
     @Test
     fun `restoring and removing a tombstone updates search visibility`() {
         jdbcTemplate.jdbcTemplate.update(
-            "UPDATE oparl_resolved_file SET deleted = false WHERE id = '66666666-6666-4666-a666-666666666666'"
+            "UPDATE oparl_resolved_file SET deleted = false WHERE id = '66666666-6666-4666-a666-666666666666'",
         )
         assertEquals(2, search("public transport").totalElements)
 
         jdbcTemplate.jdbcTemplate.update(
-            "DELETE FROM oparl_resolved_file WHERE id = '66666666-6666-4666-a666-666666666666'"
+            "DELETE FROM oparl_resolved_file WHERE id = '66666666-6666-4666-a666-666666666666'",
         )
         assertEquals(1, search("public transport").totalElements)
     }
@@ -120,10 +121,11 @@ class OparlSearchRepositoryTest(
 
     @Test
     fun `filters search results by type when a type list is provided`() {
-        val filteredResult = search(
-            term = "oparl-demo.example.org",
-            types = listOf(OparlType.BODY, OparlType.FILE),
-        )
+        val filteredResult =
+            search(
+                term = "oparl-demo.example.org",
+                types = listOf(OparlType.BODY, OparlType.FILE),
+            )
 
         assertTrue(filteredResult.content.isNotEmpty())
         assertTrue(filteredResult.content.all { it.entityType == OparlType.BODY || it.entityType == OparlType.FILE })
@@ -143,19 +145,22 @@ class OparlSearchRepositoryTest(
     fun `both page and count queries can use trigram indexes for every type`() {
         // Tiny fixtures normally favor sequential scans. Disable them locally to verify index eligibility.
         jdbcTemplate.jdbcTemplate.execute("SET LOCAL enable_seqscan = off")
-        val parameters = mapOf(
-            "pattern" to "%not-present%",
-            "bodies" to "",
-            "types" to OparlType.entries.joinToString(",") { it.name },
-            "bodyFilterDisabled" to true,
-            "typeFilterDisabled" to false,
-            "limit" to 20,
-            "offset" to 0,
-        )
+        val parameters =
+            mapOf(
+                "pattern" to "%not-present%",
+                "bodies" to "",
+                "types" to OparlType.entries.joinToString(",") { it.name },
+                "bodyFilterDisabled" to true,
+                "typeFilterDisabled" to false,
+                "limit" to 20,
+                "offset" to 0,
+            )
 
         listOf(JpaOparlSearchRepository.SEARCH_QUERY, JpaOparlSearchRepository.COUNT_QUERY).forEach { query ->
-            val plan = jdbcTemplate.queryForList("EXPLAIN $query", parameters, String::class.java)
-                .joinToString("\n")
+            val plan =
+                jdbcTemplate
+                    .queryForList("EXPLAIN $query", parameters, String::class.java)
+                    .joinToString("\n")
             SEARCHABLE_TYPES.forEach { type ->
                 val index = "oparl_resolved_${type.name.lowercase(Locale.ROOT)}_search_trgm_idx"
                 assertTrue(plan.contains(index), "Expected $index in query plan:\n$plan")

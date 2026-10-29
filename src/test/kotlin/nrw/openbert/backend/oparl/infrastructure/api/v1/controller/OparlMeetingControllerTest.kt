@@ -27,7 +27,8 @@ class OparlMeetingControllerTest(
 
     @Test
     fun `lists resolved meetings belonging to a body`() {
-        mockMvc.get("$bodyUrl/meeting")
+        mockMvc
+            .get("$bodyUrl/meeting")
             .andExpect {
                 status { isOk() }
                 jsonPath("$.id") { value("$bodyUrl/meeting?page=1") }
@@ -70,7 +71,8 @@ class OparlMeetingControllerTest(
 
     @Test
     fun `paginates meetings and returns empty page when out of range`() {
-        mockMvc.get("$bodyUrl/meeting?page=2")
+        mockMvc
+            .get("$bodyUrl/meeting?page=2")
             .andExpect {
                 status { isOk() }
                 jsonPath("$.id") { value("$bodyUrl/meeting?page=2") }
@@ -89,12 +91,14 @@ class OparlMeetingControllerTest(
 
     @Test
     fun `returns bad request when page number is less than 1`() {
-        mockMvc.get("$bodyUrl/meeting?page=0")
+        mockMvc
+            .get("$bodyUrl/meeting?page=0")
             .andExpect {
                 status { isBadRequest() }
             }
 
-        mockMvc.get("$bodyUrl/meeting?page=-1")
+        mockMvc
+            .get("$bodyUrl/meeting?page=-1")
             .andExpect {
                 status { isBadRequest() }
             }
@@ -102,7 +106,8 @@ class OparlMeetingControllerTest(
 
     @Test
     fun `returns a single resolved meeting`() {
-        mockMvc.get(meetingUrl)
+        mockMvc
+            .get(meetingUrl)
             .andExpect {
                 status { isOk() }
                 jsonPath("$.id") { value(meetingUrl) }
@@ -121,7 +126,8 @@ class OparlMeetingControllerTest(
 
     @Test
     fun `returns not found for an unknown meeting`() {
-        mockMvc.get("$bodyUrl/meeting/00000000-0000-0000-0000-000000000000")
+        mockMvc
+            .get("$bodyUrl/meeting/00000000-0000-0000-0000-000000000000")
             .andExpect {
                 status { isNotFound() }
             }
@@ -129,35 +135,35 @@ class OparlMeetingControllerTest(
 
     @Test
     fun `returns not found for a meeting requested through an unknown body`() {
-        mockMvc.get(
-            "https://example.org:8443/oparl/v1.1/body/" +
-                "00000000-0000-0000-0000-000000000000/meeting/" +
-                "1dd8b01e-a39c-4b40-9f24-46f7a42a3795"
-        )
-            .andExpect {
+        mockMvc
+            .get(
+                "https://example.org:8443/oparl/v1.1/body/" +
+                    "00000000-0000-0000-0000-000000000000/meeting/" +
+                    "1dd8b01e-a39c-4b40-9f24-46f7a42a3795",
+            ).andExpect {
                 status { isNotFound() }
             }
     }
 
     @Test
     fun `returns not found for a meeting belonging to another body`() {
-        mockMvc.get(
-            "https://example.org:8443/oparl/v1.1/body/" +
-                "ffffffff-ffff-4fff-afff-ffffffffffff/meeting/" +
-                "1dd8b01e-a39c-4b40-9f24-46f7a42a3795"
-        )
-            .andExpect {
+        mockMvc
+            .get(
+                "https://example.org:8443/oparl/v1.1/body/" +
+                    "ffffffff-ffff-4fff-afff-ffffffffffff/meeting/" +
+                    "1dd8b01e-a39c-4b40-9f24-46f7a42a3795",
+            ).andExpect {
                 status { isNotFound() }
             }
     }
 
     @Test
     fun `returns not found when listing meetings for an unknown body`() {
-        mockMvc.get(
-            "https://example.org:8443/oparl/v1.1/body/" +
-                "00000000-0000-0000-0000-000000000000/meeting"
-        )
-            .andExpect {
+        mockMvc
+            .get(
+                "https://example.org:8443/oparl/v1.1/body/" +
+                    "00000000-0000-0000-0000-000000000000/meeting",
+            ).andExpect {
                 status { isNotFound() }
             }
     }

@@ -1,12 +1,12 @@
 package nrw.openbert.backend.parldata.adapter.inbound.crawler.processor
 
-import nrw.openbert.backend.parldata.application.crawl.CrawlTargetEnqueuer
-import nrw.openbert.backend.parldata.domain.enums.OparlType
 import nrw.openbert.backend.parldata.adapter.outbound.client.oparl.dto.OparlLocationDto
+import nrw.openbert.backend.parldata.application.crawl.CrawlTargetEnqueuer
 import nrw.openbert.backend.parldata.application.enrich.EnrichTargetEnqueuer
+import nrw.openbert.backend.parldata.application.port.outbound.repository.RawLocationRepository
 import nrw.openbert.backend.parldata.domain.entity.embeddable.OparlResource
 import nrw.openbert.backend.parldata.domain.entity.raw.RawLocation
-import nrw.openbert.backend.parldata.application.port.outbound.repository.RawLocationRepository
+import nrw.openbert.backend.parldata.domain.enums.OparlType
 import org.springframework.stereotype.Service
 
 @Service
@@ -21,7 +21,10 @@ class LocationProcessor(
 
     override fun saveEntity(entity: RawLocation) = rawLocationRepository.save(entity)
 
-    override fun processRelationships(resource: OparlResource, dto: OparlLocationDto) {
+    override fun processRelationships(
+        resource: OparlResource,
+        dto: OparlLocationDto,
+    ) {
         enqueueUrls(resource, OparlType.BODY, dto.bodies.orEmpty())
         enqueueUrls(resource, OparlType.ORGANIZATION, dto.organizations.orEmpty())
         enqueueUrls(resource, OparlType.PERSON, dto.persons.orEmpty())
@@ -29,7 +32,10 @@ class LocationProcessor(
         enqueueUrls(resource, OparlType.PAPER, dto.papers.orEmpty())
     }
 
-    override fun updateEntity(entity: RawLocation, dto: OparlLocationDto) {
+    override fun updateEntity(
+        entity: RawLocation,
+        dto: OparlLocationDto,
+    ) {
         entity.bodyUrls = dto.bodies.orEmpty().toMutableList()
         entity.organizationUrls = dto.organizations.orEmpty().toMutableList()
         entity.personUrls = dto.persons.orEmpty().toMutableList()

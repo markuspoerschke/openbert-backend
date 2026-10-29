@@ -21,10 +21,11 @@ import java.util.UUID
 
 @Tag(
     name = "Oparl Legislative Term",
-    externalDocs = ExternalDocumentation(
-        "Oparl Specs",
-        "https://oparl.org/spezifikation/online-ansicht/#entity-legislativeterm",
-    ),
+    externalDocs =
+        ExternalDocumentation(
+            "Oparl Specs",
+            "https://oparl.org/spezifikation/online-ansicht/#entity-legislativeterm",
+        ),
 )
 @RestController
 class OparlLegislativeTermController(
@@ -44,20 +45,22 @@ class OparlLegislativeTermController(
             return ResponseEntity.notFound().build()
         }
 
-        val legislativeTerms = resolvedLegislativeTermRepository
-            .findAllByBodyIdOrderById(bodyId, pagination.toPageable())
-            .map(legislativeTermMapper::toDto)
+        val legislativeTerms =
+            resolvedLegislativeTermRepository
+                .findAllByBodyIdOrderById(bodyId, pagination.toPageable())
+                .map(legislativeTermMapper::toDto)
 
         return ResponseEntity.ok(
             OparlListDto(
                 id = urlGenerator.legislativeTerm.list(bodyId, pagination.page),
                 data = legislativeTerms.toList(),
                 pagination = listPaginationMapper.toDto(legislativeTerms),
-                links = listLinksMapper.toDto(
-                    legislativeTerms,
-                    { page -> urlGenerator.legislativeTerm.list(bodyId, page) }
-                ),
-            )
+                links =
+                    listLinksMapper.toDto(
+                        legislativeTerms,
+                        { page -> urlGenerator.legislativeTerm.list(bodyId, page) },
+                    ),
+            ),
         )
     }
 
@@ -66,8 +69,9 @@ class OparlLegislativeTermController(
         @PathVariable bodyId: UUID,
         @PathVariable legislativeTermId: UUID,
     ): ResponseEntity<OparlLegislativeTermDto> {
-        val legislativeTerm = resolvedLegislativeTermRepository
-            .findByIdAndBodyId(legislativeTermId, bodyId)
+        val legislativeTerm =
+            resolvedLegislativeTermRepository
+                .findByIdAndBodyId(legislativeTermId, bodyId)
 
         if (!legislativeTerm.isPresent) {
             return ResponseEntity.notFound().build()

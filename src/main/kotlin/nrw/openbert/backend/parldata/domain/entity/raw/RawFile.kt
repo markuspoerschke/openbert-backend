@@ -9,7 +9,9 @@ import nrw.openbert.backend.parldata.domain.entity.embeddable.OparlResource
 
 @Entity(name = "oparl_raw_file")
 @Table(uniqueConstraints = [UniqueConstraint(columnNames = ["system_id", "url"])])
-class RawFile(resource: OparlResource) : AbstractFile(resource) {
+class RawFile(
+    resource: OparlResource,
+) : AbstractFile(resource) {
     @Column(name = "meeting_urls", columnDefinition = "text[]")
     var meetingUrls: MutableList<String> = mutableListOf()
 

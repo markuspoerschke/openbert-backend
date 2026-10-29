@@ -19,7 +19,8 @@ class OparlLegislativeTermControllerTest(
 
     @Test
     fun `lists resolved legislative terms belonging to a body`() {
-        mockMvc.get("$bodyUrl/legislativeterm")
+        mockMvc
+            .get("$bodyUrl/legislativeterm")
             .andExpect {
                 status { isOk() }
                 jsonPath("$.id") { value("$bodyUrl/legislativeterm?page=1") }
@@ -48,7 +49,8 @@ class OparlLegislativeTermControllerTest(
 
     @Test
     fun `paginates legislative terms and returns empty page when out of range`() {
-        mockMvc.get("$bodyUrl/legislativeterm?page=2")
+        mockMvc
+            .get("$bodyUrl/legislativeterm?page=2")
             .andExpect {
                 status { isOk() }
                 jsonPath("$.id") { value("$bodyUrl/legislativeterm?page=2") }
@@ -67,12 +69,14 @@ class OparlLegislativeTermControllerTest(
 
     @Test
     fun `returns bad request when page number is less than 1`() {
-        mockMvc.get("$bodyUrl/legislativeterm?page=0")
+        mockMvc
+            .get("$bodyUrl/legislativeterm?page=0")
             .andExpect {
                 status { isBadRequest() }
             }
 
-        mockMvc.get("$bodyUrl/legislativeterm?page=-1")
+        mockMvc
+            .get("$bodyUrl/legislativeterm?page=-1")
             .andExpect {
                 status { isBadRequest() }
             }
@@ -80,7 +84,8 @@ class OparlLegislativeTermControllerTest(
 
     @Test
     fun `returns a single resolved legislative term`() {
-        mockMvc.get("$bodyUrl/legislativeterm/20ae1f2f-991a-4ea1-a546-27869c8c542a")
+        mockMvc
+            .get("$bodyUrl/legislativeterm/20ae1f2f-991a-4ea1-a546-27869c8c542a")
             .andExpect {
                 status { isOk() }
                 jsonPath("$.id") { value("$bodyUrl/legislativeterm/20ae1f2f-991a-4ea1-a546-27869c8c542a") }
@@ -92,7 +97,8 @@ class OparlLegislativeTermControllerTest(
 
     @Test
     fun `returns not found for an unknown legislative term`() {
-        mockMvc.get("$bodyUrl/legislativeterm/00000000-0000-0000-0000-000000000000")
+        mockMvc
+            .get("$bodyUrl/legislativeterm/00000000-0000-0000-0000-000000000000")
             .andExpect {
                 status { isNotFound() }
             }
@@ -100,35 +106,35 @@ class OparlLegislativeTermControllerTest(
 
     @Test
     fun `returns not found for a legislative term requested through an unknown body`() {
-        mockMvc.get(
-            "https://example.org:8443/oparl/v1.1/body/" +
-                "00000000-0000-0000-0000-000000000000/legislativeterm/" +
-                "20ae1f2f-991a-4ea1-a546-27869c8c542a"
-        )
-            .andExpect {
+        mockMvc
+            .get(
+                "https://example.org:8443/oparl/v1.1/body/" +
+                    "00000000-0000-0000-0000-000000000000/legislativeterm/" +
+                    "20ae1f2f-991a-4ea1-a546-27869c8c542a",
+            ).andExpect {
                 status { isNotFound() }
             }
     }
 
     @Test
     fun `returns not found for a legislative term belonging to another body`() {
-        mockMvc.get(
-            "https://example.org:8443/oparl/v1.1/body/" +
-                "ffffffff-ffff-4fff-afff-ffffffffffff/legislativeterm/" +
-                "20ae1f2f-991a-4ea1-a546-27869c8c542a"
-        )
-            .andExpect {
+        mockMvc
+            .get(
+                "https://example.org:8443/oparl/v1.1/body/" +
+                    "ffffffff-ffff-4fff-afff-ffffffffffff/legislativeterm/" +
+                    "20ae1f2f-991a-4ea1-a546-27869c8c542a",
+            ).andExpect {
                 status { isNotFound() }
             }
     }
 
     @Test
     fun `returns not found when listing legislative terms for an unknown body`() {
-        mockMvc.get(
-            "https://example.org:8443/oparl/v1.1/body/" +
-                "00000000-0000-0000-0000-000000000000/legislativeterm"
-        )
-            .andExpect {
+        mockMvc
+            .get(
+                "https://example.org:8443/oparl/v1.1/body/" +
+                    "00000000-0000-0000-0000-000000000000/legislativeterm",
+            ).andExpect {
                 status { isNotFound() }
             }
     }

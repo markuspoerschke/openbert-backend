@@ -18,10 +18,8 @@ class SearchTool(
     fun search(
         @McpToolParam(required = false, description = "The search term")
         term: String? = null,
-        
         @McpToolParam(required = false, description = "List of body IDs to filter by")
         bodies: List<String>? = null,
-        
         @McpToolParam(required = false, description = "List of OParl types to filter by (e.g., PERSON, ORGANIZATION)")
         types: List<String>? = null,
     ) = searchService
@@ -29,13 +27,13 @@ class SearchTool(
             SearchCriteria(
                 term = term?.trim(),
                 bodies = bodies ?: emptyList(),
-                types = types?.mapNotNull { typeString ->
-                    OparlType.entries.find { it.name == typeString.uppercase() }
-                } ?: OparlType.entries.toList()
+                types =
+                    types?.mapNotNull { typeString ->
+                        OparlType.entries.find { it.name == typeString.uppercase() }
+                    } ?: OparlType.entries.toList(),
             ),
-            PageRequest.of(0, PAGE_SIZE)
-        )
-        .map(mapper::toDto)
+            PageRequest.of(0, PAGE_SIZE),
+        ).map(mapper::toDto)
         .toList()
 
     private companion object {

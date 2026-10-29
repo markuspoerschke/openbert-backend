@@ -7,7 +7,9 @@ import nrw.openbert.backend.parldata.domain.enums.OparlType
 import java.util.Date
 
 @MappedSuperclass
-abstract class AbstractPaper(resource: OparlResource) : AbstractOparlEntity(resource) {
+abstract class AbstractPaper(
+    resource: OparlResource,
+) : AbstractOparlEntity(resource) {
     @Column(length = 500)
     var name: String? = null
 

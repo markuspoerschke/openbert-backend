@@ -4,17 +4,22 @@ import nrw.openbert.backend.parldata.adapter.inbound.api.dto.OparlPaginationRequ
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder
 import java.util.UUID
 
-class OparlEntityUrlGenerator(private val controller: Class<*>) {
-    fun list(bodyId: UUID, page: Int = 1): String {
-        return paginatedList(controller, "list", page, bodyId)
-    }
+class OparlEntityUrlGenerator(
+    private val controller: Class<*>,
+) {
+    fun list(
+        bodyId: UUID,
+        page: Int = 1,
+    ): String = paginatedList(controller, "list", page, bodyId)
 
-    fun get(bodyId: UUID, entityId: UUID): String {
-        return MvcUriComponentsBuilder
+    fun get(
+        bodyId: UUID,
+        entityId: UUID,
+    ): String =
+        MvcUriComponentsBuilder
             .fromMethodName(controller, "get", bodyId, entityId)
             .build()
             .toString()
-    }
 }
 
 /**
@@ -26,10 +31,9 @@ internal fun paginatedList(
     methodName: String,
     page: Int,
     vararg pathVariables: Any,
-): String {
-    return MvcUriComponentsBuilder
+): String =
+    MvcUriComponentsBuilder
         .fromMethodName(controller, methodName, *pathVariables, OparlPaginationRequestDto(page))
         .queryParam("page", page)
         .build()
         .toString()
-}
