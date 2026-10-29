@@ -17,7 +17,13 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder
 
-@Tag(name = "Search", externalDocs = ExternalDocumentation("Oparl Specs", "https://oparl.org/spezifikation/online-ansicht/"))
+@Tag(
+    name = "Search",
+    externalDocs = ExternalDocumentation(
+        "Oparl Specs",
+        "https://oparl.org/spezifikation/online-ansicht/",
+    ),
+)
 @RestController
 class OparlSearchController(
     private val searchService: OparlEntitySearchServiceInterface,

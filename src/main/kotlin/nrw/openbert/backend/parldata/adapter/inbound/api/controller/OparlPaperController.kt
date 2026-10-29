@@ -19,7 +19,13 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RestController
 import java.util.*
 
-@Tag(name = "Oparl Paper", externalDocs = ExternalDocumentation("Oparl Specs", "https://oparl.org/spezifikation/online-ansicht/#entity-paper"))
+@Tag(
+    name = "Oparl Paper",
+    externalDocs = ExternalDocumentation(
+        "Oparl Specs",
+        "https://oparl.org/spezifikation/online-ansicht/#entity-paper",
+    ),
+)
 @RestController
 class OparlPaperController(
     private val urlGenerator: OparlUrlGenerator,

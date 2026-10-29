@@ -9,7 +9,13 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RestController
 
-@Tag(name = "Oparl System", externalDocs = ExternalDocumentation("Oparl Specs", "https://oparl.org/spezifikation/online-ansicht/#entity-system"))
+@Tag(
+    name = "Oparl System",
+    externalDocs = ExternalDocumentation(
+        "Oparl Specs",
+        "https://oparl.org/spezifikation/online-ansicht/#entity-system",
+    ),
+)
 @RestController
 class OparlSystemController(
     private val urlGenerator: OparlUrlGenerator,

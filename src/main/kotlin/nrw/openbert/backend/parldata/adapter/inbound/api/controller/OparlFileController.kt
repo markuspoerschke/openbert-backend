@@ -29,7 +29,13 @@ import java.io.IOException
 import java.nio.charset.StandardCharsets
 import java.util.UUID
 
-@Tag(name = "Oparl File", externalDocs = ExternalDocumentation("Oparl Specs", "https://oparl.org/spezifikation/online-ansicht/#entity-file"))
+@Tag(
+    name = "Oparl File",
+    externalDocs = ExternalDocumentation(
+        "Oparl Specs",
+        "https://oparl.org/spezifikation/online-ansicht/#entity-file",
+    ),
+)
 @RestController
 class OparlFileController(
     private val urlGenerator: OparlUrlGenerator,
