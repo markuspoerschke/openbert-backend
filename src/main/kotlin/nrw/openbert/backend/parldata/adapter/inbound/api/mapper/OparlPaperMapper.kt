@@ -13,8 +13,8 @@ class OparlPaperMapper(
     private val urlGenerator: OparlUrlGenerator,
     private val consultationMapper: OparlConsultationMapper,
 ) {
-    fun toDto(paper: ResolvedPaper): OparlPaperDto {
-        return OparlPaperDto(
+    fun toDto(paper: ResolvedPaper): OparlPaperDto =
+        OparlPaperDto(
             id = urlGenerator.paper.get(paper.body.id, paper.id),
             type = paper.getType().url,
             body = urlGenerator.body(paper.body.id),
@@ -22,9 +22,10 @@ class OparlPaperMapper(
             reference = paper.reference,
             date = paper.date?.toOparlDate(),
             paperType = paper.paperType,
-            consultation = paper.consultations
-                .map { consultationMapper.toDto(it, includePaper = false) }
-                .takeIf { it.isNotEmpty() },
+            consultation =
+                paper.consultations
+                    .map { consultationMapper.toDto(it, includePaper = false) }
+                    .takeIf { it.isNotEmpty() },
             license = paper.license,
             keyword = paper.keyword.toList().takeIf { it.isNotEmpty() },
             created = paper.created.toString(),
@@ -32,9 +33,6 @@ class OparlPaperMapper(
             web = paper.web,
             deleted = paper.deleted,
         )
-    }
 
-    private fun Date.toOparlDate(): String {
-        return toInstant().atZone(ZoneId.systemDefault()).toLocalDate().toString()
-    }
+    private fun Date.toOparlDate(): String = toInstant().atZone(ZoneId.systemDefault()).toLocalDate().toString()
 }

@@ -18,7 +18,6 @@ class EnrichedLocation(
     @MapsId
     @JoinColumn(name = "id", nullable = false, updatable = false)
     val raw: RawLocation,
-
     @Id
     @Column(nullable = false, updatable = false)
     val id: UUID? = null,
@@ -76,24 +75,27 @@ class EnrichedLocation(
         modified = Instant.now()
     }
 
-    fun toLocationOverrides(): LocationOverrides = LocationOverrides(
-        overrideStreetAddress = overrideStreetAddress,
-        streetAddress = streetAddress,
-        overridePostalCode = overridePostalCode,
-        postalCode = postalCode,
-        overrideRoom = overrideRoom,
-        room = room,
-        overrideDescription = overrideDescription,
-        description = description,
-        overrideLocality = overrideLocality,
-        locality = locality,
-    )
+    fun toLocationOverrides(): LocationOverrides =
+        LocationOverrides(
+            overrideStreetAddress = overrideStreetAddress,
+            streetAddress = streetAddress,
+            overridePostalCode = overridePostalCode,
+            postalCode = postalCode,
+            overrideRoom = overrideRoom,
+            room = room,
+            overrideDescription = overrideDescription,
+            description = description,
+            overrideLocality = overrideLocality,
+            locality = locality,
+        )
 
     companion object {
-        fun fromRaw(raw: RawLocation, overrides: LocationOverrides = LocationOverrides()): EnrichedLocation {
-            return EnrichedLocation(raw = raw).apply {
+        fun fromRaw(
+            raw: RawLocation,
+            overrides: LocationOverrides = LocationOverrides(),
+        ): EnrichedLocation =
+            EnrichedLocation(raw = raw).apply {
                 applyValuesFrom(overrides)
             }
-        }
     }
 }

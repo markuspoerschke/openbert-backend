@@ -9,10 +9,10 @@ import nrw.openbert.backend.parldata.domain.entity.raw.RawSystem
 
 @Entity(name = "oparl_resolved_system")
 @Table(uniqueConstraints = [UniqueConstraint(columnNames = ["system_id", "url"])])
-class ResolvedSystem(resource: OparlResource) : AbstractSystem(resource) {
+class ResolvedSystem(
+    resource: OparlResource,
+) : AbstractSystem(resource) {
     companion object {
-        fun fromRaw(raw: RawSystem): ResolvedSystem {
-            return ResolvedSystem(raw.resource).apply { applyValuesFrom(raw) }
-        }
+        fun fromRaw(raw: RawSystem): ResolvedSystem = ResolvedSystem(raw.resource).apply { applyValuesFrom(raw) }
     }
 }

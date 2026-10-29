@@ -9,7 +9,9 @@ import nrw.openbert.backend.parldata.domain.entity.embeddable.OparlResource
 
 @Entity(name = "oparl_raw_location")
 @Table(uniqueConstraints = [UniqueConstraint(columnNames = ["system_id", "url"])])
-class RawLocation(resource: OparlResource) : AbstractLocation(resource) {
+class RawLocation(
+    resource: OparlResource,
+) : AbstractLocation(resource) {
     @Column(name = "body_urls", columnDefinition = "text[]")
     var bodyUrls: MutableList<String> = mutableListOf()
 

@@ -6,7 +6,9 @@ import nrw.openbert.backend.parldata.domain.entity.embeddable.OparlResource
 import nrw.openbert.backend.parldata.domain.enums.OparlType
 
 @MappedSuperclass
-abstract class AbstractConsultation(resource: OparlResource) : AbstractOparlEntity(resource) {
+abstract class AbstractConsultation(
+    resource: OparlResource,
+) : AbstractOparlEntity(resource) {
     @Column
     var authoritative: Boolean? = null
 

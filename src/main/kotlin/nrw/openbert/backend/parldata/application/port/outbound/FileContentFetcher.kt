@@ -7,5 +7,8 @@ import java.io.IOException
 interface FileContentFetcher {
     /** The body is only valid during [consume]; the fetcher closes it even if consumption fails. */
     @Throws(IOException::class)
-    fun fetch(url: OparlUrl, consume: (FileContent) -> Unit)
+    fun fetch(
+        url: OparlUrl,
+        consume: (FileContent) -> Unit,
+    )
 }

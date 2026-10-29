@@ -27,7 +27,8 @@ class OparlConsultationControllerTest(
 
     @Test
     fun `lists resolved consultations belonging to a body`() {
-        mockMvc.get("$bodyUrl/consultation")
+        mockMvc
+            .get("$bodyUrl/consultation")
             .andExpect {
                 status { isOk() }
                 jsonPath("$.id") { value("$bodyUrl/consultation?page=1") }
@@ -63,7 +64,8 @@ class OparlConsultationControllerTest(
 
     @Test
     fun `paginates consultations and returns empty page when out of range`() {
-        mockMvc.get("$bodyUrl/consultation?page=2")
+        mockMvc
+            .get("$bodyUrl/consultation?page=2")
             .andExpect {
                 status { isOk() }
                 jsonPath("$.id") { value("$bodyUrl/consultation?page=2") }
@@ -82,12 +84,14 @@ class OparlConsultationControllerTest(
 
     @Test
     fun `returns bad request when page number is less than 1`() {
-        mockMvc.get("$bodyUrl/consultation?page=0")
+        mockMvc
+            .get("$bodyUrl/consultation?page=0")
             .andExpect {
                 status { isBadRequest() }
             }
 
-        mockMvc.get("$bodyUrl/consultation?page=-1")
+        mockMvc
+            .get("$bodyUrl/consultation?page=-1")
             .andExpect {
                 status { isBadRequest() }
             }
@@ -95,7 +99,8 @@ class OparlConsultationControllerTest(
 
     @Test
     fun `returns a single resolved consultation`() {
-        mockMvc.get(consultationUrl)
+        mockMvc
+            .get(consultationUrl)
             .andExpect {
                 status { isOk() }
                 jsonPath("$.id") { value(consultationUrl) }
@@ -110,7 +115,8 @@ class OparlConsultationControllerTest(
 
     @Test
     fun `returns not found for an unknown consultation`() {
-        mockMvc.get("$bodyUrl/consultation/00000000-0000-0000-0000-000000000000")
+        mockMvc
+            .get("$bodyUrl/consultation/00000000-0000-0000-0000-000000000000")
             .andExpect {
                 status { isNotFound() }
             }
@@ -118,35 +124,35 @@ class OparlConsultationControllerTest(
 
     @Test
     fun `returns not found for a consultation requested through an unknown body`() {
-        mockMvc.get(
-            "https://example.org:8443/oparl/v1.1/body/" +
-                "00000000-0000-0000-0000-000000000000/consultation/" +
-                "c92d284d-6899-49c2-9422-70ad7f4f38ea"
-        )
-            .andExpect {
+        mockMvc
+            .get(
+                "https://example.org:8443/oparl/v1.1/body/" +
+                    "00000000-0000-0000-0000-000000000000/consultation/" +
+                    "c92d284d-6899-49c2-9422-70ad7f4f38ea",
+            ).andExpect {
                 status { isNotFound() }
             }
     }
 
     @Test
     fun `returns not found for a consultation belonging to another body`() {
-        mockMvc.get(
-            "https://example.org:8443/oparl/v1.1/body/" +
-                "ffffffff-ffff-4fff-afff-ffffffffffff/consultation/" +
-                "c92d284d-6899-49c2-9422-70ad7f4f38ea"
-        )
-            .andExpect {
+        mockMvc
+            .get(
+                "https://example.org:8443/oparl/v1.1/body/" +
+                    "ffffffff-ffff-4fff-afff-ffffffffffff/consultation/" +
+                    "c92d284d-6899-49c2-9422-70ad7f4f38ea",
+            ).andExpect {
                 status { isNotFound() }
             }
     }
 
     @Test
     fun `returns not found when listing consultations for an unknown body`() {
-        mockMvc.get(
-            "https://example.org:8443/oparl/v1.1/body/" +
-                "00000000-0000-0000-0000-000000000000/consultation"
-        )
-            .andExpect {
+        mockMvc
+            .get(
+                "https://example.org:8443/oparl/v1.1/body/" +
+                    "00000000-0000-0000-0000-000000000000/consultation",
+            ).andExpect {
                 status { isNotFound() }
             }
     }

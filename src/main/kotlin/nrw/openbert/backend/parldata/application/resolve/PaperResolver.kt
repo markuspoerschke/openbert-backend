@@ -17,15 +17,17 @@ class PaperResolver(
     override val entityType = OparlType.PAPER
 
     override fun resolve(rawEntityId: UUID) {
-        val raw = rawRepository.findById(rawEntityId).orElseThrow {
-            IllegalArgumentException("Raw paper with id $rawEntityId does not exist")
-        }
+        val raw =
+            rawRepository.findById(rawEntityId).orElseThrow {
+                IllegalArgumentException("Raw paper with id $rawEntityId does not exist")
+            }
         resolve(raw.resource)
     }
 
     fun resolve(resource: OparlResource): ResolvedPaper {
-        val raw = rawRepository.findByResource(resource)
-            ?: return resolvedRepository.findByResource(resource) ?: throw notCrawled("paper", resource)
+        val raw =
+            rawRepository.findByResource(resource)
+                ?: return resolvedRepository.findByResource(resource) ?: throw notCrawled("paper", resource)
         val body = bodyResolver.resolve(relatedResource(raw.resource, required(raw.bodyUrl, "body", raw.resource)))
         val resolved = resolvedRepository.findByResource(resource) ?: ResolvedPaper.fromRaw(raw, body)
 

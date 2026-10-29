@@ -23,9 +23,10 @@ class MeetingResolver(
     override val entityType = OparlType.MEETING
 
     override fun resolve(rawEntityId: UUID) {
-        val raw = rawRepository.findById(rawEntityId).orElseThrow {
-            IllegalArgumentException("Raw meeting with id $rawEntityId does not exist")
-        }
+        val raw =
+            rawRepository.findById(rawEntityId).orElseThrow {
+                IllegalArgumentException("Raw meeting with id $rawEntityId does not exist")
+            }
         resolve(raw)
     }
 
@@ -40,9 +41,10 @@ class MeetingResolver(
 
     private fun resolve(raw: RawMeeting): ResolvedMeeting {
         val existing = resolvedRepository.findByResource(raw.resource)
-        val organizations = raw.organizationUrls.map { url ->
-            organizationResolver.resolve(relatedResource(raw.resource, OparlUrl(url)))
-        }
+        val organizations =
+            raw.organizationUrls.map { url ->
+                organizationResolver.resolve(relatedResource(raw.resource, OparlUrl(url)))
+            }
         val body = resolveMeetingBody(raw, organizations, existing?.body)
         val resolved = existing ?: ResolvedMeeting(raw.resource, body)
 

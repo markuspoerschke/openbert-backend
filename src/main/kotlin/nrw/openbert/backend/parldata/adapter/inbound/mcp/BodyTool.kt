@@ -12,7 +12,8 @@ class BodyTool(
     val mapper: OparlBodyMapper,
 ) {
     @McpTool(name = "oparl_body_list", description = "List all available bodies in the system")
-    fun listBodies() = repository
-        .findAll(Sort.by(Sort.Direction.DESC, "name"))
-        .map(mapper::toDto)
+    fun listBodies() =
+        repository
+            .findAll(Sort.by(Sort.Direction.DESC, "name"))
+            .map(mapper::toDto)
 }

@@ -11,8 +11,8 @@ class OparlBodyMapper(
     private val urlGenerator: OparlUrlGenerator,
     private val legislativeTermMapper: OparlLegislativeTermMapper,
 ) {
-    fun toDto(body: ResolvedBody): OparlBodyDto {
-        return OparlBodyDto(
+    fun toDto(body: ResolvedBody): OparlBodyDto =
+        OparlBodyDto(
             id = urlGenerator.body(body.id),
             type = body.getType().url,
             name = body.name,
@@ -44,5 +44,4 @@ class OparlBodyMapper(
             web = body.web,
             deleted = body.deleted,
         )
-    }
 }

@@ -1,8 +1,8 @@
 package nrw.openbert.backend.crawl.domain.repository
 
 import nrw.openbert.backend.TestcontainersConfiguration
-import nrw.openbert.backend.parldata.domain.entity.CrawlTarget
 import nrw.openbert.backend.parldata.application.port.outbound.repository.CrawlTargetRepository
+import nrw.openbert.backend.parldata.domain.entity.CrawlTarget
 import nrw.openbert.backend.parldata.domain.valueObject.OparlUrl
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -25,11 +25,13 @@ class CrawlTargetRepositoryTest(
     fun `only returns referenced targets that still need crawling`() {
         val unreferencedTargetId = UUID.fromString("eeeeeeee-eeee-4eee-aeee-eeeeeeeeeeee")
         val unreferencedTarget = repository.findById(unreferencedTargetId).orElseThrow()
-        val referencedTarget = CrawlTarget.create(
-            unreferencedTarget.resource.copy(
-                url = OparlUrl("https://oparl-demo.example.org/oparl/v1.1/person/pending"),
-            ),
-        ).increaseReferenceCounter()
+        val referencedTarget =
+            CrawlTarget
+                .create(
+                    unreferencedTarget.resource.copy(
+                        url = OparlUrl("https://oparl-demo.example.org/oparl/v1.1/person/pending"),
+                    ),
+                ).increaseReferenceCounter()
         repository.saveAndFlush(referencedTarget)
 
         val dueTargetIds = repository.findDue(Instant.now(), limit = 100).map(CrawlTarget::id)
@@ -44,9 +46,11 @@ class CrawlTargetRepositoryTest(
         val personId = UUID.fromString("30000000-0000-4000-8000-000000000002")
         val membershipId = UUID.fromString("30000000-0000-4000-8000-000000000003")
 
-        val dependencyTargets = repository.findDue(Instant.now(), limit = 100)
-            .map(CrawlTarget::id)
-            .filter { it in setOf(organizationId, personId, membershipId) }
+        val dependencyTargets =
+            repository
+                .findDue(Instant.now(), limit = 100)
+                .map(CrawlTarget::id)
+                .filter { it in setOf(organizationId, personId, membershipId) }
 
         assertEquals(listOf(organizationId, personId, membershipId), dependencyTargets)
     }

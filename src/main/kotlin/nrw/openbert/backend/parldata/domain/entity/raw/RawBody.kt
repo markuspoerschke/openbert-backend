@@ -8,4 +8,6 @@ import nrw.openbert.backend.parldata.domain.entity.embeddable.OparlResource
 
 @Entity(name = "oparl_raw_body")
 @Table(uniqueConstraints = [UniqueConstraint(columnNames = ["system_id", "url"])])
-class RawBody(resource: OparlResource) : AbstractBody(resource)
+class RawBody(
+    resource: OparlResource,
+) : AbstractBody(resource)

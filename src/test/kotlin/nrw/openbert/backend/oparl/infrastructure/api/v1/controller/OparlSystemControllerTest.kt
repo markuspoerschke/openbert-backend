@@ -17,7 +17,8 @@ class OparlSystemControllerTest(
 ) {
     @Test
     fun `returns system links based on request host`() {
-        mockMvc.get("https://example.org:8443/oparl/v1.1/system")
+        mockMvc
+            .get("https://example.org:8443/oparl/v1.1/system")
             .andExpect {
                 status { isOk() }
                 jsonPath("$.id") { value("https://example.org:8443/oparl/v1.1/system") }

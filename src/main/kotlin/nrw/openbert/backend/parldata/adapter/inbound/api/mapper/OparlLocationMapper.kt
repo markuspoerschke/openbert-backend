@@ -10,8 +10,8 @@ import org.springframework.stereotype.Component
 class OparlLocationMapper(
     private val urlGenerator: OparlUrlGenerator,
 ) {
-    fun toDto(location: ResolvedLocation): OparlLocationDto {
-        return OparlLocationDto(
+    fun toDto(location: ResolvedLocation): OparlLocationDto =
+        OparlLocationDto(
             id = urlGenerator.location.get(location.body.id, location.id),
             type = location.getType().url,
             description = location.description,
@@ -29,5 +29,4 @@ class OparlLocationMapper(
             web = location.web,
             deleted = location.deleted,
         )
-    }
 }

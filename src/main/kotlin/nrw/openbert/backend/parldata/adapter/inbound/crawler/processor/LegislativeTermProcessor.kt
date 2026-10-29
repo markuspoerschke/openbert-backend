@@ -1,12 +1,12 @@
 package nrw.openbert.backend.parldata.adapter.inbound.crawler.processor
 
-import nrw.openbert.backend.parldata.application.crawl.CrawlTargetEnqueuer
-import nrw.openbert.backend.parldata.domain.enums.OparlType
 import nrw.openbert.backend.parldata.adapter.outbound.client.oparl.dto.OparlLegislativeTermDto
+import nrw.openbert.backend.parldata.application.crawl.CrawlTargetEnqueuer
 import nrw.openbert.backend.parldata.application.enrich.EnrichTargetEnqueuer
+import nrw.openbert.backend.parldata.application.port.outbound.repository.RawLegislativeTermRepository
 import nrw.openbert.backend.parldata.domain.entity.embeddable.OparlResource
 import nrw.openbert.backend.parldata.domain.entity.raw.RawLegislativeTerm
-import nrw.openbert.backend.parldata.application.port.outbound.repository.RawLegislativeTermRepository
+import nrw.openbert.backend.parldata.domain.enums.OparlType
 import org.springframework.stereotype.Service
 
 @Service
@@ -22,11 +22,17 @@ class LegislativeTermProcessor(
 
     override fun saveEntity(entity: RawLegislativeTerm) = rawLegislativeTermRepository.save(entity)
 
-    override fun processRelationships(resource: OparlResource, dto: OparlLegislativeTermDto) {
+    override fun processRelationships(
+        resource: OparlResource,
+        dto: OparlLegislativeTermDto,
+    ) {
         enqueueUrls(resource, OparlType.BODY, dto.body)
     }
 
-    override fun updateEntity(entity: RawLegislativeTerm, dto: OparlLegislativeTermDto) {
+    override fun updateEntity(
+        entity: RawLegislativeTerm,
+        dto: OparlLegislativeTermDto,
+    ) {
         entity.bodyUrl = dto.body?.toOparlUrl()
         entity.name = dto.name
         entity.startDate = dto.startDate?.toOparlDate()

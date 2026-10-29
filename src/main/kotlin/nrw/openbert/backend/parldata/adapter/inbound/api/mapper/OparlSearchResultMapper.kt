@@ -31,36 +31,59 @@ class OparlSearchResultMapper(
     private val fileMapper: OparlFileMapper,
     private val locationMapper: OparlLocationMapper,
 ) {
-    fun toDto(reference: OparlSearchReference): Any {
-        return when (reference.entityType) {
-            OparlType.BODY -> bodyMapper.toDto(find<ResolvedBody>(reference))
+    fun toDto(reference: OparlSearchReference): Any =
+        when (reference.entityType) {
+            OparlType.BODY -> {
+                bodyMapper.toDto(find<ResolvedBody>(reference))
+            }
+
             OparlType.LEGISLATIVE_TERM -> {
                 legislativeTermMapper.toDto(find<ResolvedLegislativeTerm>(reference))
             }
+
             OparlType.ORGANIZATION -> {
                 organizationMapper.toDto(find<ResolvedOrganization>(reference))
             }
-            OparlType.PERSON -> personMapper.toDto(find<ResolvedPerson>(reference))
+
+            OparlType.PERSON -> {
+                personMapper.toDto(find<ResolvedPerson>(reference))
+            }
+
             OparlType.MEMBERSHIP -> {
                 membershipMapper.toDto(find<ResolvedMembership>(reference))
             }
-            OparlType.MEETING -> meetingMapper.toDto(find<ResolvedMeeting>(reference))
+
+            OparlType.MEETING -> {
+                meetingMapper.toDto(find<ResolvedMeeting>(reference))
+            }
+
             OparlType.AGENDA_ITEM -> {
                 agendaItemMapper.toDto(find<ResolvedAgendaItem>(reference))
             }
-            OparlType.PAPER -> paperMapper.toDto(find<ResolvedPaper>(reference))
+
+            OparlType.PAPER -> {
+                paperMapper.toDto(find<ResolvedPaper>(reference))
+            }
+
             OparlType.CONSULTATION -> {
                 consultationMapper.toDto(find<ResolvedConsultation>(reference))
             }
-            OparlType.FILE -> fileMapper.toDto(find<ResolvedFile>(reference))
-            OparlType.LOCATION -> locationMapper.toDto(find<ResolvedLocation>(reference))
-            OparlType.SYSTEM -> NotImplementedError("Mapping of System is unimplemented.")
-        }
-    }
 
-    private inline fun <reified T : Any> find(reference: OparlSearchReference): T {
-        return checkNotNull(entityManager.find(T::class.java, reference.entityId)) {
+            OparlType.FILE -> {
+                fileMapper.toDto(find<ResolvedFile>(reference))
+            }
+
+            OparlType.LOCATION -> {
+                locationMapper.toDto(find<ResolvedLocation>(reference))
+            }
+
+            OparlType.SYSTEM -> {
+                NotImplementedError("Mapping of System is unimplemented.")
+            }
+        }
+
+    private inline fun <reified T : Any> find(reference: OparlSearchReference): T =
+        checkNotNull(entityManager.find(T::class.java, reference.entityId)) {
             "Search result ${reference.entityType}/${reference.entityId} no longer exists"
         }
-    }
 }

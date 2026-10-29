@@ -14,14 +14,14 @@ import nrw.openbert.backend.parldata.domain.entity.raw.RawOrganization
 @Table(uniqueConstraints = [UniqueConstraint(columnNames = ["system_id", "url"])])
 class ResolvedOrganization(
     resource: OparlResource,
-
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "body_id", nullable = false, updatable = false)
     val body: ResolvedBody,
 ) : AbstractOrganization(resource) {
     companion object {
-        fun fromRaw(raw: RawOrganization, body: ResolvedBody): ResolvedOrganization {
-            return ResolvedOrganization(raw.resource, body).apply { applyValuesFrom(raw) }
-        }
+        fun fromRaw(
+            raw: RawOrganization,
+            body: ResolvedBody,
+        ): ResolvedOrganization = ResolvedOrganization(raw.resource, body).apply { applyValuesFrom(raw) }
     }
 }

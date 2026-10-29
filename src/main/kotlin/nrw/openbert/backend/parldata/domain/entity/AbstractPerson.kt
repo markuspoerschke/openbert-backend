@@ -6,7 +6,9 @@ import nrw.openbert.backend.parldata.domain.entity.embeddable.OparlResource
 import nrw.openbert.backend.parldata.domain.enums.OparlType
 
 @MappedSuperclass
-abstract class AbstractPerson(resource: OparlResource) : AbstractOparlEntity(resource) {
+abstract class AbstractPerson(
+    resource: OparlResource,
+) : AbstractOparlEntity(resource) {
     @Column(length = 500)
     var name: String? = null
 

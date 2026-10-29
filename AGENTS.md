@@ -10,6 +10,7 @@
 
 - Build application: `./gradlew build`
 - Test application: `./gradlew test`
+- Format code: `./gradlew ktlintFormat`
 
 ## Principles
 

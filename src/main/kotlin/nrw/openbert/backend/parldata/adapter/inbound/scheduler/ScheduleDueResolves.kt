@@ -25,14 +25,16 @@ class ScheduleDueResolves(
     fun run() {
         logger.info("Running resolve scheduler")
 
-        val targets = resolveTargetRepository.findDue(
-            Instant.now(),
-            resolver.supportedEntityTypes,
-            PageRequest.of(0, BATCH_SIZE),
-        ).onEach { target ->
-            val jobId = jobScheduler.enqueue { resolver.run(target.id) }
-            target.markAsScheduled(jobId.asUUID())
-        }
+        val targets =
+            resolveTargetRepository
+                .findDue(
+                    Instant.now(),
+                    resolver.supportedEntityTypes,
+                    PageRequest.of(0, BATCH_SIZE),
+                ).onEach { target ->
+                    val jobId = jobScheduler.enqueue { resolver.run(target.id) }
+                    target.markAsScheduled(jobId.asUUID())
+                }
 
         resolveTargetRepository.saveAll(targets)
         logger.info("Scheduled {} resolve targets", targets.size)

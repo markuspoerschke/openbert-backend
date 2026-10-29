@@ -63,7 +63,8 @@ class OparlFileControllerTest(
 
     @Test
     fun `lists resolved files belonging to a body`() {
-        mockMvc.get("$bodyUrl/file")
+        mockMvc
+            .get("$bodyUrl/file")
             .andExpect {
                 status { isOk() }
                 jsonPath("$.id") { value("$bodyUrl/file?page=1") }
@@ -81,7 +82,7 @@ class OparlFileControllerTest(
                 jsonPath("$.data[0].sha512Checksum") {
                     value(
                         "3ba3e94660704f7a18c3933a0a50bc401a78ccf39654ce093c7947d2ad252b9" +
-                            "a675ad7a8ce9dcd7a2b61631fda9d8605bb4853a3509886ce348517f103f4f099"
+                            "a675ad7a8ce9dcd7a2b61631fda9d8605bb4853a3509886ce348517f103f4f099",
                     )
                 }
                 jsonPath("$.data[0].text") {
@@ -111,7 +112,8 @@ class OparlFileControllerTest(
 
     @Test
     fun `paginates files and returns empty page when out of range`() {
-        mockMvc.get("$bodyUrl/file?page=2")
+        mockMvc
+            .get("$bodyUrl/file?page=2")
             .andExpect {
                 status { isOk() }
                 jsonPath("$.id") { value("$bodyUrl/file?page=2") }
@@ -130,12 +132,14 @@ class OparlFileControllerTest(
 
     @Test
     fun `returns bad request when page number is less than 1`() {
-        mockMvc.get("$bodyUrl/file?page=0")
+        mockMvc
+            .get("$bodyUrl/file?page=0")
             .andExpect {
                 status { isBadRequest() }
             }
 
-        mockMvc.get("$bodyUrl/file?page=-1")
+        mockMvc
+            .get("$bodyUrl/file?page=-1")
             .andExpect {
                 status { isBadRequest() }
             }
@@ -143,7 +147,8 @@ class OparlFileControllerTest(
 
     @Test
     fun `returns a single resolved file`() {
-        mockMvc.get(fileUrl)
+        mockMvc
+            .get(fileUrl)
             .andExpect {
                 status { isOk() }
                 jsonPath("$.id") { value(fileUrl) }
@@ -159,10 +164,11 @@ class OparlFileControllerTest(
             withSuccess(fileBytes, MediaType.APPLICATION_PDF)
                 .header(HttpHeaders.CONTENT_LENGTH, fileBytes.size.toString())
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=upstream.pdf")
-                .header(HttpHeaders.SET_COOKIE, "upstream-session=secret")
+                .header(HttpHeaders.SET_COOKIE, "upstream-session=secret"),
         )
 
-        mockMvc.get("$fileUrl/access")
+        mockMvc
+            .get("$fileUrl/access")
             .andExpect {
                 status { isOk() }
                 content { contentType("application/pdf") }
@@ -177,10 +183,12 @@ class OparlFileControllerTest(
 
     @Test
     fun `streams original file content as an attachment from download url`() {
-        upstream.server.expect(requestTo(upstreamDownloadUrl))
+        upstream.server
+            .expect(requestTo(upstreamDownloadUrl))
             .andRespond(withSuccess(fileBytes, MediaType.APPLICATION_PDF))
 
-        mockMvc.get("$fileUrl/download")
+        mockMvc
+            .get("$fileUrl/download")
             .andExpect {
                 status { isOk() }
                 content { contentType("application/pdf") }
@@ -203,14 +211,16 @@ class OparlFileControllerTest(
 
     @Test
     fun `preserves gzip encoding and compressed content length for access and download`() {
-        val compressedBytes = ByteArrayOutputStream().apply {
-            GZIPOutputStream(this).use { it.write(fileBytes) }
-        }.toByteArray()
+        val compressedBytes =
+            ByteArrayOutputStream()
+                .apply {
+                    GZIPOutputStream(this).use { it.write(fileBytes) }
+                }.toByteArray()
         for (url in listOf(upstreamAccessUrl, upstreamDownloadUrl)) {
             upstream.server.expect(requestTo(url)).andRespond(
                 withSuccess(compressedBytes, MediaType.APPLICATION_PDF)
                     .header(HttpHeaders.CONTENT_ENCODING, "gzip")
-                    .header(HttpHeaders.CONTENT_LENGTH, compressedBytes.size.toString())
+                    .header(HttpHeaders.CONTENT_LENGTH, compressedBytes.size.toString()),
             )
         }
 
@@ -227,10 +237,12 @@ class OparlFileControllerTest(
 
     @Test
     fun `fetches fresh upstream content for each request`() {
-        upstream.server.expect(requestTo(upstreamAccessUrl))
+        upstream.server
+            .expect(requestTo(upstreamAccessUrl))
             .andRespond(withSuccess(fileBytes, MediaType.APPLICATION_PDF))
         val updatedBytes = fileBytes + byteArrayOf(1, 2, 3)
-        upstream.server.expect(requestTo(upstreamAccessUrl))
+        upstream.server
+            .expect(requestTo(upstreamAccessUrl))
             .andRespond(withSuccess(updatedBytes, MediaType.APPLICATION_PDF))
 
         mockMvc.get("$fileUrl/access").andExpect { content { bytes(fileBytes) } }
@@ -240,7 +252,8 @@ class OparlFileControllerTest(
     @Test
     fun `access falls back to download url when access url is missing`() {
         updateFile("access_url = null")
-        upstream.server.expect(requestTo(upstreamDownloadUrl))
+        upstream.server
+            .expect(requestTo(upstreamDownloadUrl))
             .andRespond(withSuccess(fileBytes, MediaType.APPLICATION_PDF))
 
         mockMvc.get("$fileUrl/access").andExpect {
@@ -253,7 +266,8 @@ class OparlFileControllerTest(
     @Test
     fun `download falls back to access url and a generated filename`() {
         updateFile("download_url = null, file_name = null")
-        upstream.server.expect(requestTo(upstreamAccessUrl))
+        upstream.server
+            .expect(requestTo(upstreamAccessUrl))
             .andRespond(withSuccess(fileBytes, MediaType.APPLICATION_PDF))
 
         mockMvc.get("$fileUrl/download").andExpect {
@@ -270,7 +284,8 @@ class OparlFileControllerTest(
 
     @Test
     fun `uses stored mime type and omits content length when upstream omits headers`() {
-        upstream.server.expect(requestTo(upstreamAccessUrl))
+        upstream.server
+            .expect(requestTo(upstreamAccessUrl))
             .andRespond(withStatus(HttpStatus.OK).body(fileBytes))
 
         mockMvc.get("$fileUrl/access").andExpect {
@@ -284,7 +299,8 @@ class OparlFileControllerTest(
     @Test
     fun `uses binary content type when both upstream and stored mime type are missing`() {
         updateFile("mime_type = null")
-        upstream.server.expect(requestTo(upstreamAccessUrl))
+        upstream.server
+            .expect(requestTo(upstreamAccessUrl))
             .andRespond(withStatus(HttpStatus.OK).body(fileBytes))
 
         mockMvc.get("$fileUrl/access").andExpect {
@@ -305,11 +321,16 @@ class OparlFileControllerTest(
 
     @Test
     fun `preserves upstream not found and gone but maps other failures to bad gateway`() {
-        val statuses = listOf(
-            HttpStatus.NOT_FOUND, HttpStatus.GONE, HttpStatus.FORBIDDEN, HttpStatus.INTERNAL_SERVER_ERROR,
-        )
+        val statuses =
+            listOf(
+                HttpStatus.NOT_FOUND,
+                HttpStatus.GONE,
+                HttpStatus.FORBIDDEN,
+                HttpStatus.INTERNAL_SERVER_ERROR,
+            )
         for (status in statuses) {
-            upstream.server.expect(requestTo(upstreamAccessUrl))
+            upstream.server
+                .expect(requestTo(upstreamAccessUrl))
                 .andRespond(withStatus(status).body("Upstream error details"))
         }
 
@@ -324,7 +345,8 @@ class OparlFileControllerTest(
 
     @Test
     fun `returns bad gateway when upstream cannot be reached`() {
-        upstream.server.expect(requestTo(upstreamDownloadUrl))
+        upstream.server
+            .expect(requestTo(upstreamDownloadUrl))
             .andRespond(withException(IOException("Connection failed")))
 
         mockMvc.get("$fileUrl/download").andExpect {
@@ -359,7 +381,8 @@ class OparlFileControllerTest(
 
     @Test
     fun `returns not found for an unknown file`() {
-        mockMvc.get("$bodyUrl/file/00000000-0000-0000-0000-000000000000")
+        mockMvc
+            .get("$bodyUrl/file/00000000-0000-0000-0000-000000000000")
             .andExpect {
                 status { isNotFound() }
             }
@@ -367,45 +390,45 @@ class OparlFileControllerTest(
 
     @Test
     fun `returns not found for a file requested through an unknown body`() {
-        mockMvc.get(
-            "https://example.org:8443/oparl/v1.1/body/" +
-                "00000000-0000-0000-0000-000000000000/file/" +
-                "3d663f77-05ca-4a14-b788-68ad340ea271"
-        )
-            .andExpect {
+        mockMvc
+            .get(
+                "https://example.org:8443/oparl/v1.1/body/" +
+                    "00000000-0000-0000-0000-000000000000/file/" +
+                    "3d663f77-05ca-4a14-b788-68ad340ea271",
+            ).andExpect {
                 status { isNotFound() }
             }
     }
 
     @Test
     fun `returns not found for a file belonging to another body`() {
-        mockMvc.get(
-            "https://example.org:8443/oparl/v1.1/body/" +
-                "ffffffff-ffff-4fff-afff-ffffffffffff/file/" +
-                "3d663f77-05ca-4a14-b788-68ad340ea271"
-        )
-            .andExpect {
+        mockMvc
+            .get(
+                "https://example.org:8443/oparl/v1.1/body/" +
+                    "ffffffff-ffff-4fff-afff-ffffffffffff/file/" +
+                    "3d663f77-05ca-4a14-b788-68ad340ea271",
+            ).andExpect {
                 status { isNotFound() }
             }
     }
 
     @Test
     fun `returns not found when listing files for an unknown body`() {
-        mockMvc.get(
-            "https://example.org:8443/oparl/v1.1/body/" +
-                "00000000-0000-0000-0000-000000000000/file"
-        )
-            .andExpect {
+        mockMvc
+            .get(
+                "https://example.org:8443/oparl/v1.1/body/" +
+                    "00000000-0000-0000-0000-000000000000/file",
+            ).andExpect {
                 status { isNotFound() }
             }
     }
 
     @Test
     fun `returns not found when accessing an unknown file`() {
-        mockMvc.get(
-            "$bodyUrl/file/00000000-0000-0000-0000-000000000000/access"
-        )
-            .andExpect {
+        mockMvc
+            .get(
+                "$bodyUrl/file/00000000-0000-0000-0000-000000000000/access",
+            ).andExpect {
                 status { isNotFound() }
             }
     }
@@ -413,18 +436,20 @@ class OparlFileControllerTest(
     @Test
     fun `returns not found for binary endpoints through another body or unknown file`() {
         for (endpoint in listOf("access", "download")) {
-            mockMvc.get(
-                "https://example.org:8443/oparl/v1.1/body/ffffffff-ffff-4fff-afff-ffffffffffff/" +
-                    "file/3d663f77-05ca-4a14-b788-68ad340ea271/$endpoint"
-            ).andExpect { status { isNotFound() } }
-            mockMvc.get("$bodyUrl/file/00000000-0000-0000-0000-000000000000/$endpoint")
+            mockMvc
+                .get(
+                    "https://example.org:8443/oparl/v1.1/body/ffffffff-ffff-4fff-afff-ffffffffffff/" +
+                        "file/3d663f77-05ca-4a14-b788-68ad340ea271/$endpoint",
+                ).andExpect { status { isNotFound() } }
+            mockMvc
+                .get("$bodyUrl/file/00000000-0000-0000-0000-000000000000/$endpoint")
                 .andExpect { status { isNotFound() } }
         }
     }
 
     private fun updateFile(assignments: String) {
         jdbcTemplate.update(
-            "UPDATE oparl_resolved_file SET $assignments WHERE id = '3d663f77-05ca-4a14-b788-68ad340ea271'"
+            "UPDATE oparl_resolved_file SET $assignments WHERE id = '3d663f77-05ca-4a14-b788-68ad340ea271'",
         )
     }
 
@@ -440,6 +465,9 @@ class OparlFileControllerTest(
         val server: MockRestServiceServer = MockRestServiceServer.bindTo(builder).build()
         private val client = OparlFileContentClient(builder)
 
-        override fun fetch(url: OparlUrl, consume: (FileContent) -> Unit) = client.fetch(url, consume)
+        override fun fetch(
+            url: OparlUrl,
+            consume: (FileContent) -> Unit,
+        ) = client.fetch(url, consume)
     }
 }

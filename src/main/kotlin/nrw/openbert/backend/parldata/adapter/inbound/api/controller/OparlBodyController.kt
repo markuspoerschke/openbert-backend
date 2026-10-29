@@ -20,10 +20,11 @@ import java.util.UUID
 
 @Tag(
     name = "Oparl Body",
-    externalDocs = ExternalDocumentation(
-        "Oparl Specs",
-        "https://oparl.org/spezifikation/online-ansicht/#entity-body",
-    ),
+    externalDocs =
+        ExternalDocumentation(
+            "Oparl Specs",
+            "https://oparl.org/spezifikation/online-ansicht/#entity-body",
+        ),
 )
 @RestController
 class OparlBodyController(
@@ -37,25 +38,29 @@ class OparlBodyController(
     fun list(
         @ParameterObject @Valid pagination: OparlPaginationRequestDto,
     ): ResponseEntity<OparlListDto<OparlBodyDto>> {
-        val bodies = resolvedBodyRepository
-            .findAllByOrderById(pagination.toPageable())
-            .map(bodyMapper::toDto)
+        val bodies =
+            resolvedBodyRepository
+                .findAllByOrderById(pagination.toPageable())
+                .map(bodyMapper::toDto)
 
         return ResponseEntity.ok(
             OparlListDto(
                 id = urlGenerator.bodyList(pagination.page),
                 data = bodies.toList(),
                 pagination = listPaginationMapper.toDto(bodies),
-                links = listLinksMapper.toDto(
-                    bodies,
-                    { page -> urlGenerator.bodyList(page) }
-                ),
-            )
+                links =
+                    listLinksMapper.toDto(
+                        bodies,
+                        { page -> urlGenerator.bodyList(page) },
+                    ),
+            ),
         )
     }
 
     @GetMapping("oparl/v1.1/body/{id}")
-    fun get(@PathVariable id: UUID): ResponseEntity<OparlBodyDto> {
+    fun get(
+        @PathVariable id: UUID,
+    ): ResponseEntity<OparlBodyDto> {
         val resolvedBody = resolvedBodyRepository.findById(id)
 
         if (!resolvedBody.isPresent) {

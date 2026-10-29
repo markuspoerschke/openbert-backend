@@ -1,11 +1,11 @@
 package nrw.openbert.backend.crawl.application
 
 import nrw.openbert.backend.parldata.application.crawl.CrawlTargetEnqueuer
-import nrw.openbert.backend.parldata.domain.enums.OparlType
-import nrw.openbert.backend.parldata.domain.entity.CrawlTarget
 import nrw.openbert.backend.parldata.application.port.outbound.repository.CrawlTargetRepository
+import nrw.openbert.backend.parldata.domain.entity.CrawlTarget
 import nrw.openbert.backend.parldata.domain.entity.OparlSystem
 import nrw.openbert.backend.parldata.domain.entity.embeddable.OparlResource
+import nrw.openbert.backend.parldata.domain.enums.OparlType
 import nrw.openbert.backend.parldata.domain.valueObject.OparlUrl
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentCaptor
@@ -41,12 +41,13 @@ class CrawlTargetEnqueuerTest {
     @Test
     fun `marks a processed target as crawled`() {
         val resource = resource("https://oparl.example.org/location/1")
-        val target = CrawlTarget(
-            resource = resource,
-            referenceCount = 4,
-            scheduledAt = Instant.parse("2026-07-31T08:00:00Z"),
-            jobId = UUID.randomUUID(),
-        )
+        val target =
+            CrawlTarget(
+                resource = resource,
+                referenceCount = 4,
+                scheduledAt = Instant.parse("2026-07-31T08:00:00Z"),
+                jobId = UUID.randomUUID(),
+            )
         `when`(repository.findByResource(resource))
             .thenReturn(target)
 
@@ -59,8 +60,7 @@ class CrawlTargetEnqueuerTest {
         verify(repository).save(target)
     }
 
-    private fun resource(url: String) =
-        OparlResource(system, OparlUrl(url))
+    private fun resource(url: String) = OparlResource(system, OparlUrl(url))
 
     private fun captureSavedTarget(): CrawlTarget {
         val captor = ArgumentCaptor.forClass(CrawlTarget::class.java)

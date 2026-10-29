@@ -11,17 +11,23 @@ import java.io.IOException
 import java.net.URI
 
 @Component
-class OparlFileContentClient(restClientBuilder: RestClient.Builder) : FileContentFetcher {
+class OparlFileContentClient(
+    restClientBuilder: RestClient.Builder,
+) : FileContentFetcher {
     private val restClient = restClientBuilder.build()
 
-    override fun fetch(url: OparlUrl, consume: (FileContent) -> Unit) {
-        val uri = try {
-            URI.create(url.value).also {
-                require(it.scheme in setOf("http", "https") && it.host != null)
+    override fun fetch(
+        url: OparlUrl,
+        consume: (FileContent) -> Unit,
+    ) {
+        val uri =
+            try {
+                URI.create(url.value).also {
+                    require(it.scheme in setOf("http", "https") && it.host != null)
+                }
+            } catch (exception: IllegalArgumentException) {
+                throw IOException("Invalid upstream file URL", exception)
             }
-        } catch (exception: IllegalArgumentException) {
-            throw IOException("Invalid upstream file URL", exception)
-        }
 
         try {
             // exchange keeps the response open throughout the callback and closes it in finally.
@@ -33,7 +39,7 @@ class OparlFileContentClient(restClientBuilder: RestClient.Builder) : FileConten
                         contentLength = response.headers.contentLength.takeIf { it >= 0 },
                         contentEncoding = response.headers[HttpHeaders.CONTENT_ENCODING]?.joinToString(", "),
                         body = response.body,
-                    )
+                    ),
                 )
             }
         } catch (exception: RestClientException) {

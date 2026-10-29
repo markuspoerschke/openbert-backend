@@ -17,15 +17,17 @@ class BodyResolver(
     override val entityType = OparlType.BODY
 
     override fun resolve(rawEntityId: UUID) {
-        val raw = rawRepository.findById(rawEntityId).orElseThrow {
-            IllegalArgumentException("Raw body with id $rawEntityId does not exist")
-        }
+        val raw =
+            rawRepository.findById(rawEntityId).orElseThrow {
+                IllegalArgumentException("Raw body with id $rawEntityId does not exist")
+            }
         resolve(raw)
     }
 
     fun resolve(resource: OparlResource): ResolvedBody {
-        val raw = rawRepository.findByResource(resource)
-            ?: return resolvedRepository.findByResource(resource) ?: throw notCrawled("body", resource)
+        val raw =
+            rawRepository.findByResource(resource)
+                ?: return resolvedRepository.findByResource(resource) ?: throw notCrawled("body", resource)
         return resolve(raw)
     }
 

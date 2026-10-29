@@ -86,8 +86,10 @@ class EnricherTest {
     }
 
     private fun target(entityType: OparlType): EnrichTarget {
-        val target = EnrichTarget(rawEntityId = UUID.randomUUID(), entityType = entityType)
-            .enqueue().markAsScheduled(UUID.randomUUID())
+        val target =
+            EnrichTarget(rawEntityId = UUID.randomUUID(), entityType = entityType)
+                .enqueue()
+                .markAsScheduled(UUID.randomUUID())
         `when`(repository.findById(target.id)).thenReturn(Optional.of(target))
         return target
     }

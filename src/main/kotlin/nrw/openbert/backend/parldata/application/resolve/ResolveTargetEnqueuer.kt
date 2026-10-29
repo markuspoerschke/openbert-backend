@@ -16,11 +16,15 @@ class ResolveTargetEnqueuer(
 
     fun enqueue(entity: AbstractOparlEntity) = enqueue(entity.id, entity.getType())
 
-    fun enqueue(rawEntityId: UUID, entityType: OparlType) {
+    fun enqueue(
+        rawEntityId: UUID,
+        entityType: OparlType,
+    ) {
         logger.info("Enqueuing {} raw entity {} for resolving", entityType, rawEntityId)
 
-        val target = repository.findByRawEntityIdAndEntityType(rawEntityId, entityType)
-            ?: ResolveTarget(rawEntityId = rawEntityId, entityType = entityType)
+        val target =
+            repository.findByRawEntityIdAndEntityType(rawEntityId, entityType)
+                ?: ResolveTarget(rawEntityId = rawEntityId, entityType = entityType)
         repository.save(target.enqueue())
     }
 }

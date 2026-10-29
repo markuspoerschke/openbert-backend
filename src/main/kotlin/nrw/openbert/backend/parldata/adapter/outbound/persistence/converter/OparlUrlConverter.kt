@@ -6,11 +6,7 @@ import nrw.openbert.backend.parldata.domain.valueObject.OparlUrl
 
 @Converter(autoApply = true)
 class OparlUrlConverter : AttributeConverter<OparlUrl, String> {
-    override fun convertToDatabaseColumn(attribute: OparlUrl?): String? {
-        return attribute?.value
-    }
+    override fun convertToDatabaseColumn(attribute: OparlUrl?): String? = attribute?.value
 
-    override fun convertToEntityAttribute(dbData: String?): OparlUrl? {
-        return dbData?.let { OparlUrl(it) }
-    }
+    override fun convertToEntityAttribute(dbData: String?): OparlUrl? = dbData?.let { OparlUrl(it) }
 }

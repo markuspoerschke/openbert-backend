@@ -1,9 +1,9 @@
 package nrw.openbert.backend.parldata.adapter.inbound.api.mapper
 
-import nrw.openbert.backend.parldata.domain.entity.AbstractConsultation
-import nrw.openbert.backend.parldata.domain.entity.resolved.ResolvedConsultation
 import nrw.openbert.backend.parldata.adapter.inbound.api.dto.OparlConsultationDto
 import nrw.openbert.backend.parldata.adapter.inbound.api.urlGenerator.OparlUrlGenerator
+import nrw.openbert.backend.parldata.domain.entity.AbstractConsultation
+import nrw.openbert.backend.parldata.domain.entity.resolved.ResolvedConsultation
 import org.springframework.stereotype.Component
 
 @Component
@@ -13,21 +13,24 @@ class OparlConsultationMapper(
     fun toDto(
         consultation: ResolvedConsultation,
         includePaper: Boolean = true,
-    ): OparlConsultationDto {
-        return OparlConsultationDto(
+    ): OparlConsultationDto =
+        OparlConsultationDto(
             id = urlGenerator.consultation.get(consultation.body.id, consultation.id),
             type = consultation.getType().url,
-            paper = consultation.paper
-                .takeIf { includePaper }
-                ?.let { urlGenerator.paper.get(it.body.id, it.id) },
-            agendaItem = urlGenerator.agendaItem.get(
-                consultation.agendaItem.body.id,
-                consultation.agendaItem.id,
-            ),
+            paper =
+                consultation.paper
+                    .takeIf { includePaper }
+                    ?.let { urlGenerator.paper.get(it.body.id, it.id) },
+            agendaItem =
+                urlGenerator.agendaItem.get(
+                    consultation.agendaItem.body.id,
+                    consultation.agendaItem.id,
+                ),
             meeting = urlGenerator.meeting.get(consultation.meeting.body.id, consultation.meeting.id),
-            organization = consultation.organizations
-                .map { urlGenerator.organization.get(it.body.id, it.id) }
-                .takeIf { it.isNotEmpty() },
+            organization =
+                consultation.organizations
+                    .map { urlGenerator.organization.get(it.body.id, it.id) }
+                    .takeIf { it.isNotEmpty() },
             authoritative = consultation.authoritative,
             role = consultation.role,
             license = consultation.license,
@@ -37,5 +40,4 @@ class OparlConsultationMapper(
             web = consultation.web,
             deleted = consultation.deleted,
         )
-    }
 }

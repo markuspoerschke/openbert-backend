@@ -7,16 +7,15 @@ import jakarta.persistence.MappedSuperclass
 import nrw.openbert.backend.parldata.domain.entity.embeddable.OparlResource
 import nrw.openbert.backend.parldata.domain.enums.OparlType
 import java.time.Instant
-import java.util.*
+import java.util.UUID
 
 @MappedSuperclass
 abstract class AbstractOparlEntity(
     @Embedded
     val resource: OparlResource,
-
     @Id
     @Column(nullable = false, updatable = false)
-    val id: UUID = UUID.randomUUID()
+    val id: UUID = UUID.randomUUID(),
 ) {
     companion object {
         /**

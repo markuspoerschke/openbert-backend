@@ -19,7 +19,8 @@ class OparlLocationControllerTest(
 
     @Test
     fun `lists resolved locations belonging to a body`() {
-        mockMvc.get("$bodyUrl/location")
+        mockMvc
+            .get("$bodyUrl/location")
             .andExpect {
                 status { isOk() }
                 jsonPath("$.id") { value("$bodyUrl/location?page=1") }
@@ -56,7 +57,8 @@ class OparlLocationControllerTest(
 
     @Test
     fun `paginates locations and returns empty page when out of range`() {
-        mockMvc.get("$bodyUrl/location?page=2")
+        mockMvc
+            .get("$bodyUrl/location?page=2")
             .andExpect {
                 status { isOk() }
                 jsonPath("$.id") { value("$bodyUrl/location?page=2") }
@@ -75,12 +77,14 @@ class OparlLocationControllerTest(
 
     @Test
     fun `returns bad request when page number is less than 1`() {
-        mockMvc.get("$bodyUrl/location?page=0")
+        mockMvc
+            .get("$bodyUrl/location?page=0")
             .andExpect {
                 status { isBadRequest() }
             }
 
-        mockMvc.get("$bodyUrl/location?page=-1")
+        mockMvc
+            .get("$bodyUrl/location?page=-1")
             .andExpect {
                 status { isBadRequest() }
             }
@@ -88,7 +92,8 @@ class OparlLocationControllerTest(
 
     @Test
     fun `returns a single resolved location`() {
-        mockMvc.get("$bodyUrl/location/a70c1459-c98f-4e9c-a02f-4bb21b837c04")
+        mockMvc
+            .get("$bodyUrl/location/a70c1459-c98f-4e9c-a02f-4bb21b837c04")
             .andExpect {
                 status { isOk() }
                 jsonPath("$.id") { value("$bodyUrl/location/a70c1459-c98f-4e9c-a02f-4bb21b837c04") }
@@ -99,7 +104,8 @@ class OparlLocationControllerTest(
 
     @Test
     fun `returns not found for an unknown location`() {
-        mockMvc.get("$bodyUrl/location/00000000-0000-0000-0000-000000000000")
+        mockMvc
+            .get("$bodyUrl/location/00000000-0000-0000-0000-000000000000")
             .andExpect {
                 status { isNotFound() }
             }
@@ -107,35 +113,35 @@ class OparlLocationControllerTest(
 
     @Test
     fun `returns not found for a location requested through an unknown body`() {
-        mockMvc.get(
-            "https://example.org:8443/oparl/v1.1/body/" +
-                "00000000-0000-0000-0000-000000000000/location/" +
-                "a70c1459-c98f-4e9c-a02f-4bb21b837c04"
-        )
-            .andExpect {
+        mockMvc
+            .get(
+                "https://example.org:8443/oparl/v1.1/body/" +
+                    "00000000-0000-0000-0000-000000000000/location/" +
+                    "a70c1459-c98f-4e9c-a02f-4bb21b837c04",
+            ).andExpect {
                 status { isNotFound() }
             }
     }
 
     @Test
     fun `returns not found for a location belonging to another body`() {
-        mockMvc.get(
-            "https://example.org:8443/oparl/v1.1/body/" +
-                "ffffffff-ffff-4fff-afff-ffffffffffff/location/" +
-                "a70c1459-c98f-4e9c-a02f-4bb21b837c04"
-        )
-            .andExpect {
+        mockMvc
+            .get(
+                "https://example.org:8443/oparl/v1.1/body/" +
+                    "ffffffff-ffff-4fff-afff-ffffffffffff/location/" +
+                    "a70c1459-c98f-4e9c-a02f-4bb21b837c04",
+            ).andExpect {
                 status { isNotFound() }
             }
     }
 
     @Test
     fun `returns not found when listing locations for an unknown body`() {
-        mockMvc.get(
-            "https://example.org:8443/oparl/v1.1/body/" +
-                "00000000-0000-0000-0000-000000000000/location"
-        )
-            .andExpect {
+        mockMvc
+            .get(
+                "https://example.org:8443/oparl/v1.1/body/" +
+                    "00000000-0000-0000-0000-000000000000/location",
+            ).andExpect {
                 status { isNotFound() }
             }
     }

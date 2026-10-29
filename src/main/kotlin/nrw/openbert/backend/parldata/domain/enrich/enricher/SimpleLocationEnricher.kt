@@ -17,8 +17,11 @@ class SimpleLocationEnricher(
     private val roomMatcher: RoomMatcher,
     private val streetNameMatcher: StreetNameMatcher,
 ) {
-    fun enrich(location: RawLocation, result: LocationOverrides): LocationOverrides {
-        return normalizeFields(location, result)
+    fun enrich(
+        location: RawLocation,
+        result: LocationOverrides,
+    ): LocationOverrides =
+        normalizeFields(location, result)
             // check if field values have values from other fields
             .let {
                 removeRepeatedPostalCodeAndLocality(
@@ -27,40 +30,38 @@ class SimpleLocationEnricher(
                     it.getLocalityOverrideOrOriginalValue(location.locality),
                     it,
                 )
-            }
-            .let {
+            }.let {
                 normalizeStreetAddressInRoom(
                     it.getStreetAddressOverrideOrOriginalValue(location.streetAddress),
                     it.getRoomOverrideOrOriginalValue(location.room),
                     it,
                 )
-            }
-            .let {
+            }.let {
                 removeOrganizationNameFromAddress(
                     it.getPostalCodeOverrideOrOriginalValue(location.postalCode),
                     it.getLocalityOverrideOrOriginalValue(location.locality),
                     it.getDescriptionOverrideOrOriginalValue(location.description),
                     it,
                 )
-            }
-            .let {
+            }.let {
                 normalizePostalCodeContainsRoom(
                     it.getPostalCodeOverrideOrOriginalValue(location.postalCode),
                     it.getRoomOverrideOrOriginalValue(location.room),
                     it,
                 )
-            }
-            .let {
+            }.let {
                 rejoinSplitLocality(
                     it.getPostalCodeOverrideOrOriginalValue(location.postalCode),
                     it.getLocalityOverrideOrOriginalValue(location.locality),
                     it,
                 )
             }
-    }
 
-    private fun normalizeFields(location: RawLocation, result: LocationOverrides): LocationOverrides {
-        return result
+    private fun normalizeFields(
+        location: RawLocation,
+        result: LocationOverrides,
+    ): LocationOverrides =
+        result
             // normalize field values
             .let { normalizeStreetName(it.getStreetAddressOverrideOrOriginalValue(location.streetAddress), it) }
             .let {
@@ -69,31 +70,30 @@ class SimpleLocationEnricher(
                     it,
                     LocationOverrides::withPostalCodeOverride,
                 )
-            }
-            .let {
+            }.let {
                 nullableStringNormalizer.normalizeField(
                     it.getRoomOverrideOrOriginalValue(location.room),
                     it,
                     LocationOverrides::withRoomOverride,
                 )
-            }
-            .let {
+            }.let {
                 nullableStringNormalizer.normalizeField(
                     it.getDescriptionOverrideOrOriginalValue(location.description),
                     it,
                     LocationOverrides::withDescriptionOverride,
                 )
-            }
-            .let {
+            }.let {
                 nullableStringNormalizer.normalizeField(
                     it.getLocalityOverrideOrOriginalValue(location.locality),
                     it,
                     LocationOverrides::withLocalityOverride,
                 )
             }
-    }
 
-    private fun normalizeStreetName(streetName: String?, result: LocationOverrides): LocationOverrides {
+    private fun normalizeStreetName(
+        streetName: String?,
+        result: LocationOverrides,
+    ): LocationOverrides {
         val normalizedStreetName = streetAddressNormalizer.normalize(streetName)
 
         if (normalizedStreetName == streetName) {

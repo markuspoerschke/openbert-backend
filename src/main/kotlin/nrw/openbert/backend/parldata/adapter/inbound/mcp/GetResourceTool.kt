@@ -20,13 +20,15 @@ class GetResourceTool(
     fun getResource(
         @McpToolParam(
             required = true,
-            description = "The id of the OParl resource to fetch, " +
-                "e.g. https://example.org/oparl/v1.1/body/{bodyId}/person/{personId}",
+            description =
+                "The id of the OParl resource to fetch, " +
+                    "e.g. https://example.org/oparl/v1.1/body/{bodyId}/person/{personId}",
         )
         id: String,
     ): Any {
-        val reference = OparlResourceId.fromUrl(id)
-            ?: throw IllegalArgumentException("Unsupported OParl resource id: $id")
+        val reference =
+            OparlResourceId.fromUrl(id)
+                ?: throw IllegalArgumentException("Unsupported OParl resource id: $id")
 
         return mapper.toDto(OparlSearchReference(reference.type, reference.id))
     }

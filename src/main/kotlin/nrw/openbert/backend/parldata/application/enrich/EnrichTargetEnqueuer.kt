@@ -16,8 +16,9 @@ class EnrichTargetEnqueuer(
         val entityType = entity.getType()
         logger.info("Enqueuing {} raw entity {} for enrichment", entityType, entity.id)
 
-        val target = repository.findByRawEntityIdAndEntityType(entity.id, entityType)
-            ?: EnrichTarget.create(entity)
+        val target =
+            repository.findByRawEntityIdAndEntityType(entity.id, entityType)
+                ?: EnrichTarget.create(entity)
         repository.save(target.enqueue())
     }
 }

@@ -19,7 +19,8 @@ class OparlPersonControllerTest(
 
     @Test
     fun `lists resolved persons belonging to a body`() {
-        mockMvc.get("$bodyUrl/person")
+        mockMvc
+            .get("$bodyUrl/person")
             .andExpect {
                 status { isOk() }
                 jsonPath("$.id") { value("$bodyUrl/person?page=1") }
@@ -40,13 +41,13 @@ class OparlPersonControllerTest(
                 jsonPath("$.data[0].membership.length()") { value(1) }
                 jsonPath("$.data[0].membership[0].id") {
                     value(
-                        "$bodyUrl/membership/47fdc541-cf5b-4e45-9bd4-46c8dcca9f34"
+                        "$bodyUrl/membership/47fdc541-cf5b-4e45-9bd4-46c8dcca9f34",
                     )
                 }
                 jsonPath("$.data[0].membership[0].person") { doesNotExist() }
                 jsonPath("$.data[0].membership[0].organization") {
                     value(
-                        "$bodyUrl/organization/9f7d37f9-cd93-4b11-a868-19a6c1e39318"
+                        "$bodyUrl/organization/9f7d37f9-cd93-4b11-a868-19a6c1e39318",
                     )
                 }
                 jsonPath("$.pagination.currentPage") { value(1) }
@@ -63,7 +64,8 @@ class OparlPersonControllerTest(
 
     @Test
     fun `paginates persons and returns empty page when out of range`() {
-        mockMvc.get("$bodyUrl/person?page=2")
+        mockMvc
+            .get("$bodyUrl/person?page=2")
             .andExpect {
                 status { isOk() }
                 jsonPath("$.id") { value("$bodyUrl/person?page=2") }
@@ -82,12 +84,14 @@ class OparlPersonControllerTest(
 
     @Test
     fun `returns bad request when page number is less than 1`() {
-        mockMvc.get("$bodyUrl/person?page=0")
+        mockMvc
+            .get("$bodyUrl/person?page=0")
             .andExpect {
                 status { isBadRequest() }
             }
 
-        mockMvc.get("$bodyUrl/person?page=-1")
+        mockMvc
+            .get("$bodyUrl/person?page=-1")
             .andExpect {
                 status { isBadRequest() }
             }
@@ -95,7 +99,8 @@ class OparlPersonControllerTest(
 
     @Test
     fun `returns a single resolved person`() {
-        mockMvc.get("$bodyUrl/person/5e4cb965-6c76-4b31-a6ce-e8b26e68fb8b")
+        mockMvc
+            .get("$bodyUrl/person/5e4cb965-6c76-4b31-a6ce-e8b26e68fb8b")
             .andExpect {
                 status { isOk() }
                 jsonPath("$.id") { value("$bodyUrl/person/5e4cb965-6c76-4b31-a6ce-e8b26e68fb8b") }
@@ -108,7 +113,8 @@ class OparlPersonControllerTest(
 
     @Test
     fun `returns not found for unknown person`() {
-        mockMvc.get("$bodyUrl/person/00000000-0000-0000-0000-000000000000")
+        mockMvc
+            .get("$bodyUrl/person/00000000-0000-0000-0000-000000000000")
             .andExpect {
                 status { isNotFound() }
             }
@@ -116,35 +122,35 @@ class OparlPersonControllerTest(
 
     @Test
     fun `returns not found for a person requested through an unknown body`() {
-        mockMvc.get(
-            "https://example.org:8443/oparl/v1.1/body/" +
-                "00000000-0000-0000-0000-000000000000/person/" +
-                "5e4cb965-6c76-4b31-a6ce-e8b26e68fb8b"
-        )
-            .andExpect {
+        mockMvc
+            .get(
+                "https://example.org:8443/oparl/v1.1/body/" +
+                    "00000000-0000-0000-0000-000000000000/person/" +
+                    "5e4cb965-6c76-4b31-a6ce-e8b26e68fb8b",
+            ).andExpect {
                 status { isNotFound() }
             }
     }
 
     @Test
     fun `returns not found for a person belonging to another body`() {
-        mockMvc.get(
-            "https://example.org:8443/oparl/v1.1/body/" +
-                "ffffffff-ffff-4fff-afff-ffffffffffff/person/" +
-                "5e4cb965-6c76-4b31-a6ce-e8b26e68fb8b"
-        )
-            .andExpect {
+        mockMvc
+            .get(
+                "https://example.org:8443/oparl/v1.1/body/" +
+                    "ffffffff-ffff-4fff-afff-ffffffffffff/person/" +
+                    "5e4cb965-6c76-4b31-a6ce-e8b26e68fb8b",
+            ).andExpect {
                 status { isNotFound() }
             }
     }
 
     @Test
     fun `returns not found when listing persons for an unknown body`() {
-        mockMvc.get(
-            "https://example.org:8443/oparl/v1.1/body/" +
-                "00000000-0000-0000-0000-000000000000/person"
-        )
-            .andExpect {
+        mockMvc
+            .get(
+                "https://example.org:8443/oparl/v1.1/body/" +
+                    "00000000-0000-0000-0000-000000000000/person",
+            ).andExpect {
                 status { isNotFound() }
             }
     }

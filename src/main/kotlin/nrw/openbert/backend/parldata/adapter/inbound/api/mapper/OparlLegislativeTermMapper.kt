@@ -12,8 +12,8 @@ import java.util.Date
 class OparlLegislativeTermMapper(
     private val urlGenerator: OparlUrlGenerator,
 ) {
-    fun toDto(legislativeTerm: ResolvedLegislativeTerm): OparlLegislativeTermDto {
-        return OparlLegislativeTermDto(
+    fun toDto(legislativeTerm: ResolvedLegislativeTerm): OparlLegislativeTermDto =
+        OparlLegislativeTermDto(
             id = urlGenerator.legislativeTerm.get(legislativeTerm.body.id, legislativeTerm.id),
             type = legislativeTerm.getType().url,
             body = urlGenerator.body(legislativeTerm.body.id),
@@ -27,9 +27,6 @@ class OparlLegislativeTermMapper(
             web = legislativeTerm.web,
             deleted = legislativeTerm.deleted,
         )
-    }
 
-    private fun Date.toOparlDate(): String {
-        return toInstant().atZone(ZoneId.systemDefault()).toLocalDate().toString()
-    }
+    private fun Date.toOparlDate(): String = toInstant().atZone(ZoneId.systemDefault()).toLocalDate().toString()
 }

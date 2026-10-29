@@ -12,8 +12,8 @@ import java.util.Date
 class OparlFileMapper(
     private val urlGenerator: OparlUrlGenerator,
 ) {
-    fun toDto(file: ResolvedFile): OparlFileDto {
-        return OparlFileDto(
+    fun toDto(file: ResolvedFile): OparlFileDto =
+        OparlFileDto(
             id = urlGenerator.file.get(file.body.id, file.id),
             type = file.getType().url,
             name = file.name,
@@ -35,9 +35,6 @@ class OparlFileMapper(
             web = file.web,
             deleted = file.deleted,
         )
-    }
 
-    private fun Date.toOparlDate(): String {
-        return toInstant().atZone(ZoneId.systemDefault()).toLocalDate().toString()
-    }
+    private fun Date.toOparlDate(): String = toInstant().atZone(ZoneId.systemDefault()).toLocalDate().toString()
 }

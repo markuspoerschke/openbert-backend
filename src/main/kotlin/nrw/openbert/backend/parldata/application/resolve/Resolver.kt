@@ -1,7 +1,7 @@
 package nrw.openbert.backend.parldata.application.resolve
 
-import nrw.openbert.backend.parldata.domain.enums.OparlType
 import nrw.openbert.backend.parldata.application.port.outbound.repository.ResolveTargetRepository
+import nrw.openbert.backend.parldata.domain.enums.OparlType
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -20,11 +20,13 @@ class Resolver(
 
     @Transactional
     fun run(targetId: UUID) {
-        val target = targetRepository.findById(targetId).orElseThrow {
-            IllegalArgumentException("Resolve target with id $targetId does not exist")
-        }
-        val entityResolver = entityResolvers[target.entityType]
-            ?: throw UnsupportedOperationException("No resolver exists for ${target.entityType}")
+        val target =
+            targetRepository.findById(targetId).orElseThrow {
+                IllegalArgumentException("Resolve target with id $targetId does not exist")
+            }
+        val entityResolver =
+            entityResolvers[target.entityType]
+                ?: throw UnsupportedOperationException("No resolver exists for ${target.entityType}")
 
         logger.info("Resolving {} raw entity {}", target.entityType, target.rawEntityId)
         entityResolver.resolve(target.rawEntityId)

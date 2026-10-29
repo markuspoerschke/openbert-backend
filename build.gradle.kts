@@ -6,6 +6,7 @@ plugins {
     id("org.asciidoctor.jvm.convert") version "4.0.5"
     kotlin("plugin.jpa") version "2.4.21"
     id("dev.detekt") version "2.0.0-alpha.6"
+    id("org.jlleitschuh.gradle.ktlint") version "14.2.0"
 }
 
 group = "nrw.openbert"
@@ -26,10 +27,24 @@ repositories {
 configurations.named("detekt") {
     resolutionStrategy.eachDependency {
         if (requested.group == "org.jetbrains.kotlin") {
-            useVersion(dev.detekt.gradle.plugin.getSupportedKotlinVersion())
+            useVersion(
+                dev.detekt.gradle.plugin
+                    .getSupportedKotlinVersion(),
+            )
         }
     }
 }
+
+// Keep ktlint's compiler runtime independent of Spring's managed Kotlin version.
+configurations
+    .matching { it.name.startsWith("ktlint") }
+    .configureEach {
+        resolutionStrategy.eachDependency {
+            if (requested.group == "org.jetbrains.kotlin") {
+                useVersion("2.2.21")
+            }
+        }
+    }
 
 extra["snippetsDir"] = file("build/generated-snippets")
 
@@ -69,6 +84,11 @@ kotlin {
     compilerOptions {
         freeCompilerArgs.addAll("-Xjsr305=strict", "-Xannotation-default-target=param-property")
     }
+}
+
+ktlint {
+    // Pin the ktlint engine so it can parse the Kotlin version used in this project.
+    version.set("1.8.0")
 }
 
 allOpen {

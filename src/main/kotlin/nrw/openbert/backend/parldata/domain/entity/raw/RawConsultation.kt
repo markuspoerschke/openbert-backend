@@ -10,7 +10,9 @@ import nrw.openbert.backend.parldata.domain.valueObject.OparlUrl
 
 @Entity(name = "oparl_raw_consultation")
 @Table(uniqueConstraints = [UniqueConstraint(columnNames = ["system_id", "url"])])
-class RawConsultation(resource: OparlResource) : AbstractConsultation(resource) {
+class RawConsultation(
+    resource: OparlResource,
+) : AbstractConsultation(resource) {
     @Column(name = "paper_url", length = OparlUrl.MAX_LENGTH)
     var paperUrl: OparlUrl? = null
 

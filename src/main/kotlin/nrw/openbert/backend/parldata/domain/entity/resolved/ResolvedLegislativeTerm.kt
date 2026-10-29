@@ -14,14 +14,14 @@ import nrw.openbert.backend.parldata.domain.entity.raw.RawLegislativeTerm
 @Table(uniqueConstraints = [UniqueConstraint(columnNames = ["system_id", "url"])])
 class ResolvedLegislativeTerm(
     resource: OparlResource,
-
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "body_id", nullable = false, updatable = false)
     val body: ResolvedBody,
 ) : AbstractLegislativeTerm(resource) {
     companion object {
-        fun fromRaw(raw: RawLegislativeTerm, body: ResolvedBody): ResolvedLegislativeTerm {
-            return ResolvedLegislativeTerm(raw.resource, body).apply { applyValuesFrom(raw) }
-        }
+        fun fromRaw(
+            raw: RawLegislativeTerm,
+            body: ResolvedBody,
+        ): ResolvedLegislativeTerm = ResolvedLegislativeTerm(raw.resource, body).apply { applyValuesFrom(raw) }
     }
 }

@@ -30,10 +30,11 @@ class OparlUrlPersistenceTest(
         val system = entityManager.find(OparlSystem::class.java, SYSTEM_ID)
         assertEquals(OparlUrl("https://oparl-demo.example.org"), system.url)
 
-        val resource = OparlResource(
-            system,
-            OparlUrl("https://oparl-demo.example.org/oparl/v1.1/meeting/body-only"),
-        )
+        val resource =
+            OparlResource(
+                system,
+                OparlUrl("https://oparl-demo.example.org/oparl/v1.1/meeting/body-only"),
+            )
         val meeting = rawMeetingRepository.findByResource(resource)
         assertNotNull(meeting)
         assertEquals(resource, meeting.resource)

@@ -117,8 +117,9 @@ class LocationResolverPersistenceTest(
 
     private fun resolve(): ResolvedLocation {
         val raw = rawLocationRepository.findById(rawId).orElseThrow()
-        val target = targetRepository.findByRawEntityIdAndEntityType(rawId, raw.getType())
-            ?: ResolveTarget.create(raw)
+        val target =
+            targetRepository.findByRawEntityIdAndEntityType(rawId, raw.getType())
+                ?: ResolveTarget.create(raw)
         targetRepository.save(target.enqueue())
 
         resolver.run(target.id)

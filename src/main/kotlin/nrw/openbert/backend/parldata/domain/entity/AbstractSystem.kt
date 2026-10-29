@@ -3,11 +3,13 @@ package nrw.openbert.backend.parldata.domain.entity
 import jakarta.persistence.Column
 import jakarta.persistence.MappedSuperclass
 import nrw.openbert.backend.parldata.domain.entity.embeddable.OparlResource
-import nrw.openbert.backend.parldata.domain.valueObject.OparlUrl
 import nrw.openbert.backend.parldata.domain.enums.OparlType
+import nrw.openbert.backend.parldata.domain.valueObject.OparlUrl
 
 @MappedSuperclass
-abstract class AbstractSystem(resource: OparlResource) : AbstractOparlEntity(resource) {
+abstract class AbstractSystem(
+    resource: OparlResource,
+) : AbstractOparlEntity(resource) {
     @Column
     var oparlVersion: String = UNKNOWN
 

@@ -11,8 +11,10 @@ import java.lang.reflect.InvocationTargetException
 class SentryJobFilter(
     private val scopes: IScopes = Sentry.getCurrentScopes(),
 ) : JobServerFilter {
-
-    override fun onProcessingFailed(job: Job, e: Exception) {
+    override fun onProcessingFailed(
+        job: Job,
+        e: Exception,
+    ) {
         val actualException = unwrap(e)
         scopes.captureException(actualException) { scope ->
             scope.setTag("jobrunr.job.id", job.id.toString())

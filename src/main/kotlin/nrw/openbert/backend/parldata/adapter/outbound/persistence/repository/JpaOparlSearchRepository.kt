@@ -1,9 +1,9 @@
 package nrw.openbert.backend.parldata.adapter.outbound.persistence.repository
 
 import nrw.openbert.backend.parldata.application.port.model.SearchCriteria
-import nrw.openbert.backend.parldata.domain.valueObject.OparlSearchReference
 import nrw.openbert.backend.parldata.application.port.outbound.repository.OparlSearchRepository
 import nrw.openbert.backend.parldata.domain.enums.OparlType
+import nrw.openbert.backend.parldata.domain.valueObject.OparlSearchReference
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
@@ -14,42 +14,51 @@ import java.util.UUID
 @Repository
 class JpaOparlSearchRepository(
     private val jdbcTemplate: NamedParameterJdbcTemplate,
-): OparlSearchRepository {
-    override fun search(searchCriteria: SearchCriteria, pageable: Pageable): Page<OparlSearchReference> {
-        val sanitizedSearchTerm = searchCriteria
-            .term
-            .orEmpty()
-            .replace("!", "!!")
-            .replace("%", "!%")
-            .replace("_", "!_")
+) : OparlSearchRepository {
+    override fun search(
+        searchCriteria: SearchCriteria,
+        pageable: Pageable,
+    ): Page<OparlSearchReference> {
+        val sanitizedSearchTerm =
+            searchCriteria
+                .term
+                .orEmpty()
+                .replace("!", "!!")
+                .replace("%", "!%")
+                .replace("_", "!_")
 
-        val bodyFilterValues = searchCriteria.bodies
-            .map(String::trim)
-            .filter(String::isNotBlank)
-        val typeFilterValues = searchCriteria.types
-            .map(OparlType::name)
-            .distinct()
+        val bodyFilterValues =
+            searchCriteria.bodies
+                .map(String::trim)
+                .filter(String::isNotBlank)
+        val typeFilterValues =
+            searchCriteria.types
+                .map(OparlType::name)
+                .distinct()
 
-        val parameters = mapOf(
-            "pattern" to "%${sanitizedSearchTerm}%",
-            "bodies" to bodyFilterValues.joinToString(","),
-            "types" to typeFilterValues.joinToString(","),
-            "bodyFilterDisabled" to bodyFilterValues.isEmpty(),
-            "typeFilterDisabled" to typeFilterValues.isEmpty(),
-            "limit" to pageable.pageSize,
-            "offset" to pageable.offset,
-        )
-        val references = jdbcTemplate.query(SEARCH_QUERY, parameters) { resultSet, _ ->
-            OparlSearchReference(
-                entityType = OparlType.valueOf(resultSet.getString("entity_type")),
-                entityId = resultSet.getObject("entity_id", UUID::class.java),
+        val parameters =
+            mapOf(
+                "pattern" to "%$sanitizedSearchTerm%",
+                "bodies" to bodyFilterValues.joinToString(","),
+                "types" to typeFilterValues.joinToString(","),
+                "bodyFilterDisabled" to bodyFilterValues.isEmpty(),
+                "typeFilterDisabled" to typeFilterValues.isEmpty(),
+                "limit" to pageable.pageSize,
+                "offset" to pageable.offset,
             )
-        }
-        val totalElements = jdbcTemplate.queryForObject(
-            COUNT_QUERY,
-            parameters,
-            Long::class.java,
-        ) ?: 0
+        val references =
+            jdbcTemplate.query(SEARCH_QUERY, parameters) { resultSet, _ ->
+                OparlSearchReference(
+                    entityType = OparlType.valueOf(resultSet.getString("entity_type")),
+                    entityId = resultSet.getObject("entity_id", UUID::class.java),
+                )
+            }
+        val totalElements =
+            jdbcTemplate.queryForObject(
+                COUNT_QUERY,
+                parameters,
+                Long::class.java,
+            ) ?: 0
 
         return PageImpl(references, pageable, totalElements)
     }

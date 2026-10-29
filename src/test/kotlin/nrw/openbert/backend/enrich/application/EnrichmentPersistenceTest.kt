@@ -7,11 +7,11 @@ import nrw.openbert.backend.parldata.adapter.inbound.crawler.processor.SystemPro
 import nrw.openbert.backend.parldata.adapter.inbound.scheduler.ScheduleDueEnriches
 import nrw.openbert.backend.parldata.adapter.outbound.client.oparl.dto.OparlLocationDto
 import nrw.openbert.backend.parldata.adapter.outbound.client.oparl.dto.OparlSystemDto
-import nrw.openbert.backend.parldata.application.enrich.Enricher
 import nrw.openbert.backend.parldata.application.enrich.EnrichTargetEnqueuer
+import nrw.openbert.backend.parldata.application.enrich.Enricher
 import nrw.openbert.backend.parldata.application.port.outbound.repository.CrawlTargetRepository
-import nrw.openbert.backend.parldata.application.port.outbound.repository.EnrichedLocationInterface
 import nrw.openbert.backend.parldata.application.port.outbound.repository.EnrichTargetRepository
+import nrw.openbert.backend.parldata.application.port.outbound.repository.EnrichedLocationInterface
 import nrw.openbert.backend.parldata.application.port.outbound.repository.RawLegislativeTermRepository
 import nrw.openbert.backend.parldata.application.port.outbound.repository.RawLocationRepository
 import nrw.openbert.backend.parldata.application.port.outbound.repository.ResolveTargetRepository
@@ -67,14 +67,17 @@ class EnrichmentPersistenceTest(
     @Autowired private val entityManager: EntityManager,
 ) {
     @ParameterizedTest
-    @CsvSource(delimiter = '|', value = [
-        "f8573c97-eac8-443f-bc5d-e61f73185777 | Nevigeser Straße 307 | 42553 | Velbert |",
-        "5f37b17f-74de-4940-b1ab-9f2dd7ab521a | | | |",
-        "028a0258-262f-47cc-8e7f-95c97c4863da | | | 1, Am Lindenkamp 33 | Sitzungssaal",
-        "b64c7df8-c0be-421b-8779-84fdcf93e080 | Donnerstraße 13 | 42555 | Velbert | Raum 41",
-        "3c04fe2e-d8bc-4bf9-a9fc-caacbfa8b154 | | | " +
-            "Den Sitzungsort entnehmen Sie bitte der Einladung bzw. dem Newseintrag |",
-    ])
+    @CsvSource(
+        delimiter = '|',
+        value = [
+            "f8573c97-eac8-443f-bc5d-e61f73185777 | Nevigeser Straße 307 | 42553 | Velbert |",
+            "5f37b17f-74de-4940-b1ab-9f2dd7ab521a | | | |",
+            "028a0258-262f-47cc-8e7f-95c97c4863da | | | 1, Am Lindenkamp 33 | Sitzungssaal",
+            "b64c7df8-c0be-421b-8779-84fdcf93e080 | Donnerstraße 13 | 42555 | Velbert | Raum 41",
+            "3c04fe2e-d8bc-4bf9-a9fc-caacbfa8b154 | | | " +
+                "Den Sitzungsort entnehmen Sie bitte der Einladung bzw. dem Newseintrag |",
+        ],
+    )
     fun `issue 84 examples are persisted and resolved without changing the source`(
         id: UUID,
         streetAddress: String?,
@@ -106,13 +109,16 @@ class EnrichmentPersistenceTest(
         entityManager.clear()
 
         val unchangedRaw = rawLocationRepository.findById(id).orElseThrow()
-        assertEquals(originalValues, listOf(
-            unchangedRaw.streetAddress,
-            unchangedRaw.postalCode,
-            unchangedRaw.locality,
-            unchangedRaw.room,
-            unchangedRaw.description,
-        ))
+        assertEquals(
+            originalValues,
+            listOf(
+                unchangedRaw.streetAddress,
+                unchangedRaw.postalCode,
+                unchangedRaw.locality,
+                unchangedRaw.room,
+                unchangedRaw.description,
+            ),
+        )
         val resolved = resolvedLocationRepository.findByResource(unchangedRaw.resource)!!
         assertEquals(streetAddress, resolved.streetAddress)
         assertEquals(postalCode, resolved.postalCode)
@@ -150,14 +156,15 @@ class EnrichmentPersistenceTest(
 
     @Test
     fun `crawling a location queues enrichment before resolution`() {
-        val raw = locationProcessor.process(
-            resource("location/enrichment"),
-            OparlLocationDto(
-                streetAddress = "  Rathausplatz 1  ",
-                postalCode = "  12345  ",
-                bodies = listOf("https://oparl-demo.example.org/oparl/v1.1/body/123"),
-            ),
-        )
+        val raw =
+            locationProcessor.process(
+                resource("location/enrichment"),
+                OparlLocationDto(
+                    streetAddress = "  Rathausplatz 1  ",
+                    postalCode = "  12345  ",
+                    bodies = listOf("https://oparl-demo.example.org/oparl/v1.1/body/123"),
+                ),
+            )
         entityManager.flush()
         val target = targetRepository.findByRawEntityIdAndEntityType(raw.id, OparlType.LOCATION)
         assertNotNull(target)
@@ -192,10 +199,11 @@ class EnrichmentPersistenceTest(
 
     @Test
     fun `a type without an enricher passes from crawling through enrichment to resolution`() {
-        val raw = systemProcessor.process(
-            resource("system/enrichment"),
-            OparlSystemDto(name = "Source system", oparlVersion = "https://schema.oparl.org/1.1/"),
-        )
+        val raw =
+            systemProcessor.process(
+                resource("system/enrichment"),
+                OparlSystemDto(name = "Source system", oparlVersion = "https://schema.oparl.org/1.1/"),
+            )
         val target = targetRepository.findByRawEntityIdAndEntityType(raw.id, OparlType.SYSTEM)
         assertNotNull(target)
         assertNull(resolveTargetRepository.findByRawEntityIdAndEntityType(raw.id, OparlType.SYSTEM))
@@ -242,8 +250,10 @@ class EnrichmentPersistenceTest(
 
     @Test
     fun `another crawl requeues a completed enrichment target`() {
-        val raw = rawLegislativeTermRepository
-            .findById(UUID.fromString("10000000-0000-4000-8000-000000000001")).orElseThrow()
+        val raw =
+            rawLegislativeTermRepository
+                .findById(UUID.fromString("10000000-0000-4000-8000-000000000001"))
+                .orElseThrow()
 
         enqueuer.enqueue(raw)
         entityManager.flush()
@@ -292,10 +302,11 @@ class EnrichmentPersistenceTest(
     }
 
     private fun resource(path: String): OparlResource {
-        val system = entityManager.find(
-            OparlSystem::class.java,
-            UUID.fromString("9352fa21-68c6-4f4e-8832-08a0454ff179"),
-        )
+        val system =
+            entityManager.find(
+                OparlSystem::class.java,
+                UUID.fromString("9352fa21-68c6-4f4e-8832-08a0454ff179"),
+            )
         return OparlResource(system, OparlUrl("https://oparl-demo.example.org/oparl/v1.1/$path"))
     }
 }

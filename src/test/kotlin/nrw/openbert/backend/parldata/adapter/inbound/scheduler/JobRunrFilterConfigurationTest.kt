@@ -7,7 +7,6 @@ import org.mockito.Mockito.mock
 import org.mockito.Mockito.verify
 
 class JobRunrFilterConfigurationTest {
-
     @Test
     fun `registers job filters on background job server bean`() {
         val filter1 = mock(JobFilter::class.java)

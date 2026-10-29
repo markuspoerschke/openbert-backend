@@ -13,7 +13,6 @@ data class OparlResource(
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "system_id", nullable = false, updatable = false)
     val system: OparlSystem,
-
     @Column(length = OparlUrl.MAX_LENGTH, nullable = false, updatable = false)
     val url: OparlUrl,
 )

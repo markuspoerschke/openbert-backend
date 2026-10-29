@@ -19,7 +19,8 @@ class OparlMembershipControllerTest(
 
     @Test
     fun `lists resolved memberships belonging to a body`() {
-        mockMvc.get("$bodyUrl/membership")
+        mockMvc
+            .get("$bodyUrl/membership")
             .andExpect {
                 status { isOk() }
                 jsonPath("$.id") { value("$bodyUrl/membership?page=1") }
@@ -30,7 +31,7 @@ class OparlMembershipControllerTest(
                 jsonPath("$.data[0].person") { value("$bodyUrl/person/5e4cb965-6c76-4b31-a6ce-e8b26e68fb8b") }
                 jsonPath("$.data[0].organization") {
                     value(
-                        "$bodyUrl/organization/9f7d37f9-cd93-4b11-a868-19a6c1e39318"
+                        "$bodyUrl/organization/9f7d37f9-cd93-4b11-a868-19a6c1e39318",
                     )
                 }
                 jsonPath("$.data[0].role") { value("Vorsitz") }
@@ -55,7 +56,8 @@ class OparlMembershipControllerTest(
 
     @Test
     fun `paginates memberships and returns empty page when out of range`() {
-        mockMvc.get("$bodyUrl/membership?page=2")
+        mockMvc
+            .get("$bodyUrl/membership?page=2")
             .andExpect {
                 status { isOk() }
                 jsonPath("$.id") { value("$bodyUrl/membership?page=2") }
@@ -74,12 +76,14 @@ class OparlMembershipControllerTest(
 
     @Test
     fun `returns bad request when page number is less than 1`() {
-        mockMvc.get("$bodyUrl/membership?page=0")
+        mockMvc
+            .get("$bodyUrl/membership?page=0")
             .andExpect {
                 status { isBadRequest() }
             }
 
-        mockMvc.get("$bodyUrl/membership?page=-1")
+        mockMvc
+            .get("$bodyUrl/membership?page=-1")
             .andExpect {
                 status { isBadRequest() }
             }
@@ -87,7 +91,8 @@ class OparlMembershipControllerTest(
 
     @Test
     fun `returns a single resolved membership`() {
-        mockMvc.get("$bodyUrl/membership/47fdc541-cf5b-4e45-9bd4-46c8dcca9f34")
+        mockMvc
+            .get("$bodyUrl/membership/47fdc541-cf5b-4e45-9bd4-46c8dcca9f34")
             .andExpect {
                 status { isOk() }
                 jsonPath("$.id") { value("$bodyUrl/membership/47fdc541-cf5b-4e45-9bd4-46c8dcca9f34") }
@@ -100,7 +105,8 @@ class OparlMembershipControllerTest(
 
     @Test
     fun `returns not found for an unknown membership`() {
-        mockMvc.get("$bodyUrl/membership/00000000-0000-0000-0000-000000000000")
+        mockMvc
+            .get("$bodyUrl/membership/00000000-0000-0000-0000-000000000000")
             .andExpect {
                 status { isNotFound() }
             }
@@ -108,35 +114,35 @@ class OparlMembershipControllerTest(
 
     @Test
     fun `returns not found for a membership requested through an unknown body`() {
-        mockMvc.get(
-            "https://example.org:8443/oparl/v1.1/body/" +
-                "00000000-0000-0000-0000-000000000000/membership/" +
-                "47fdc541-cf5b-4e45-9bd4-46c8dcca9f34"
-        )
-            .andExpect {
+        mockMvc
+            .get(
+                "https://example.org:8443/oparl/v1.1/body/" +
+                    "00000000-0000-0000-0000-000000000000/membership/" +
+                    "47fdc541-cf5b-4e45-9bd4-46c8dcca9f34",
+            ).andExpect {
                 status { isNotFound() }
             }
     }
 
     @Test
     fun `returns not found for a membership belonging to another body`() {
-        mockMvc.get(
-            "https://example.org:8443/oparl/v1.1/body/" +
-                "ffffffff-ffff-4fff-afff-ffffffffffff/membership/" +
-                "47fdc541-cf5b-4e45-9bd4-46c8dcca9f34"
-        )
-            .andExpect {
+        mockMvc
+            .get(
+                "https://example.org:8443/oparl/v1.1/body/" +
+                    "ffffffff-ffff-4fff-afff-ffffffffffff/membership/" +
+                    "47fdc541-cf5b-4e45-9bd4-46c8dcca9f34",
+            ).andExpect {
                 status { isNotFound() }
             }
     }
 
     @Test
     fun `returns not found when listing memberships for an unknown body`() {
-        mockMvc.get(
-            "https://example.org:8443/oparl/v1.1/body/" +
-                "00000000-0000-0000-0000-000000000000/membership"
-        )
-            .andExpect {
+        mockMvc
+            .get(
+                "https://example.org:8443/oparl/v1.1/body/" +
+                    "00000000-0000-0000-0000-000000000000/membership",
+            ).andExpect {
                 status { isNotFound() }
             }
     }

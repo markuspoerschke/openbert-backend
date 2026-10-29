@@ -11,7 +11,9 @@ import nrw.openbert.backend.parldata.domain.entity.raw.RawBody
 
 @Entity(name = "oparl_resolved_body")
 @Table(uniqueConstraints = [UniqueConstraint(columnNames = ["system_id", "url"])])
-class ResolvedBody(resource: OparlResource) : AbstractBody(resource) {
+class ResolvedBody(
+    resource: OparlResource,
+) : AbstractBody(resource) {
     @OneToMany(mappedBy = "body")
     val organizations: MutableList<ResolvedOrganization> = mutableListOf()
 
@@ -39,8 +41,6 @@ class ResolvedBody(resource: OparlResource) : AbstractBody(resource) {
     val consultations: MutableList<ResolvedConsultation> = mutableListOf()
 
     companion object {
-        fun fromRaw(raw: RawBody): ResolvedBody {
-            return ResolvedBody(raw.resource).apply { applyValuesFrom(raw) }
-        }
+        fun fromRaw(raw: RawBody): ResolvedBody = ResolvedBody(raw.resource).apply { applyValuesFrom(raw) }
     }
 }

@@ -21,10 +21,11 @@ import java.util.UUID
 
 @Tag(
     name = "Oparl Meeting",
-    externalDocs = ExternalDocumentation(
-        "Oparl Specs",
-        "https://oparl.org/spezifikation/online-ansicht/#entity-meeting",
-    ),
+    externalDocs =
+        ExternalDocumentation(
+            "Oparl Specs",
+            "https://oparl.org/spezifikation/online-ansicht/#entity-meeting",
+        ),
 )
 @RestController
 class OparlMeetingController(
@@ -44,20 +45,22 @@ class OparlMeetingController(
             return ResponseEntity.notFound().build()
         }
 
-        val meetings = resolvedMeetingRepository
-            .findAllByBodyIdOrderById(bodyId, pagination.toPageable())
-            .map(meetingMapper::toDto)
+        val meetings =
+            resolvedMeetingRepository
+                .findAllByBodyIdOrderById(bodyId, pagination.toPageable())
+                .map(meetingMapper::toDto)
 
         return ResponseEntity.ok(
             OparlListDto(
                 id = urlGenerator.meeting.list(bodyId, pagination.page),
                 data = meetings.toList(),
                 pagination = listPaginationMapper.toDto(meetings),
-                links = listLinksMapper.toDto(
-                    meetings,
-                    { page -> urlGenerator.meeting.list(bodyId, page) }
-                ),
-            )
+                links =
+                    listLinksMapper.toDto(
+                        meetings,
+                        { page -> urlGenerator.meeting.list(bodyId, page) },
+                    ),
+            ),
         )
     }
 

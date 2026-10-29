@@ -10,7 +10,10 @@ import java.time.Instant
 import java.util.UUID
 
 interface EnrichTargetRepository : JpaRepository<EnrichTarget, UUID> {
-    fun findByRawEntityIdAndEntityType(rawEntityId: UUID, entityType: OparlType): EnrichTarget?
+    fun findByRawEntityIdAndEntityType(
+        rawEntityId: UUID,
+        entityType: OparlType,
+    ): EnrichTarget?
 
     @Query(
         """

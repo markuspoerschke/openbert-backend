@@ -21,10 +21,11 @@ import java.util.UUID
 
 @Tag(
     name = "Oparl Agenda Item",
-    externalDocs = ExternalDocumentation(
-        "Oparl Specs",
-        "https://oparl.org/spezifikation/online-ansicht/#entity-agendaitem",
-    ),
+    externalDocs =
+        ExternalDocumentation(
+            "Oparl Specs",
+            "https://oparl.org/spezifikation/online-ansicht/#entity-agendaitem",
+        ),
 )
 @RestController
 class OparlAgendaItemController(
@@ -44,20 +45,22 @@ class OparlAgendaItemController(
             return ResponseEntity.notFound().build()
         }
 
-        val agendaItems = resolvedAgendaItemRepository
-            .findAllByBodyIdOrderById(bodyId, pagination.toPageable())
-            .map(agendaItemMapper::toDto)
+        val agendaItems =
+            resolvedAgendaItemRepository
+                .findAllByBodyIdOrderById(bodyId, pagination.toPageable())
+                .map(agendaItemMapper::toDto)
 
         return ResponseEntity.ok(
             OparlListDto(
                 id = urlGenerator.agendaItem.list(bodyId, pagination.page),
                 data = agendaItems.toList(),
                 pagination = listPaginationMapper.toDto(agendaItems),
-                links = listLinksMapper.toDto(
-                    agendaItems,
-                    { page -> urlGenerator.agendaItem.list(bodyId, page) }
-                ),
-            )
+                links =
+                    listLinksMapper.toDto(
+                        agendaItems,
+                        { page -> urlGenerator.agendaItem.list(bodyId, page) },
+                    ),
+            ),
         )
     }
 

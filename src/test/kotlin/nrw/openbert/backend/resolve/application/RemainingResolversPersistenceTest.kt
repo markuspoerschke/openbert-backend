@@ -2,16 +2,7 @@ package nrw.openbert.backend.resolve.application
 
 import jakarta.persistence.EntityManager
 import nrw.openbert.backend.TestcontainersConfiguration
-import nrw.openbert.backend.parldata.domain.entity.AbstractOparlEntity
-import nrw.openbert.backend.parldata.domain.entity.raw.RawAgendaItem
-import nrw.openbert.backend.parldata.domain.entity.raw.RawConsultation
-import nrw.openbert.backend.parldata.domain.entity.raw.RawFile
-import nrw.openbert.backend.parldata.domain.entity.raw.RawLegislativeTerm
-import nrw.openbert.backend.parldata.domain.entity.raw.RawLocation
-import nrw.openbert.backend.parldata.domain.entity.raw.RawMeeting
-import nrw.openbert.backend.parldata.domain.entity.raw.RawMembership
-import nrw.openbert.backend.parldata.domain.entity.raw.RawPaper
-import nrw.openbert.backend.parldata.domain.entity.raw.RawPerson
+import nrw.openbert.backend.parldata.application.port.outbound.repository.ResolveTargetRepository
 import nrw.openbert.backend.parldata.application.port.outbound.repository.ResolvedAgendaItemRepository
 import nrw.openbert.backend.parldata.application.port.outbound.repository.ResolvedConsultationRepository
 import nrw.openbert.backend.parldata.application.port.outbound.repository.ResolvedFileRepository
@@ -21,9 +12,18 @@ import nrw.openbert.backend.parldata.application.port.outbound.repository.Resolv
 import nrw.openbert.backend.parldata.application.port.outbound.repository.ResolvedMembershipRepository
 import nrw.openbert.backend.parldata.application.port.outbound.repository.ResolvedPaperRepository
 import nrw.openbert.backend.parldata.application.port.outbound.repository.ResolvedPersonRepository
-import nrw.openbert.backend.parldata.domain.entity.ResolveTarget
-import nrw.openbert.backend.parldata.application.port.outbound.repository.ResolveTargetRepository
 import nrw.openbert.backend.parldata.application.resolve.Resolver
+import nrw.openbert.backend.parldata.domain.entity.AbstractOparlEntity
+import nrw.openbert.backend.parldata.domain.entity.ResolveTarget
+import nrw.openbert.backend.parldata.domain.entity.raw.RawAgendaItem
+import nrw.openbert.backend.parldata.domain.entity.raw.RawConsultation
+import nrw.openbert.backend.parldata.domain.entity.raw.RawFile
+import nrw.openbert.backend.parldata.domain.entity.raw.RawLegislativeTerm
+import nrw.openbert.backend.parldata.domain.entity.raw.RawLocation
+import nrw.openbert.backend.parldata.domain.entity.raw.RawMeeting
+import nrw.openbert.backend.parldata.domain.entity.raw.RawMembership
+import nrw.openbert.backend.parldata.domain.entity.raw.RawPaper
+import nrw.openbert.backend.parldata.domain.entity.raw.RawPerson
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -104,10 +104,11 @@ class RemainingResolversPersistenceTest(
 
         val file = assertNotNull(fileRepository.findByResource(raw.resource))
         assertEquals(UUID.fromString("903c26aa-dc8f-4d34-afd6-afdc5040dbd3"), file.body.id)
-        val rawAgendaItem = entityManager.find(
-            RawAgendaItem::class.java,
-            UUID.fromString("70000000-0000-4000-8000-000000000001"),
-        )
+        val rawAgendaItem =
+            entityManager.find(
+                RawAgendaItem::class.java,
+                UUID.fromString("70000000-0000-4000-8000-000000000001"),
+            )
         assertNull(agendaItemRepository.findByResource(rawAgendaItem.resource))
 
         resolve(RawAgendaItem::class.java, rawAgendaItem.id.toString())
@@ -119,12 +120,16 @@ class RemainingResolversPersistenceTest(
         assertEquals(listOf(file.id), resolved.auxiliaryFiles.map { it.id })
     }
 
-    private fun <T : AbstractOparlEntity> resolve(type: Class<T>, id: String): T {
+    private fun <T : AbstractOparlEntity> resolve(
+        type: Class<T>,
+        id: String,
+    ): T {
         val raw = entityManager.find(type, UUID.fromString(id))
         val candidate = ResolveTarget.create(raw)
-        val target = targetRepository.save(
-            (targetRepository.findByRawEntityIdAndEntityType(raw.id, candidate.entityType) ?: candidate).enqueue(),
-        )
+        val target =
+            targetRepository.save(
+                (targetRepository.findByRawEntityIdAndEntityType(raw.id, candidate.entityType) ?: candidate).enqueue(),
+            )
         resolver.run(target.id)
         assertNotNull(targetRepository.findById(target.id).orElseThrow().lastResolvedAt)
         return raw

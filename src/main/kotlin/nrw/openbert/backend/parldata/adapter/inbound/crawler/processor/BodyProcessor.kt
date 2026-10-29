@@ -1,13 +1,13 @@
 package nrw.openbert.backend.parldata.adapter.inbound.crawler.processor
 
-import nrw.openbert.backend.parldata.application.crawl.CrawlTargetEnqueuer
-import nrw.openbert.backend.parldata.domain.enums.OparlType
 import nrw.openbert.backend.parldata.adapter.outbound.client.oparl.dto.OparlBodyDto
+import nrw.openbert.backend.parldata.application.crawl.CrawlTargetEnqueuer
 import nrw.openbert.backend.parldata.application.enrich.EnrichTargetEnqueuer
+import nrw.openbert.backend.parldata.application.port.outbound.repository.RawBodyRepository
 import nrw.openbert.backend.parldata.domain.entity.AbstractOparlEntity
 import nrw.openbert.backend.parldata.domain.entity.embeddable.OparlResource
 import nrw.openbert.backend.parldata.domain.entity.raw.RawBody
-import nrw.openbert.backend.parldata.application.port.outbound.repository.RawBodyRepository
+import nrw.openbert.backend.parldata.domain.enums.OparlType
 import org.springframework.stereotype.Service
 
 @Service
@@ -24,7 +24,10 @@ class BodyProcessor(
 
     override fun saveEntity(entity: RawBody) = rawBodyRepository.save(entity)
 
-    override fun processRelationships(resource: OparlResource, dto: OparlBodyDto) {
+    override fun processRelationships(
+        resource: OparlResource,
+        dto: OparlBodyDto,
+    ) {
         enqueueUrls(resource, OparlType.SYSTEM, dto.system)
         enqueueUrls(resource, OparlType.ORGANIZATION, dto.organization)
         enqueueUrls(resource, OparlType.PERSON, dto.person)
@@ -41,7 +44,10 @@ class BodyProcessor(
         processInline(resource, dto.location, locationProcessor) { it.bodyUrls.addUrl(resource.url) }
     }
 
-    override fun updateEntity(entity: RawBody, dto: OparlBodyDto) {
+    override fun updateEntity(
+        entity: RawBody,
+        dto: OparlBodyDto,
+    ) {
         entity.shortName = dto.shortName
         entity.name = dto.name ?: AbstractOparlEntity.UNKNOWN
         entity.website = dto.website

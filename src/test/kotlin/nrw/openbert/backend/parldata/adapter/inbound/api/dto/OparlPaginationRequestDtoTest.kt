@@ -18,8 +18,22 @@ class OparlPaginationRequestDtoTest {
 
     @Test
     fun `rejects page numbers below 1`() {
-        assertEquals("page", validator.validate(OparlPaginationRequestDto(page = 0)).single().propertyPath.toString())
-        assertEquals("page", validator.validate(OparlPaginationRequestDto(page = -1)).single().propertyPath.toString())
+        assertEquals(
+            "page",
+            validator
+                .validate(OparlPaginationRequestDto(page = 0))
+                .single()
+                .propertyPath
+                .toString(),
+        )
+        assertEquals(
+            "page",
+            validator
+                .validate(OparlPaginationRequestDto(page = -1))
+                .single()
+                .propertyPath
+                .toString(),
+        )
     }
 
     @Test

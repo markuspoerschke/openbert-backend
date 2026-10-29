@@ -24,12 +24,14 @@ class ScheduleDueCrawls(
     fun run() {
         logger.info("Running crawl scheduler")
 
-        val dueTargets = crawlTargetRepository.findDue(Instant.now(), 1).onEach { crawlTarget ->
-            val jobId = jobScheduler.enqueue {
-                crawler.run(crawlTarget.id)
+        val dueTargets =
+            crawlTargetRepository.findDue(Instant.now(), 1).onEach { crawlTarget ->
+                val jobId =
+                    jobScheduler.enqueue {
+                        crawler.run(crawlTarget.id)
+                    }
+                crawlTarget.markAsScheduled(jobId.asUUID())
             }
-            crawlTarget.markAsScheduled(jobId.asUUID())
-        }
 
         crawlTargetRepository.saveAll(dueTargets)
         logger.info("Scheduled {} crawl targets", dueTargets.size)

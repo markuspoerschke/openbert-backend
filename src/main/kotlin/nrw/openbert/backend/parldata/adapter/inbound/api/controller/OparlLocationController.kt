@@ -21,10 +21,11 @@ import java.util.UUID
 
 @Tag(
     name = "Oparl Location",
-    externalDocs = ExternalDocumentation(
-        "Oparl Specs",
-        "https://oparl.org/spezifikation/online-ansicht/#entity-location",
-    ),
+    externalDocs =
+        ExternalDocumentation(
+            "Oparl Specs",
+            "https://oparl.org/spezifikation/online-ansicht/#entity-location",
+        ),
 )
 @RestController
 class OparlLocationController(
@@ -44,20 +45,22 @@ class OparlLocationController(
             return ResponseEntity.notFound().build()
         }
 
-        val locations = resolvedLocationRepository
-            .findAllByBodyIdOrderById(bodyId, pagination.toPageable())
-            .map(locationMapper::toDto)
+        val locations =
+            resolvedLocationRepository
+                .findAllByBodyIdOrderById(bodyId, pagination.toPageable())
+                .map(locationMapper::toDto)
 
         return ResponseEntity.ok(
             OparlListDto(
                 id = urlGenerator.location.list(bodyId, pagination.page),
                 data = locations.toList(),
                 pagination = listPaginationMapper.toDto(locations),
-                links = listLinksMapper.toDto(
-                    locations,
-                    { page -> urlGenerator.location.list(bodyId, page) }
-                ),
-            )
+                links =
+                    listLinksMapper.toDto(
+                        locations,
+                        { page -> urlGenerator.location.list(bodyId, page) },
+                    ),
+            ),
         )
     }
 
