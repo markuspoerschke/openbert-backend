@@ -1,5 +1,7 @@
 package nrw.openbert.backend.parldata.adapter.inbound.api.controller
 
+import io.swagger.v3.oas.annotations.ExternalDocumentation
+import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.servlet.http.HttpServletResponse
 import jakarta.validation.Valid
 import nrw.openbert.backend.parldata.adapter.inbound.api.dto.OparlFileDto
@@ -27,6 +29,13 @@ import java.io.IOException
 import java.nio.charset.StandardCharsets
 import java.util.UUID
 
+@Tag(
+    name = "Oparl File",
+    externalDocs = ExternalDocumentation(
+        "Oparl Specs",
+        "https://oparl.org/spezifikation/online-ansicht/#entity-file",
+    ),
+)
 @RestController
 class OparlFileController(
     private val urlGenerator: OparlUrlGenerator,
