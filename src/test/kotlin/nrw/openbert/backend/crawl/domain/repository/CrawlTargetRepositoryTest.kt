@@ -23,8 +23,7 @@ class CrawlTargetRepositoryTest(
 ) {
     @Test
     fun `only returns referenced targets that still need crawling`() {
-        val unreferencedTargetId = UUID.fromString("eeeeeeee-eeee-4eee-aeee-eeeeeeeeeeee")
-        val unreferencedTarget = repository.findById(unreferencedTargetId).orElseThrow()
+        val unreferencedTarget = repository.findById(unreferencedTargetId()).orElseThrow()
         val referencedTarget =
             CrawlTarget
                 .create(
@@ -37,7 +36,26 @@ class CrawlTargetRepositoryTest(
         val dueTargetIds = repository.findDue(Instant.now(), limit = 100).map(CrawlTarget::id)
 
         assertTrue(referencedTarget.id in dueTargetIds)
-        assertFalse(unreferencedTargetId in dueTargetIds)
+        assertFalse(unreferencedTargetId() in dueTargetIds)
+    }
+
+    @Test
+    fun `does not return failed targets`() {
+        val failedTarget =
+            CrawlTarget
+                .create(
+                    repository
+                        .findById(unreferencedTargetId())
+                        .orElseThrow()
+                        .resource
+                        .copy(url = OparlUrl("https://oparl-demo.example.org/oparl/v1.1/person/failed")),
+                ).increaseReferenceCounter()
+                .markAsFailed("upstream returned 404")
+        repository.saveAndFlush(failedTarget)
+
+        val dueTargetIds = repository.findDue(Instant.now(), limit = 100).map(CrawlTarget::id)
+
+        assertFalse(failedTarget.id in dueTargetIds)
     }
 
     @Test
@@ -54,4 +72,6 @@ class CrawlTargetRepositoryTest(
 
         assertEquals(listOf(organizationId, personId, membershipId), dependencyTargets)
     }
+
+    private fun unreferencedTargetId(): UUID = UUID.fromString("eeeeeeee-eeee-4eee-aeee-eeeeeeeeeeee")
 }

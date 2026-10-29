@@ -32,8 +32,12 @@ class CrawlTarget(
     var referenceCount: Int = 0,
     var scheduledAt: Instant? = null,
     var jobId: UUID? = null,
+    var failedAt: Instant? = null,
+    var failureReason: String? = null,
 ) {
     companion object {
+        const val FAILURE_REASON_MAX_LENGTH = 1024
+
         fun create(
             resource: OparlResource,
             entityType: OparlType? = null,
@@ -59,12 +63,17 @@ class CrawlTarget(
             referenceCount = 0
             scheduledAt = null
             jobId = null
+            failedAt = null
+            failureReason = null
             lastCrawledAt = modifiedAt
         }
 
-    fun markAsScheduled(jobId: UUID) =
+    fun markAsFailed(reason: String) =
         apply {
+            modifiedAt = Instant.now()
             scheduledAt = null
-            this.jobId = jobId
+            jobId = null
+            failedAt = modifiedAt
+            failureReason = reason.take(FAILURE_REASON_MAX_LENGTH)
         }
 }
