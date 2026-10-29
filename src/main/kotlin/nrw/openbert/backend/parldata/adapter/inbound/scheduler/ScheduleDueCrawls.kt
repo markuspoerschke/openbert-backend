@@ -2,38 +2,31 @@ package nrw.openbert.backend.parldata.adapter.inbound.scheduler
 
 import nrw.openbert.backend.parldata.adapter.inbound.crawler.Crawler
 import nrw.openbert.backend.parldata.application.port.outbound.repository.CrawlTargetRepository
-import org.jobrunr.jobs.annotations.Job
-import org.jobrunr.jobs.annotations.Recurring
-import org.jobrunr.scheduling.JobScheduler
 import org.slf4j.LoggerFactory
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
+import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.Instant
 
 @Service
+@ConditionalOnProperty(name = ["app.crawl.scheduler.enabled"], havingValue = "true", matchIfMissing = true)
 class ScheduleDueCrawls(
     private val crawlTargetRepository: CrawlTargetRepository,
     private val crawler: Crawler,
-    private val jobScheduler: JobScheduler,
 ) {
     private val logger = LoggerFactory.getLogger(javaClass)
 
     @Transactional
-    @Job(name = "Crawler - Schedule")
-    @Recurring(id = "crawl-schedule", cron = "PT30S")
+    @Scheduled(cron = "\${app.crawl.scheduler.cron:0 * * * * *}")
     fun run() {
         logger.info("Running crawl scheduler")
 
         val dueTargets =
-            crawlTargetRepository.findDue(Instant.now(), 1).onEach { crawlTarget ->
-                val jobId =
-                    jobScheduler.enqueue {
-                        crawler.run(crawlTarget.id)
-                    }
-                crawlTarget.markAsScheduled(jobId.asUUID())
-            }
+            crawlTargetRepository
+                .findDue(Instant.now(), 1)
+                .onEach { crawlTarget -> crawler.run(crawlTarget.id) }
 
-        crawlTargetRepository.saveAll(dueTargets)
-        logger.info("Scheduled {} crawl targets", dueTargets.size)
+        logger.info("Crawled {} crawl targets", dueTargets.size)
     }
 }

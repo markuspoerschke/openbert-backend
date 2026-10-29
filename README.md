@@ -78,6 +78,17 @@ Data availability depends on the upstream server and background processing.
 - **API documentation:** [Swagger UI](http://localhost:8080/docs) to browse and try the HTTP endpoints; OpenAPI schema at `http://localhost:8080/docs/openapi.json`.
 - **Tests and packaging:** `./gradlew build` (Docker required for Testcontainers).
 
+## Configuration
+
+Application-specific properties use the `app.` prefix and can be overridden through environment variables using Spring's relaxed binding.
+
+| Property | Environment variable | Default | Description |
+| --- | --- | --- | --- |
+| `app.crawl.scheduler.enabled` | `APP_CRAWL_SCHEDULER_ENABLED` | `true` | Enables or disables the crawl cronjob. When set to `false`, no crawl targets are processed. |
+| `app.crawl.scheduler.cron` | `APP_CRAWL_SCHEDULER_CRON` | `0 * * * * *` | Cron expression for the crawl cronjob (every 60 seconds by default). The special value `-` disables the schedule. |
+
+The crawl runs directly inside the cronjob, so crawls are paced by the cron expression instead of piling up in the JobRunr queue. Only resolve and enrich jobs are still dispatched through JobRunr.
+
 ## Static analysis
 
 Run `./gradlew detekt` to analyze production and test Kotlin sources. Detekt also runs through `check` when executing `./gradlew build`, including the CI build. Reports are written to `build/reports/detekt/` in HTML, XML, Markdown and SARIF formats.
