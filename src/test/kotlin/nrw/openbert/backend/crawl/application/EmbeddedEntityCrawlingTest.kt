@@ -73,6 +73,17 @@ class EmbeddedEntityCrawlingTest(
         entityManager.flush()
         entityManager.clear()
 
+        val personTarget = assertListCrawlSeedsNewPerson(personResource, completeResource, listTarget, completedAt)
+        val crawledAt = crawlOwnUrlFillsMissingFields(personResource, personTarget)
+        assertRepeatedListDataCannotEraseFullData(personResource, listTarget, personTarget, crawledAt)
+    }
+
+    private fun assertListCrawlSeedsNewPerson(
+        personResource: OparlResource,
+        completeResource: OparlResource,
+        listTarget: CrawlTarget,
+        completedAt: Instant?,
+    ): CrawlTarget {
         val seed = persons.findByResource(personResource)!!
         assertEquals("List name", seed.name)
         assertTrue(seed.email.isEmpty())
@@ -85,7 +96,14 @@ class EmbeddedEntityCrawlingTest(
         assertEquals(listOf("+49 123 456"), completePerson.phone)
         assertEquals(completedAt, crawlTargets.findByResource(completeResource)!!.lastCrawledAt)
         assertNull(enrichTargets.findByRawEntityIdAndEntityType(completePerson.id, OparlType.PERSON))
+        return personTarget
+    }
 
+    private fun crawlOwnUrlFillsMissingFields(
+        personResource: OparlResource,
+        personTarget: CrawlTarget,
+    ): Instant? {
+        val seedId = persons.findByResource(personResource)!!.id
         `when`(oparlClient.get(personResource.url.value)).thenReturn(
             OparlPersonDto(
                 id = personResource.url.value,
@@ -101,7 +119,7 @@ class EmbeddedEntityCrawlingTest(
         entityManager.clear()
 
         val fullPerson = persons.findByResource(personResource)!!
-        assertEquals(seed.id, fullPerson.id)
+        assertEquals(seedId, fullPerson.id)
         assertEquals("Full name", fullPerson.name)
         assertEquals("Example", fullPerson.familyName)
         assertEquals(resource("body/123").url, fullPerson.bodyUrl)
@@ -110,7 +128,15 @@ class EmbeddedEntityCrawlingTest(
         val crawledAt = crawlTargets.findById(personTarget.id).orElseThrow().lastCrawledAt
         assertNotNull(crawledAt)
         verify(oparlClient).get(personResource.url.value)
+        return crawledAt
+    }
 
+    private fun assertRepeatedListDataCannotEraseFullData(
+        personResource: OparlResource,
+        listTarget: CrawlTarget,
+        personTarget: CrawlTarget,
+        crawledAt: Instant?,
+    ) {
         // A later page containing the same partial representation cannot erase full data.
         crawler.run(listTarget.id)
         entityManager.flush()
