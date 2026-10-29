@@ -9,6 +9,7 @@ import nrw.openbert.backend.parldata.domain.valueObject.OparlUrl
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchers.anyInt
+import org.mockito.Mockito.doThrow
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.verifyNoMoreInteractions
@@ -18,7 +19,8 @@ import java.time.Instant
 class ScheduleDueCrawlsTest {
     private val crawlTargetRepository = mock(CrawlTargetRepository::class.java)
     private val crawler = mock(Crawler::class.java)
-    private val scheduleDueCrawls = ScheduleDueCrawls(crawlTargetRepository, crawler)
+    private val crawlFailureRecorder = mock(CrawlFailureRecorder::class.java)
+    private val scheduleDueCrawls = ScheduleDueCrawls(crawlTargetRepository, crawler, crawlFailureRecorder)
 
     @Test
     fun `crawls due targets directly instead of enqueueing them`() {
@@ -28,7 +30,7 @@ class ScheduleDueCrawlsTest {
         scheduleDueCrawls.run()
 
         verify(crawler).run(target.id)
-        verifyNoMoreInteractions(crawler)
+        verifyNoMoreInteractions(crawler, crawlFailureRecorder)
     }
 
     @Test
@@ -37,7 +39,20 @@ class ScheduleDueCrawlsTest {
 
         scheduleDueCrawls.run()
 
-        verifyNoMoreInteractions(crawler)
+        verifyNoMoreInteractions(crawler, crawlFailureRecorder)
+    }
+
+    @Test
+    fun `records the failure instead of throwing when a crawl fails`() {
+        val target = crawlTarget()
+        `when`(crawlTargetRepository.findDue(anyInstant(), anyInt())).thenReturn(listOf(target))
+        val error = RuntimeException("upstream returned 404")
+        doThrow(error).`when`(crawler).run(target.id)
+
+        scheduleDueCrawls.run()
+
+        verify(crawlFailureRecorder).record(target.id, error)
+        verifyNoMoreInteractions(crawlFailureRecorder)
     }
 
     private fun anyInstant(): Instant = any(Instant::class.java) ?: Instant.EPOCH

@@ -6,7 +6,6 @@ import org.slf4j.LoggerFactory
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Transactional
 import java.time.Instant
 
 @Service
@@ -14,18 +13,24 @@ import java.time.Instant
 class ScheduleDueCrawls(
     private val crawlTargetRepository: CrawlTargetRepository,
     private val crawler: Crawler,
+    private val crawlFailureRecorder: CrawlFailureRecorder,
 ) {
     private val logger = LoggerFactory.getLogger(javaClass)
 
-    @Transactional
+    @Suppress("TooGenericExceptionCaught")
     @Scheduled(cron = "\${app.crawl.scheduler.cron:0 * * * * *}")
     fun run() {
         logger.info("Running crawl scheduler")
 
-        val dueTargets =
-            crawlTargetRepository
-                .findDue(Instant.now(), 1)
-                .onEach { crawlTarget -> crawler.run(crawlTarget.id) }
+        val dueTargets = crawlTargetRepository.findDue(Instant.now(), 1)
+
+        dueTargets.forEach { crawlTarget ->
+            try {
+                crawler.run(crawlTarget.id)
+            } catch (error: Exception) {
+                crawlFailureRecorder.record(crawlTarget.id, error)
+            }
+        }
 
         logger.info("Crawled {} crawl targets", dueTargets.size)
     }

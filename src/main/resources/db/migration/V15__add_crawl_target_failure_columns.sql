@@ -1,0 +1,3 @@
+ALTER TABLE crawl_target
+    ADD COLUMN failed_at TIMESTAMP(6) WITHOUT TIME ZONE,
+    ADD COLUMN failure_reason VARCHAR(1024);
