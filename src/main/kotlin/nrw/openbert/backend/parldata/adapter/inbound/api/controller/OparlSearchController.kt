@@ -1,6 +1,8 @@
 package nrw.openbert.backend.parldata.adapter.inbound.api.controller
 
+import io.swagger.v3.oas.annotations.ExternalDocumentation
 import io.swagger.v3.oas.annotations.Parameter
+import io.swagger.v3.oas.annotations.tags.Tag
 import nrw.openbert.backend.parldata.adapter.inbound.api.dto.OparlListLinksDto
 import nrw.openbert.backend.parldata.adapter.inbound.api.dto.OparlListPaginationDto
 import nrw.openbert.backend.parldata.adapter.inbound.api.dto.OparlSearchResultListDto
@@ -15,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder
 
+@Tag(name = "Search", externalDocs = ExternalDocumentation("Oparl Specs", "https://oparl.org/spezifikation/online-ansicht/"))
 @RestController
 class OparlSearchController(
     private val searchService: OparlEntitySearchServiceInterface,

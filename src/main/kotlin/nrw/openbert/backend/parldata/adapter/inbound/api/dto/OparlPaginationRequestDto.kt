@@ -1,5 +1,6 @@
 package nrw.openbert.backend.parldata.adapter.inbound.api.dto
 
+import io.swagger.v3.oas.annotations.Parameter
 import jakarta.validation.constraints.Min
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
@@ -14,6 +15,7 @@ data class OparlPaginationRequestDto(
      * 1-based page number as required by OParl.
      */
     @field:Min(1)
+    @Parameter(description = "1-based page number as required by OParl.")
     val page: Int = 1,
 ) {
     /**

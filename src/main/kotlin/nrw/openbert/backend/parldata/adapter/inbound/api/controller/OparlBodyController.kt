@@ -1,5 +1,7 @@
 package nrw.openbert.backend.parldata.adapter.inbound.api.controller
 
+import io.swagger.v3.oas.annotations.ExternalDocumentation
+import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
 import nrw.openbert.backend.parldata.adapter.inbound.api.dto.OparlBodyDto
 import nrw.openbert.backend.parldata.adapter.inbound.api.dto.OparlListDto
@@ -16,6 +18,7 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RestController
 import java.util.UUID
 
+@Tag(name = "Oparl Body", externalDocs = ExternalDocumentation("Oparl Specs", "https://oparl.org/spezifikation/online-ansicht/#entity-body"))
 @RestController
 class OparlBodyController(
     private val urlGenerator: OparlUrlGenerator,
