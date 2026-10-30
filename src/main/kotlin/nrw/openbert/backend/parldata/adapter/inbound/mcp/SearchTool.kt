@@ -27,17 +27,17 @@ class SearchTool(
         term: String? = null,
         @McpToolParam(required = false, description = "List of body IDs to filter by")
         bodies: List<String>? = null,
-        @McpToolParam(required = false, description = "List of OParl types to filter by (e.g., PERSON, ORGANIZATION)")
-        types: List<String>? = null,
+        @McpToolParam(
+            required = false,
+            description = "List of OParl resource types to filter",
+        )
+        types: List<OparlType>? = null,
     ) = searchService
         .search(
             SearchCriteria(
                 term = term?.trim(),
                 bodies = bodies ?: emptyList(),
-                types =
-                    types?.mapNotNull { typeString ->
-                        OparlType.entries.find { it.name == typeString.uppercase() }
-                    } ?: OparlType.entries.toList(),
+                types = types ?: OparlType.entries.toList(),
             ),
             PageRequest.of(0, PAGE_SIZE),
         ).map(mapper::toDto)
