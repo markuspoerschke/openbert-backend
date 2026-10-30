@@ -48,21 +48,23 @@ class SearchTool(
         val effectivePage = (page ?: 1).coerceAtLeast(1) - 1 // Convert to 0-based
         val effectivePageSize = (pageSize ?: DEFAULT_PAGE_SIZE).coerceAtLeast(1).coerceAtMost(MAX_PAGE_SIZE)
 
-        val resultPage = searchService.search(
-            SearchCriteria(
-                term = term?.trim(),
-                bodies = bodies ?: emptyList(),
-                types = types ?: OparlType.entries.toList(),
-            ),
-            PageRequest.of(effectivePage, effectivePageSize),
-        )
+        val resultPage =
+            searchService.search(
+                SearchCriteria(
+                    term = term?.trim(),
+                    bodies = bodies ?: emptyList(),
+                    types = types ?: OparlType.entries.toList(),
+                ),
+                PageRequest.of(effectivePage, effectivePageSize),
+            )
 
-        val pagination = OparlListPaginationDto(
-            totalElements = Math.toIntExact(resultPage.totalElements),
-            elementsPerPage = effectivePageSize,
-            currentPage = effectivePage + 1, // Convert back to 1-based
-            totalPages = resultPage.totalPages,
-        )
+        val pagination =
+            OparlListPaginationDto(
+                totalElements = Math.toIntExact(resultPage.totalElements),
+                elementsPerPage = effectivePageSize,
+                currentPage = effectivePage + 1, // Convert back to 1-based
+                totalPages = resultPage.totalPages,
+            )
 
         return McpSearchResultListDto(
             data = resultPage.map(mapper::toDto).toList(),

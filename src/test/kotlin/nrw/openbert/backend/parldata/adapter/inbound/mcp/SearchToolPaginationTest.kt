@@ -52,12 +52,13 @@ class SearchToolPaginationTest {
         assertEquals(
             McpSearchResultListDto(
                 data = listOf(mappedResult),
-                pagination = OparlListPaginationDto(
-                    totalElements = 1,
-                    elementsPerPage = 30,
-                    currentPage = 1,
-                    totalPages = 1,
-                ),
+                pagination =
+                    OparlListPaginationDto(
+                        totalElements = 1,
+                        elementsPerPage = 30,
+                        currentPage = 1,
+                        totalPages = 1,
+                    ),
             ),
             result,
         )
@@ -95,12 +96,13 @@ class SearchToolPaginationTest {
         assertEquals(
             McpSearchResultListDto(
                 data = listOf(mappedResult),
-                pagination = OparlListPaginationDto(
-                    totalElements = 30, // Total elements in the page
-                    elementsPerPage = 10,
-                    currentPage = 2,
-                    totalPages = 3,
-                ),
+                pagination =
+                    OparlListPaginationDto(
+                        totalElements = 30, // Total elements in the page
+                        elementsPerPage = 10,
+                        currentPage = 2,
+                        totalPages = 3,
+                    ),
             ),
             result,
         )
@@ -138,12 +140,13 @@ class SearchToolPaginationTest {
         assertEquals(
             McpSearchResultListDto(
                 data = listOf(mappedResult),
-                pagination = OparlListPaginationDto(
-                    totalElements = 1,
-                    elementsPerPage = 100,
-                    currentPage = 1,
-                    totalPages = 1,
-                ),
+                pagination =
+                    OparlListPaginationDto(
+                        totalElements = 1,
+                        elementsPerPage = 100,
+                        currentPage = 1,
+                        totalPages = 1,
+                    ),
             ),
             result,
         )
