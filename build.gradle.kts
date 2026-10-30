@@ -76,7 +76,7 @@ dependencies {
     testImplementation("org.testcontainers:testcontainers-postgresql")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.1.1")
-    implementation("org.springframework.ai:spring-ai-starter-mcp-server-webmvc:2.0.1")
+    implementation("org.springframework.ai:spring-ai-starter-mcp-server-webmvc:2.0.2")
     implementation("io.sentry:sentry-spring-boot-4:8.61.0")
 }
 
