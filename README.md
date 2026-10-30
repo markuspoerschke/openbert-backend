@@ -12,7 +12,7 @@ The longer-term goal is to connect information across municipalities. Planned en
 
 MCP is the main entry point, with tools for listing councils and searching their data. It can be used with clients such as Claude and LM Studio. A frontend is in development; public hosting is pending authentication. There is no hosted demo yet.
 
-The OParl implementation is incomplete: refresh/deletion handling and some relationships remain unfinished, and file downloads currently return placeholders.
+The OParl implementation is incomplete: refresh/deletion handling and some relationships remain unfinished.
 
 ## System overview
 
