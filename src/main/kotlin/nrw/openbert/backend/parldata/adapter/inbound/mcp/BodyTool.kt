@@ -11,7 +11,12 @@ class BodyTool(
     val repository: ResolvedBodyRepository,
     val mapper: OparlBodyMapper,
 ) {
-    @McpTool(name = "oparl_body_list", description = "List all available bodies in the system")
+    @McpTool(
+        name = "oparl_body_list",
+        description =
+            "List all available bodies in the system. " +
+                "Never fails for a valid call; returns an empty list when there are no bodies.",
+    )
     fun listBodies() =
         repository
             .findAll(Sort.by(Sort.Direction.DESC, "name"))

@@ -6,6 +6,7 @@ import nrw.openbert.backend.parldata.domain.enums.OparlType
 import nrw.openbert.backend.parldata.domain.valueObject.OparlSearchReference
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertThrows
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.verify
@@ -56,13 +57,18 @@ class GetResourceToolTest {
     }
 
     @Test
-    fun `throws exception for unsupported id`() {
+    fun `returns a client friendly error message for an unsupported id`() {
         val exception =
             assertThrows(IllegalArgumentException::class.java) {
                 tool.getResource("https://example.org/not-oparl")
             }
 
-        assertEquals("Unsupported OParl resource id: https://example.org/not-oparl", exception.message)
+        val message = requireNotNull(exception.message)
+        assertTrue(message.startsWith("Unsupported OParl resource id 'https://example.org/not-oparl'."))
+        assertTrue(message.contains("https://example.org/oparl/v1.1/body/{bodyId}/person/{personId}"))
+        assertTrue(message.contains("Supported resources are bodies"))
+        assertTrue(message.contains("agendaitem, consultation, file, legislativeterm, location, meeting"))
+        assertTrue(message.contains("membership, organization, paper, and person"))
     }
 
     private fun bodyDto() =
