@@ -25,7 +25,7 @@ class SearchToolTest {
                 bodies = listOf("903c26aa-dc8f-4d34-afd6-afdc5040dbd3"),
             )
 
-        assertTrue(results.isNotEmpty())
+        assert(results.data.isNotEmpty())
     }
 
     @Test
@@ -36,8 +36,8 @@ class SearchToolTest {
                 types = listOf(OparlType.ORGANIZATION),
             )
 
-        assertTrue(results.isNotEmpty())
-        val firstResult = results[0]
+        assert(results.data.isNotEmpty())
+        val firstResult = results.data[0]
         if (firstResult is Map<*, *>) {
             assertEquals(OparlType.ORGANIZATION.url, firstResult["type"])
         }
@@ -52,8 +52,8 @@ class SearchToolTest {
                 types = listOf(OparlType.FILE),
             )
 
-        assertTrue(results.isNotEmpty())
-        val firstResult = results[0]
+        assert(results.data.isNotEmpty())
+        val firstResult = results.data[0]
         if (firstResult is Map<*, *>) {
             assertEquals(OparlType.FILE.url, firstResult["type"])
         }
@@ -67,7 +67,7 @@ class SearchToolTest {
                 types = emptyList(),
             )
 
-        assertTrue(results.isNotEmpty()) // Should fallback to all types
+        assert(results.data.isNotEmpty()) // Should fallback to all types
     }
 
     @Test
@@ -78,8 +78,8 @@ class SearchToolTest {
                 types = listOf(OparlType.ORGANIZATION),
             )
 
-        assertTrue(results.isNotEmpty())
-        val firstResult = results[0]
+        assert(results.data.isNotEmpty())
+        val firstResult = results.data[0]
         if (firstResult is Map<*, *>) {
             assertEquals(OparlType.ORGANIZATION.url, firstResult["type"])
         }
