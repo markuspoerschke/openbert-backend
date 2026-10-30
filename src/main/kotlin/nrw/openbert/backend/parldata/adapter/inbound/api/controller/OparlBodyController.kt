@@ -40,7 +40,7 @@ class OparlBodyController(
     ): ResponseEntity<OparlListDto<OparlBodyDto>> {
         val bodies =
             resolvedBodyRepository
-                .findAllByOrderById(pagination.toPageable())
+                .findAllByOrderById(pagination.toSpringPageRequest())
                 .map(bodyMapper::toDto)
 
         return ResponseEntity.ok(

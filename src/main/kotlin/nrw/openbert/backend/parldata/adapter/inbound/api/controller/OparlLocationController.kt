@@ -47,7 +47,7 @@ class OparlLocationController(
 
         val locations =
             resolvedLocationRepository
-                .findAllByBodyIdOrderById(bodyId, pagination.toPageable())
+                .findAllByBodyIdOrderById(bodyId, pagination.toSpringPageRequest())
                 .map(locationMapper::toDto)
 
         return ResponseEntity.ok(

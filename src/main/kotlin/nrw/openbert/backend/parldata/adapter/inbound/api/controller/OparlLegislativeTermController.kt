@@ -47,7 +47,7 @@ class OparlLegislativeTermController(
 
         val legislativeTerms =
             resolvedLegislativeTermRepository
-                .findAllByBodyIdOrderById(bodyId, pagination.toPageable())
+                .findAllByBodyIdOrderById(bodyId, pagination.toSpringPageRequest())
                 .map(legislativeTermMapper::toDto)
 
         return ResponseEntity.ok(

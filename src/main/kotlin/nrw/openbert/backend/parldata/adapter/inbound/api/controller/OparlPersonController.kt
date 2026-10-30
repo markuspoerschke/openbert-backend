@@ -47,7 +47,7 @@ class OparlPersonController(
 
         val persons =
             resolvedPersonRepository
-                .findAllByBodyIdOrderById(bodyId, pagination.toPageable())
+                .findAllByBodyIdOrderById(bodyId, pagination.toSpringPageRequest())
                 .map(personMapper::toDto)
 
         return ResponseEntity.ok(

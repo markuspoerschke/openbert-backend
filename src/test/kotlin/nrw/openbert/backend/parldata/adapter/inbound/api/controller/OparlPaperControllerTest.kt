@@ -97,6 +97,38 @@ class OparlPaperControllerTest(
     }
 
     @Test
+    fun `lists resolved papers with custom page size`() {
+        mockMvc
+            .get("$bodyUrl/paper?page=1&size=10")
+            .andExpect {
+                status { isOk() }
+                jsonPath("$.pagination.elementsPerPage") { value(10) }
+                jsonPath("$.data.length()") { value(1) }
+            }
+    }
+
+    @Test
+    fun `returns bad request when size is invalid`() {
+        mockMvc
+            .get("$bodyUrl/paper?size=0")
+            .andExpect {
+                status { isBadRequest() }
+            }
+
+        mockMvc
+            .get("$bodyUrl/paper?size=-1")
+            .andExpect {
+                status { isBadRequest() }
+            }
+
+        mockMvc
+            .get("$bodyUrl/paper?size=101")
+            .andExpect {
+                status { isBadRequest() }
+            }
+    }
+
+    @Test
     fun `returns a single resolved paper`() {
         mockMvc
             .get(paperUrl)

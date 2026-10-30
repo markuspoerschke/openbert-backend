@@ -58,7 +58,7 @@ class OparlFileController(
 
         val files =
             resolvedFileRepository
-                .findAllByBodyIdOrderById(bodyId, pagination.toPageable())
+                .findAllByBodyIdOrderById(bodyId, pagination.toSpringPageRequest())
                 .map(fileMapper::toDto)
 
         return ResponseEntity.ok(

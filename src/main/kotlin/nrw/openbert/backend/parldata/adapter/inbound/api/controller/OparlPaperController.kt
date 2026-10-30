@@ -47,7 +47,7 @@ class OparlPaperController(
 
         val papers =
             resolvedPaperRepository
-                .findAllByBodyIdOrderById(bodyId, pagination.toPageable())
+                .findAllByBodyIdOrderById(bodyId, pagination.toSpringPageRequest())
                 .map(paperMapper::toDto)
 
         return ResponseEntity.ok(

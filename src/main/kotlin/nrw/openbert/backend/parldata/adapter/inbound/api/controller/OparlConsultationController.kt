@@ -47,7 +47,7 @@ class OparlConsultationController(
 
         val consultations =
             resolvedConsultationRepository
-                .findAllByBodyIdOrderById(bodyId, pagination.toPageable())
+                .findAllByBodyIdOrderById(bodyId, pagination.toSpringPageRequest())
                 .map(consultationMapper::toDto)
 
         return ResponseEntity.ok(

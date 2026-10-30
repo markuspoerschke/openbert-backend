@@ -47,7 +47,7 @@ class OparlMembershipController(
 
         val memberships =
             resolvedMembershipRepository
-                .findAllByBodyIdOrderById(bodyId, pagination.toPageable())
+                .findAllByBodyIdOrderById(bodyId, pagination.toSpringPageRequest())
                 .map { membershipMapper.toDto(it) }
 
         return ResponseEntity.ok(

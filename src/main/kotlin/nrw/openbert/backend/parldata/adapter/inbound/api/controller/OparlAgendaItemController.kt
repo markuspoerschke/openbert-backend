@@ -47,7 +47,7 @@ class OparlAgendaItemController(
 
         val agendaItems =
             resolvedAgendaItemRepository
-                .findAllByBodyIdOrderById(bodyId, pagination.toPageable())
+                .findAllByBodyIdOrderById(bodyId, pagination.toSpringPageRequest())
                 .map(agendaItemMapper::toDto)
 
         return ResponseEntity.ok(

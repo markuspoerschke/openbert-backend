@@ -57,7 +57,7 @@ class OparlOrganizationController(
 
         val organizations =
             resolvedOrganizationRepository
-                .findAllByBodyIdOrderById(bodyId, pagination.toPageable())
+                .findAllByBodyIdOrderById(bodyId, pagination.toSpringPageRequest())
                 .map(organizationMapper::toDto)
 
         return ResponseEntity.ok(
@@ -103,7 +103,7 @@ class OparlOrganizationController(
                 .findAllDistinctByOrganizationsIdAndBodyIdOrderById(
                     organizationId,
                     bodyId,
-                    pagination.toPageable(),
+                    pagination.toSpringPageRequest(),
                 ).map(meetingMapper::toDto)
 
         return ResponseEntity.ok(
@@ -135,7 +135,7 @@ class OparlOrganizationController(
                 .findAllDistinctByOrganizationsIdAndBodyIdOrderById(
                     organizationId,
                     bodyId,
-                    pagination.toPageable(),
+                    pagination.toSpringPageRequest(),
                 ).map(consultationMapper::toDto)
 
         return ResponseEntity.ok(

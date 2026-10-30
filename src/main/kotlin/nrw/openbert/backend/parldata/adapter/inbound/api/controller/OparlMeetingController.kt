@@ -47,7 +47,7 @@ class OparlMeetingController(
 
         val meetings =
             resolvedMeetingRepository
-                .findAllByBodyIdOrderById(bodyId, pagination.toPageable())
+                .findAllByBodyIdOrderById(bodyId, pagination.toSpringPageRequest())
                 .map(meetingMapper::toDto)
 
         return ResponseEntity.ok(
