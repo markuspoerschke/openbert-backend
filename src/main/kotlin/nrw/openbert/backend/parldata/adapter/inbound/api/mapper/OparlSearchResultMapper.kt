@@ -84,6 +84,6 @@ class OparlSearchResultMapper(
 
     private inline fun <reified T : Any> find(reference: OparlSearchReference): T =
         checkNotNull(entityManager.find(T::class.java, reference.entityId)) {
-            "Search result ${reference.entityType}/${reference.entityId} no longer exists"
+            "No OParl ${reference.entityType} resource with id ${reference.entityId} exists."
         }
 }

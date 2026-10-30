@@ -14,23 +14,30 @@ class SearchTool(
     private val searchService: OparlEntitySearchServiceInterface,
     private val mapper: OparlSearchResultMapper,
 ) {
-    @McpTool(description = "Searches for content in the OParl system", name = "oparl_search")
+    @McpTool(
+        name = "oparl_search",
+        description =
+            "Searches for content in the OParl system. " +
+                "A search term should contain at least three consecutive letters or digits. " +
+                "Never fails for a valid call: unknown type filter values are ignored and an unknown " +
+                "body filter simply matches no results.",
+    )
     fun search(
         @McpToolParam(required = false, description = "The search term")
         term: String? = null,
         @McpToolParam(required = false, description = "List of body IDs to filter by")
         bodies: List<String>? = null,
-        @McpToolParam(required = false, description = "List of OParl types to filter by (e.g., PERSON, ORGANIZATION)")
-        types: List<String>? = null,
+        @McpToolParam(
+            required = false,
+            description = "List of OParl resource types to filter",
+        )
+        types: List<OparlType>? = null,
     ) = searchService
         .search(
             SearchCriteria(
                 term = term?.trim(),
                 bodies = bodies ?: emptyList(),
-                types =
-                    types?.mapNotNull { typeString ->
-                        OparlType.entries.find { it.name == typeString.uppercase() }
-                    } ?: OparlType.entries.toList(),
+                types = types ?: OparlType.entries.toList(),
             ),
             PageRequest.of(0, PAGE_SIZE),
         ).map(mapper::toDto)

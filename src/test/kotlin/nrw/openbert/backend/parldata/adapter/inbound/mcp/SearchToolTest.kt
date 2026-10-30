@@ -33,7 +33,7 @@ class SearchToolTest {
         val results =
             searchTool.search(
                 term = "haushalt",
-                types = listOf("ORGANIZATION"),
+                types = listOf(OparlType.ORGANIZATION),
             )
 
         assertTrue(results.isNotEmpty())
@@ -49,7 +49,7 @@ class SearchToolTest {
             searchTool.search(
                 term = "searchable",
                 bodies = listOf("ffffffff-ffff-4fff-afff-ffffffffffff"),
-                types = listOf("FILE"),
+                types = listOf(OparlType.FILE),
             )
 
         assertTrue(results.isNotEmpty())
@@ -60,14 +60,14 @@ class SearchToolTest {
     }
 
     @Test
-    fun `handles invalid type values gracefully`() {
+    fun `handles empty type list gracefully`() {
         val results =
             searchTool.search(
                 term = "searchable",
-                types = listOf("INVALID_TYPE"),
+                types = emptyList(),
             )
 
-        assertTrue(results.isNotEmpty()) // Should ignore invalid type and return all types
+        assertTrue(results.isNotEmpty()) // Should fallback to all types
     }
 
     @Test
@@ -75,7 +75,7 @@ class SearchToolTest {
         val results =
             searchTool.search(
                 bodies = listOf("903c26aa-dc8f-4d34-afd6-afdc5040dbd3"),
-                types = listOf("ORGANIZATION"),
+                types = listOf(OparlType.ORGANIZATION),
             )
 
         assertTrue(results.isNotEmpty())
