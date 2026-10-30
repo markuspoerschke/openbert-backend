@@ -1,0 +1,45 @@
+name: Agentic Coding
+
+on:
+  issue_comment:
+    types: [created]
+  pull_request_review_comment:
+    types: [created]
+  issues:
+    types: [opened, assigned]
+  pull_request_review:
+    types: [submitted]
+
+jobs:
+  junie:
+    if: |
+      (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@markuspoerschke-bot')) ||
+      (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@markuspoerschke-bot')) ||
+      (github.event_name == 'pull_request_review' && contains(github.event.review.body, '@markuspoerschke-bot')) ||
+      (github.event_name == 'issues' && (contains(github.event.issue.body, '@markuspoerschke-bot') || contains(github.event.issue.title, '@markuspoerschke-bot') || (github.event.action == 'assigned' && github.event.assignee.login == 'markuspoerschke-bot')))
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 1
+
+      - name: Set up Java
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: "25"
+          cache: gradle
+
+      - name: Run Junie
+        id: junie
+        uses: JetBrains/junie-github-action@v1
+        with:
+          junie_api_key: ${{ secrets.JUNIE_API_KEY }}
+          custom_github_token: ${{ secrets.VIBE_GITHUB_TOKEN }}
+          trigger_phrase: "@markuspoerschke-bot"
+          assignee_trigger: "markuspoerschke-bot"
