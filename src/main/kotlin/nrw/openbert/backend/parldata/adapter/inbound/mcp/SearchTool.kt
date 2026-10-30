@@ -14,7 +14,14 @@ class SearchTool(
     private val searchService: OparlEntitySearchServiceInterface,
     private val mapper: OparlSearchResultMapper,
 ) {
-    @McpTool(description = "Searches for content in the OParl system", name = "oparl_search")
+    @McpTool(
+        name = "oparl_search",
+        description =
+            "Searches for content in the OParl system. " +
+                "A search term should contain at least three consecutive letters or digits. " +
+                "Never fails for a valid call: unknown type filter values are ignored and an unknown " +
+                "body filter simply matches no results.",
+    )
     fun search(
         @McpToolParam(required = false, description = "The search term")
         term: String? = null,
