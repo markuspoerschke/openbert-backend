@@ -16,7 +16,7 @@ jobs:
       (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@markuspoerschke-bot')) ||
       (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@markuspoerschke-bot')) ||
       (github.event_name == 'pull_request_review' && contains(github.event.review.body, '@markuspoerschke-bot')) ||
-      (github.event_name == 'issues' && (contains(github.event.issue.body, '@markuspoerschke-bot') || contains(github.event.issue.title, '@markuspoerschke-bot')))
+      (github.event_name == 'issues' && (contains(github.event.issue.body, '@markuspoerschke-bot') || contains(github.event.issue.title, '@markuspoerschke-bot') || (github.event.action == 'assigned' && github.event.assignee.login == 'markuspoerschke-bot')))
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -41,4 +41,5 @@ jobs:
         with:
           junie_api_key: ${{ secrets.JUNIE_API_KEY }}
           custom_github_token: ${{ secrets.VIBE_GITHUB_TOKEN }}
+          trigger_phrase: "@markuspoerschke-bot"
           assignee_trigger: "markuspoerschke-bot"
