@@ -52,13 +52,13 @@ class OparlConsultationController(
 
         return ResponseEntity.ok(
             OparlListDto(
-                id = urlGenerator.consultation.list(bodyId, pagination.page),
+                id = urlGenerator.consultation.list(bodyId, pagination.page, pagination.size),
                 data = consultations.toList(),
                 pagination = listPaginationMapper.toDto(consultations),
                 links =
                     listLinksMapper.toDto(
                         consultations,
-                        { page -> urlGenerator.consultation.list(bodyId, page) },
+                        { page -> urlGenerator.consultation.list(bodyId, page, pagination.size) },
                     ),
             ),
         )

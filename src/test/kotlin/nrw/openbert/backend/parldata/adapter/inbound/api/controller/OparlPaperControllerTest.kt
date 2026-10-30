@@ -102,7 +102,11 @@ class OparlPaperControllerTest(
             .get("$bodyUrl/paper?page=1&size=10")
             .andExpect {
                 status { isOk() }
+                jsonPath("$.id") { value("$bodyUrl/paper?page=1&size=10") }
                 jsonPath("$.pagination.elementsPerPage") { value(10) }
+                jsonPath("$.links.first") { value("$bodyUrl/paper?page=1&size=10") }
+                jsonPath("$.links.self") { value("$bodyUrl/paper?page=1&size=10") }
+                jsonPath("$.links.last") { value("$bodyUrl/paper?page=1&size=10") }
                 jsonPath("$.data.length()") { value(1) }
             }
     }

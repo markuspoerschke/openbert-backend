@@ -52,13 +52,13 @@ class OparlMembershipController(
 
         return ResponseEntity.ok(
             OparlListDto(
-                id = urlGenerator.membership.list(bodyId, pagination.page),
+                id = urlGenerator.membership.list(bodyId, pagination.page, pagination.size),
                 data = memberships.toList(),
                 pagination = listPaginationMapper.toDto(memberships),
                 links =
                     listLinksMapper.toDto(
                         memberships,
-                        { page -> urlGenerator.membership.list(bodyId, page) },
+                        { page -> urlGenerator.membership.list(bodyId, page, pagination.size) },
                     ),
             ),
         )

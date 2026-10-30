@@ -52,13 +52,13 @@ class OparlLocationController(
 
         return ResponseEntity.ok(
             OparlListDto(
-                id = urlGenerator.location.list(bodyId, pagination.page),
+                id = urlGenerator.location.list(bodyId, pagination.page, pagination.size),
                 data = locations.toList(),
                 pagination = listPaginationMapper.toDto(locations),
                 links =
                     listLinksMapper.toDto(
                         locations,
-                        { page -> urlGenerator.location.list(bodyId, page) },
+                        { page -> urlGenerator.location.list(bodyId, page, pagination.size) },
                     ),
             ),
         )

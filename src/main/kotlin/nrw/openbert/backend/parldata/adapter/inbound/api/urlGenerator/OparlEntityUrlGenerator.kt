@@ -10,7 +10,8 @@ class OparlEntityUrlGenerator(
     fun list(
         bodyId: UUID,
         page: Int = 1,
-    ): String = paginatedList(controller, "list", page, bodyId)
+        size: Int = OparlPaginationRequestDto.PAGE_SIZE,
+    ): String = paginatedList(controller, "list", page, size, bodyId)
 
     fun get(
         bodyId: UUID,
@@ -30,10 +31,17 @@ internal fun paginatedList(
     controller: Class<*>,
     methodName: String,
     page: Int,
+    size: Int = OparlPaginationRequestDto.PAGE_SIZE,
     vararg pathVariables: Any,
-): String =
-    MvcUriComponentsBuilder
-        .fromMethodName(controller, methodName, *pathVariables, OparlPaginationRequestDto(page))
-        .queryParam("page", page)
-        .build()
-        .toString()
+): String {
+    val builder =
+        MvcUriComponentsBuilder
+            .fromMethodName(controller, methodName, *pathVariables, OparlPaginationRequestDto(page, size))
+            .queryParam("page", page)
+
+    if (size != OparlPaginationRequestDto.PAGE_SIZE) {
+        builder.queryParam("size", size)
+    }
+
+    return builder.build().toString()
+}
