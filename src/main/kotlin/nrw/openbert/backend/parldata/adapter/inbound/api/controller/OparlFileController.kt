@@ -58,18 +58,18 @@ class OparlFileController(
 
         val files =
             resolvedFileRepository
-                .findAllByBodyIdOrderById(bodyId, pagination.toPageable())
+                .findAllByBodyIdOrderById(bodyId, pagination.toSpringPageRequest())
                 .map(fileMapper::toDto)
 
         return ResponseEntity.ok(
             OparlListDto(
-                id = urlGenerator.file.list(bodyId, pagination.page),
+                id = urlGenerator.file.list(bodyId, pagination.page, pagination.size),
                 data = files.toList(),
                 pagination = listPaginationMapper.toDto(files),
                 links =
                     listLinksMapper.toDto(
                         files,
-                        { page -> urlGenerator.file.list(bodyId, page) },
+                        { page -> urlGenerator.file.list(bodyId, page, pagination.size) },
                     ),
             ),
         )

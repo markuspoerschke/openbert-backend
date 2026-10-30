@@ -47,18 +47,18 @@ class OparlConsultationController(
 
         val consultations =
             resolvedConsultationRepository
-                .findAllByBodyIdOrderById(bodyId, pagination.toPageable())
+                .findAllByBodyIdOrderById(bodyId, pagination.toSpringPageRequest())
                 .map(consultationMapper::toDto)
 
         return ResponseEntity.ok(
             OparlListDto(
-                id = urlGenerator.consultation.list(bodyId, pagination.page),
+                id = urlGenerator.consultation.list(bodyId, pagination.page, pagination.size),
                 data = consultations.toList(),
                 pagination = listPaginationMapper.toDto(consultations),
                 links =
                     listLinksMapper.toDto(
                         consultations,
-                        { page -> urlGenerator.consultation.list(bodyId, page) },
+                        { page -> urlGenerator.consultation.list(bodyId, page, pagination.size) },
                     ),
             ),
         )

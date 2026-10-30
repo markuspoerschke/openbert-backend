@@ -11,6 +11,7 @@ import nrw.openbert.backend.parldata.adapter.inbound.api.controller.OparlMembers
 import nrw.openbert.backend.parldata.adapter.inbound.api.controller.OparlOrganizationController
 import nrw.openbert.backend.parldata.adapter.inbound.api.controller.OparlPaperController
 import nrw.openbert.backend.parldata.adapter.inbound.api.controller.OparlPersonController
+import nrw.openbert.backend.parldata.adapter.inbound.api.dto.OparlPaginationRequestDto
 import org.springframework.stereotype.Component
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder
 import java.util.UUID
@@ -29,7 +30,10 @@ class OparlUrlGenerator {
     val membership = OparlEntityUrlGenerator(OparlMembershipController::class.java)
     val location = OparlEntityUrlGenerator(OparlLocationController::class.java)
 
-    fun bodyList(page: Int = 1): String = paginatedList(OparlBodyController::class.java, "list", page)
+    fun bodyList(
+        page: Int = 1,
+        size: Int = OparlPaginationRequestDto.PAGE_SIZE,
+    ): String = paginatedList(OparlBodyController::class.java, "list", page, size)
 
     fun body(bodyId: UUID): String =
         MvcUriComponentsBuilder
@@ -41,11 +45,13 @@ class OparlUrlGenerator {
         bodyId: UUID,
         organizationId: UUID,
         page: Int = 1,
+        size: Int = OparlPaginationRequestDto.PAGE_SIZE,
     ): String =
         paginatedList(
             OparlOrganizationController::class.java,
             "listMeetings",
             page,
+            size,
             bodyId,
             organizationId,
         )
@@ -54,11 +60,13 @@ class OparlUrlGenerator {
         bodyId: UUID,
         organizationId: UUID,
         page: Int = 1,
+        size: Int = OparlPaginationRequestDto.PAGE_SIZE,
     ): String =
         paginatedList(
             OparlOrganizationController::class.java,
             "listConsultations",
             page,
+            size,
             bodyId,
             organizationId,
         )

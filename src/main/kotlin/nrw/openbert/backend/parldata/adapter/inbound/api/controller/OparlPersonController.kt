@@ -47,18 +47,18 @@ class OparlPersonController(
 
         val persons =
             resolvedPersonRepository
-                .findAllByBodyIdOrderById(bodyId, pagination.toPageable())
+                .findAllByBodyIdOrderById(bodyId, pagination.toSpringPageRequest())
                 .map(personMapper::toDto)
 
         return ResponseEntity.ok(
             OparlListDto(
-                id = urlGenerator.person.list(bodyId, pagination.page),
+                id = urlGenerator.person.list(bodyId, pagination.page, pagination.size),
                 data = persons.toList(),
                 pagination = listPaginationMapper.toDto(persons),
                 links =
                     listLinksMapper.toDto(
                         persons,
-                        { page -> urlGenerator.person.list(bodyId, page) },
+                        { page -> urlGenerator.person.list(bodyId, page, pagination.size) },
                     ),
             ),
         )
