@@ -3,14 +3,16 @@ package nrw.openbert.backend.parldata.adapter.inbound.api.controller
 import io.swagger.v3.oas.annotations.ExternalDocumentation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.tags.Tag
+import jakarta.validation.Valid
 import nrw.openbert.backend.parldata.adapter.inbound.api.dto.OparlListLinksDto
 import nrw.openbert.backend.parldata.adapter.inbound.api.dto.OparlListPaginationDto
+import nrw.openbert.backend.parldata.adapter.inbound.api.dto.OparlPaginationRequestDto
 import nrw.openbert.backend.parldata.adapter.inbound.api.dto.OparlSearchResultListDto
 import nrw.openbert.backend.parldata.adapter.inbound.api.mapper.OparlSearchResultMapper
 import nrw.openbert.backend.parldata.application.port.inbound.OparlEntitySearchServiceInterface
 import nrw.openbert.backend.parldata.application.port.model.SearchCriteria
 import nrw.openbert.backend.parldata.domain.enums.OparlType
-import org.springframework.data.domain.PageRequest
+import org.springdoc.core.annotations.ParameterObject
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
@@ -38,22 +40,15 @@ class OparlSearchController(
         @RequestParam(required = false) bodies: List<String>?,
         @Parameter(description = "List of OParl types to filter by (e.g., PERSON, ORGANIZATION)")
         @RequestParam(required = false) types: List<String>?,
-        @RequestParam(defaultValue = "1") page: Int,
-        @RequestParam(defaultValue = "20") size: Int,
+        @ParameterObject @Valid pagination: OparlPaginationRequestDto,
     ): ResponseEntity<OparlSearchResultListDto> {
         val searchText = text?.trim()
         val invalidText = searchText != null && !SEARCHABLE_TEXT.containsMatchIn(searchText)
-        if (invalidText || page < 1 || size !in 1..MAX_PAGE_SIZE) {
+        if (invalidText) {
             return ResponseEntity.badRequest().build()
         }
 
-        // Convert string types to OparlType enum values
-        val typeEnums =
-            types?.let { typeStrings ->
-                typeStrings.mapNotNull { typeString ->
-                    OparlType.entries.find { it.name == typeString.uppercase() }
-                }
-            } ?: OparlType.entries.toList()
+        val typeEnums = resolveTypes(types)
 
         val resultPage =
             searchService
@@ -63,7 +58,7 @@ class OparlSearchController(
                         bodies = bodies ?: emptyList(),
                         types = typeEnums,
                     ),
-                    PageRequest.of(page - 1, size),
+                    pagination.toSpringPageRequest(),
                 ).map(mapper::toDto)
 
         val baseUrl =
@@ -80,26 +75,54 @@ class OparlSearchController(
                 pagination =
                     OparlListPaginationDto(
                         totalElements = Math.toIntExact(resultPage.totalElements),
-                        elementsPerPage = size,
-                        currentPage = page,
+                        elementsPerPage = pagination.size,
+                        currentPage = pagination.page,
                         totalPages = totalPages,
                     ),
                 links =
-                    OparlListLinksDto(
-                        first = pageUrl(baseUrl, searchText, bodies, types, 1, size),
-                        prev = if (page > 1) pageUrl(baseUrl, searchText, bodies, types, page - 1, size) else null,
-                        self = pageUrl(baseUrl, searchText, bodies, types, page, size),
-                        next =
-                            if (page < totalPages) {
-                                pageUrl(baseUrl, searchText, bodies, types, page + 1, size)
-                            } else {
-                                null
-                            },
-                        last = pageUrl(baseUrl, searchText, bodies, types, totalPages.coerceAtLeast(1), size),
+                    createLinks(
+                        baseUrl = baseUrl,
+                        searchText = searchText,
+                        bodies = bodies,
+                        types = types,
+                        currentPage = pagination.page,
+                        totalPages = totalPages,
+                        size = pagination.size,
                     ),
             ),
         )
     }
+
+    private fun resolveTypes(types: List<String>?): List<OparlType> =
+        types?.let { typeStrings ->
+            typeStrings.mapNotNull { typeString ->
+                OparlType.entries.find { it.name == typeString.uppercase() }
+            }
+        } ?: OparlType.entries.toList()
+
+    private fun createLinks(
+        baseUrl: String,
+        searchText: String?,
+        bodies: List<String>?,
+        types: List<String>?,
+        currentPage: Int,
+        totalPages: Int,
+        size: Int,
+    ): OparlListLinksDto =
+        OparlListLinksDto(
+            first = pageUrl(baseUrl, searchText, bodies, types, 1, size),
+            prev = if (currentPage > 1) pageUrl(baseUrl, searchText, bodies, types, currentPage - 1, size) else null,
+            self = pageUrl(baseUrl, searchText, bodies, types, currentPage, size),
+            next =
+                if (currentPage <
+                    totalPages
+                ) {
+                    pageUrl(baseUrl, searchText, bodies, types, currentPage + 1, size)
+                } else {
+                    null
+                },
+            last = pageUrl(baseUrl, searchText, bodies, types, totalPages.coerceAtLeast(1), size),
+        )
 
     private fun pageUrl(
         baseUrl: String,
@@ -128,6 +151,5 @@ class OparlSearchController(
     companion object {
         // Patterns without a complete trigram would scan the whole search index.
         private val SEARCHABLE_TEXT = Regex("[\\p{L}\\p{Nd}]{3}")
-        private const val MAX_PAGE_SIZE = 100
     }
 }

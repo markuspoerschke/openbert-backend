@@ -47,18 +47,18 @@ class OparlAgendaItemController(
 
         val agendaItems =
             resolvedAgendaItemRepository
-                .findAllByBodyIdOrderById(bodyId, pagination.toPageable())
+                .findAllByBodyIdOrderById(bodyId, pagination.toSpringPageRequest())
                 .map(agendaItemMapper::toDto)
 
         return ResponseEntity.ok(
             OparlListDto(
-                id = urlGenerator.agendaItem.list(bodyId, pagination.page),
+                id = urlGenerator.agendaItem.list(bodyId, pagination.page, pagination.size),
                 data = agendaItems.toList(),
                 pagination = listPaginationMapper.toDto(agendaItems),
                 links =
                     listLinksMapper.toDto(
                         agendaItems,
-                        { page -> urlGenerator.agendaItem.list(bodyId, page) },
+                        { page -> urlGenerator.agendaItem.list(bodyId, page, pagination.size) },
                     ),
             ),
         )

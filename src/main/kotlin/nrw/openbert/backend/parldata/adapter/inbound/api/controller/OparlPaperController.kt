@@ -47,18 +47,18 @@ class OparlPaperController(
 
         val papers =
             resolvedPaperRepository
-                .findAllByBodyIdOrderById(bodyId, pagination.toPageable())
+                .findAllByBodyIdOrderById(bodyId, pagination.toSpringPageRequest())
                 .map(paperMapper::toDto)
 
         return ResponseEntity.ok(
             OparlListDto(
-                id = urlGenerator.paper.list(bodyId, pagination.page),
+                id = urlGenerator.paper.list(bodyId, pagination.page, pagination.size),
                 data = papers.toList(),
                 pagination = listPaginationMapper.toDto(papers),
                 links =
                     listLinksMapper.toDto(
                         papers,
-                        { page -> urlGenerator.paper.list(bodyId, page) },
+                        { page -> urlGenerator.paper.list(bodyId, page, pagination.size) },
                     ),
             ),
         )

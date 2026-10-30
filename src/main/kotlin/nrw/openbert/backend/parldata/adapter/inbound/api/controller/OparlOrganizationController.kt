@@ -57,18 +57,18 @@ class OparlOrganizationController(
 
         val organizations =
             resolvedOrganizationRepository
-                .findAllByBodyIdOrderById(bodyId, pagination.toPageable())
+                .findAllByBodyIdOrderById(bodyId, pagination.toSpringPageRequest())
                 .map(organizationMapper::toDto)
 
         return ResponseEntity.ok(
             OparlListDto(
-                id = urlGenerator.organization.list(bodyId, pagination.page),
+                id = urlGenerator.organization.list(bodyId, pagination.page, pagination.size),
                 data = organizations.toList(),
                 pagination = listPaginationMapper.toDto(organizations),
                 links =
                     listLinksMapper.toDto(
                         organizations,
-                        { page -> urlGenerator.organization.list(bodyId, page) },
+                        { page -> urlGenerator.organization.list(bodyId, page, pagination.size) },
                     ),
             ),
         )
@@ -103,18 +103,18 @@ class OparlOrganizationController(
                 .findAllDistinctByOrganizationsIdAndBodyIdOrderById(
                     organizationId,
                     bodyId,
-                    pagination.toPageable(),
+                    pagination.toSpringPageRequest(),
                 ).map(meetingMapper::toDto)
 
         return ResponseEntity.ok(
             OparlListDto(
-                id = urlGenerator.organizationMeetingList(bodyId, organizationId, pagination.page),
+                id = urlGenerator.organizationMeetingList(bodyId, organizationId, pagination.page, pagination.size),
                 data = meetings.toList(),
                 pagination = listPaginationMapper.toDto(meetings),
                 links =
                     listLinksMapper.toDto(
                         meetings,
-                        { page -> urlGenerator.organizationMeetingList(bodyId, organizationId, page) },
+                        { page -> urlGenerator.organizationMeetingList(bodyId, organizationId, page, pagination.size) },
                     ),
             ),
         )
@@ -135,18 +135,26 @@ class OparlOrganizationController(
                 .findAllDistinctByOrganizationsIdAndBodyIdOrderById(
                     organizationId,
                     bodyId,
-                    pagination.toPageable(),
+                    pagination.toSpringPageRequest(),
                 ).map(consultationMapper::toDto)
 
         return ResponseEntity.ok(
             OparlListDto(
-                id = urlGenerator.organizationConsultationList(bodyId, organizationId, pagination.page),
+                id =
+                    urlGenerator.organizationConsultationList(
+                        bodyId,
+                        organizationId,
+                        pagination.page,
+                        pagination.size,
+                    ),
                 data = consultations.toList(),
                 pagination = listPaginationMapper.toDto(consultations),
                 links =
                     listLinksMapper.toDto(
                         consultations,
-                        { page -> urlGenerator.organizationConsultationList(bodyId, organizationId, page) },
+                        { page ->
+                            urlGenerator.organizationConsultationList(bodyId, organizationId, page, pagination.size)
+                        },
                     ),
             ),
         )

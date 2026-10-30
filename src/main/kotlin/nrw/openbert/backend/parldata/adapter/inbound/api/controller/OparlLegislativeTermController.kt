@@ -47,18 +47,18 @@ class OparlLegislativeTermController(
 
         val legislativeTerms =
             resolvedLegislativeTermRepository
-                .findAllByBodyIdOrderById(bodyId, pagination.toPageable())
+                .findAllByBodyIdOrderById(bodyId, pagination.toSpringPageRequest())
                 .map(legislativeTermMapper::toDto)
 
         return ResponseEntity.ok(
             OparlListDto(
-                id = urlGenerator.legislativeTerm.list(bodyId, pagination.page),
+                id = urlGenerator.legislativeTerm.list(bodyId, pagination.page, pagination.size),
                 data = legislativeTerms.toList(),
                 pagination = listPaginationMapper.toDto(legislativeTerms),
                 links =
                     listLinksMapper.toDto(
                         legislativeTerms,
-                        { page -> urlGenerator.legislativeTerm.list(bodyId, page) },
+                        { page -> urlGenerator.legislativeTerm.list(bodyId, page, pagination.size) },
                     ),
             ),
         )

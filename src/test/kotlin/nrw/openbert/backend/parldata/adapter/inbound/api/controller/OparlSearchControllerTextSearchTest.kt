@@ -37,7 +37,7 @@ class OparlSearchControllerTextSearchTest(
                     value("A searchable document about public transport.")
                 }
                 jsonPath("$.pagination.totalElements") { value(1) }
-                jsonPath("$.pagination.elementsPerPage") { value(20) }
+                jsonPath("$.pagination.elementsPerPage") { value(25) }
                 jsonPath("$.pagination.currentPage") { value(1) }
                 jsonPath("$.pagination.totalPages") { value(1) }
             }
