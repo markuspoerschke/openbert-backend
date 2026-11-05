@@ -69,7 +69,7 @@ class Crawler(
 
         logger.info("Crawling OParl resource {} (target {})", crawlTarget.resource.url.value, targetId)
 
-        val oparlData = oparlClient.get(crawlTarget.resource.url.value)
+        val oparlData = oparlClient.get(crawlTarget.resource)
 
         process(
             response = oparlData,

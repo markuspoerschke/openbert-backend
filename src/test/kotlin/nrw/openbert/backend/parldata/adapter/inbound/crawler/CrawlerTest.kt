@@ -220,7 +220,7 @@ class CrawlerTest {
                 .`when`(crawlTargetRepository.findById(target.id))
                 .thenReturn(Optional.of(target))
             Mockito
-                .`when`(oparlClient.get(target.resource.url.value))
+                .`when`(oparlClient.get(target.resource))
                 .thenReturn(response)
         }
 

@@ -58,7 +58,7 @@ class EmbeddedEntityCrawlingTest(
             crawlTargets.saveAndFlush(
                 CrawlTarget.create(resource("body/123/person"), OparlType.PERSON).increaseReferenceCounter(),
             )
-        `when`(oparlClient.get(listTarget.resource.url.value)).thenReturn(
+        `when`(oparlClient.get(listTarget.resource)).thenReturn(
             OparlListDto(
                 data =
                     listOf(
@@ -103,7 +103,7 @@ class EmbeddedEntityCrawlingTest(
         personTarget: CrawlTarget,
     ): Instant? {
         val seedId = persons.findByResource(personResource)!!.id
-        `when`(oparlClient.get(personResource.url.value)).thenReturn(
+        `when`(oparlClient.get(personResource)).thenReturn(
             OparlPersonDto(
                 id = personResource.url.value,
                 body = resource("body/123").url.value,
@@ -126,7 +126,7 @@ class EmbeddedEntityCrawlingTest(
         assertEquals(listOf("+49 555"), fullPerson.phone)
         val crawledAt = crawlTargets.findById(personTarget.id).orElseThrow().lastCrawledAt
         assertNotNull(crawledAt)
-        verify(oparlClient).get(personResource.url.value)
+        verify(oparlClient).get(personResource)
         return crawledAt
     }
 
@@ -153,7 +153,7 @@ class EmbeddedEntityCrawlingTest(
             crawlTargets.saveAndFlush(
                 CrawlTarget.create(resource("body/123/person"), OparlType.PERSON).increaseReferenceCounter(),
             )
-        `when`(oparlClient.get(listTarget.resource.url.value)).thenReturn(
+        `when`(oparlClient.get(listTarget.resource)).thenReturn(
             OparlListDto(
                 data =
                     listOf(
@@ -201,7 +201,7 @@ class EmbeddedEntityCrawlingTest(
         assertEquals(listOf(parent.url.value), locations.findByResource(location)!!.personUrls)
         val memberTarget = assertDue(member, OparlType.MEMBERSHIP)
         assertDue(location, OparlType.LOCATION)
-        `when`(oparlClient.get(member.url.value)).thenReturn(
+        `when`(oparlClient.get(member)).thenReturn(
             OparlMembershipDto(
                 id = member.url.value,
                 person = parent.url.value,
