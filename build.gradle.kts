@@ -76,7 +76,7 @@ dependencies {
     testImplementation("org.testcontainers:testcontainers-postgresql")
     testImplementation("io.mockk:mockk:1.13.13")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
-    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.1.1")
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.2.0")
     implementation("org.springframework.ai:spring-ai-starter-mcp-server-webmvc:2.0.2")
     implementation("io.sentry:sentry-spring-boot-4:8.61.1")
     implementation("org.springframework.security:spring-security-crypto")
