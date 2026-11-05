@@ -24,11 +24,10 @@ class OparlClient(
                 .get()
                 .uri(oparlResource.url.value)
                 .apply {
-                    oparlResource.system.authorizationHeader?.let {
+                    oparlResource.system.authorizationHeader?.value?.let {
                         header(HttpHeaders.AUTHORIZATION, it)
                     }
-                }
-                .retrieve()
+                }.retrieve()
                 .requiredBody(JsonNode::class.java)
 
         addMissingListTypes(response, oparlResource.url.value)

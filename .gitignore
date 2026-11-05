@@ -6,7 +6,7 @@ build/
 !**/src/test/**/build/
 
 ### Spring Boot Config ###
-/src/main/resources/application-local.properties
+/application-local.properties
 
 ### STS ###
 .apt_generated

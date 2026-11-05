@@ -21,7 +21,7 @@ class ArchitectureTest {
             .layer("Adapters")
             .definedBy("nrw.openbert.backend.*.adapter..")
             .layer("Bootstrap")
-            .definedBy("nrw.openbert.backend")
+            .definedBy("nrw.openbert.backend", "nrw.openbert.backend.bootstrap..")
             .whereLayer("Domain")
             .mayOnlyBeAccessedByLayers("Application", "Adapters", "Bootstrap")
             .whereLayer("Application")

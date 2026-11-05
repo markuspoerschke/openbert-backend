@@ -79,7 +79,7 @@ dependencies {
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.1.1")
     implementation("org.springframework.ai:spring-ai-starter-mcp-server-webmvc:2.0.2")
     implementation("io.sentry:sentry-spring-boot-4:8.61.1")
-    implementation("org.springframework.boot:spring-boot-starter-security")
+    implementation("org.springframework.security:spring-security-crypto")
 }
 
 kotlin {
