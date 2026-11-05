@@ -1,6 +1,8 @@
 package nrw.openbert.backend.parldata.adapter.outbound.client.oparl
 
 import nrw.openbert.backend.parldata.adapter.outbound.client.oparl.dto.OparlResponseDto
+import nrw.openbert.backend.parldata.domain.entity.embeddable.OparlResource
+import org.springframework.http.HttpHeaders
 import org.springframework.stereotype.Component
 import org.springframework.web.client.RestClient
 import tools.jackson.databind.JsonNode
@@ -16,15 +18,19 @@ class OparlClient(
 ) {
     private val restClient = restClientBuilder.build()
 
-    fun get(url: String): OparlResponseDto {
+    fun get(oparlResource: OparlResource): OparlResponseDto {
         val response =
             restClient
                 .get()
-                .uri(url)
-                .retrieve()
+                .uri(oparlResource.url.value)
+                .apply {
+                    oparlResource.system.authorizationHeader?.value?.let {
+                        header(HttpHeaders.AUTHORIZATION, it)
+                    }
+                }.retrieve()
                 .requiredBody(JsonNode::class.java)
 
-        addMissingListTypes(response, url)
+        addMissingListTypes(response, oparlResource.url.value)
         addMissingEmbeddedTypes(response)
 
         return objectMapper.treeToValue(response, OparlResponseDto::class.java)

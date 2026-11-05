@@ -13,12 +13,17 @@ import nrw.openbert.backend.parldata.adapter.outbound.client.oparl.dto.OparlOrga
 import nrw.openbert.backend.parldata.adapter.outbound.client.oparl.dto.OparlPaperDto
 import nrw.openbert.backend.parldata.adapter.outbound.client.oparl.dto.OparlPersonDto
 import nrw.openbert.backend.parldata.adapter.outbound.client.oparl.dto.OparlSystemDto
+import nrw.openbert.backend.parldata.domain.entity.embeddable.OparlResource
+import nrw.openbert.backend.parldata.domain.valueObject.OparlUrl
+import nrw.openbert.backend.parldata.test.entityBuilder.OparlSystemBuilder
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.restclient.test.autoconfigure.RestClientTest
+import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpMethod
 import org.springframework.http.MediaType
 import org.springframework.test.web.client.MockRestServiceServer
+import org.springframework.test.web.client.match.MockRestRequestMatchers.header
 import org.springframework.test.web.client.match.MockRestRequestMatchers.method
 import org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo
 import org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess
@@ -35,6 +40,8 @@ class OparlClientTest(
     fun `preserves the provider body extension on meetings`() {
         val url = "https://oparl.example.org/meeting/1"
         val bodyUrl = "https://oparl.example.org/body/1"
+        val oparlResource = resource(url)
+
         mockServer
             .expect(requestTo(url))
             .andRespond(
@@ -52,7 +59,7 @@ class OparlClientTest(
                 ),
             )
 
-        val response = assertIs<OparlMeetingDto>(oparlClient.get(url))
+        val response = assertIs<OparlMeetingDto>(oparlClient.get(oparlResource))
 
         assertEquals(bodyUrl, response.body)
         mockServer.verify()
@@ -61,6 +68,8 @@ class OparlClientTest(
     @Test
     fun `gets a single OParl object`() {
         val url = "https://oparl.example.org/system"
+        val oparlResource = resource(url)
+
         mockServer
             .expect(requestTo(url))
             .andExpect(method(HttpMethod.GET))
@@ -78,7 +87,7 @@ class OparlClientTest(
                 ),
             )
 
-        val response = assertIs<OparlSystemDto>(oparlClient.get(url))
+        val response = assertIs<OparlSystemDto>(oparlClient.get(oparlResource))
 
         assertEquals(url, response.id)
         assertEquals("https://schema.oparl.org/1.1/", response.oparlVersion)
@@ -87,8 +96,37 @@ class OparlClientTest(
     }
 
     @Test
+    fun `sends the system authorization header`() {
+        val url = "https://oparl.example.org/system"
+        val oparlResource = resource(url, authorizationHeader = "Bearer secret-token")
+
+        mockServer
+            .expect(requestTo(url))
+            .andExpect(method(HttpMethod.GET))
+            .andExpect(header(HttpHeaders.AUTHORIZATION, "Bearer secret-token"))
+            .andRespond(
+                withSuccess(
+                    """
+                    {
+                      "id": "$url",
+                      "type": "https://schema.oparl.org/1.1/System",
+                      "oparlVersion": "https://schema.oparl.org/1.1/"
+                    }
+                    """.trimIndent(),
+                    MediaType.APPLICATION_JSON,
+                ),
+            )
+
+        val response = assertIs<OparlSystemDto>(oparlClient.get(oparlResource))
+
+        assertEquals(url, response.id)
+        mockServer.verify()
+    }
+
+    @Test
     fun `gets a polymorphic OParl list with nullable metadata`() {
         val url = "https://oparl.example.org/objects"
+        val oparlResource = resource(url)
         val objectTypes =
             listOf(
                 "AgendaItem",
@@ -125,25 +163,9 @@ class OparlClientTest(
                 ),
             )
 
-        val response = assertIs<OparlListDto>(oparlClient.get(url))
+        val response = assertIs<OparlListDto>(oparlClient.get(oparlResource))
 
-        assertEquals(
-            listOf(
-                OparlAgendaItemDto::class,
-                OparlBodyDto::class,
-                OparlConsultationDto::class,
-                OparlFileDto::class,
-                OparlLegislativeTermDto::class,
-                OparlLocationDto::class,
-                OparlMeetingDto::class,
-                OparlMembershipDto::class,
-                OparlOrganizationDto::class,
-                OparlPaperDto::class,
-                OparlPersonDto::class,
-                OparlSystemDto::class,
-            ),
-            response.data?.map { it::class },
-        )
+        assertEquals(expectedDtoTypes, response.data?.map { it::class })
         assertEquals(12, response.pagination?.totalElements)
         assertNull(response.pagination?.totalPages)
         assertEquals(url, response.links?.self)
@@ -153,6 +175,7 @@ class OparlClientTest(
     @Test
     fun `recognizes an untyped OParl 1_0 list and infers types of deleted items`() {
         val url = "https://oparl.example.org/body/1/organization"
+        val oparlResource = resource(url)
         mockServer
             .expect(requestTo(url))
             .andRespond(
@@ -183,7 +206,7 @@ class OparlClientTest(
                 ),
             )
 
-        val response = assertIs<OparlListDto>(oparlClient.get(url))
+        val response = assertIs<OparlListDto>(oparlClient.get(oparlResource))
         val deletedOrganization = assertIs<OparlOrganizationDto>(response.data?.first())
         val activeOrganization = assertIs<OparlOrganizationDto>(response.data?.last())
 
@@ -199,6 +222,8 @@ class OparlClientTest(
     @Test
     fun `infers the item type from an all-deleted list URL`() {
         val url = "https://oparl.example.org/webservice/oparl/v1.0/body/1/organization"
+        val oparlResource = resource(url)
+
         mockServer
             .expect(requestTo(url))
             .andRespond(
@@ -217,7 +242,7 @@ class OparlClientTest(
                 ),
             )
 
-        val response = assertIs<OparlListDto>(oparlClient.get(url))
+        val response = assertIs<OparlListDto>(oparlClient.get(oparlResource))
         val organization = assertIs<OparlOrganizationDto>(response.data?.single())
 
         assertEquals("https://schema.oparl.org/1.0/List", response.type)
@@ -225,4 +250,25 @@ class OparlClientTest(
         assertEquals(true, organization.deleted)
         mockServer.verify()
     }
+
+    private fun resource(
+        url: String,
+        authorizationHeader: String? = null,
+    ) = OparlResource(OparlSystemBuilder().build(authorizationHeader), OparlUrl(url))
+
+    private val expectedDtoTypes =
+        listOf(
+            OparlAgendaItemDto::class,
+            OparlBodyDto::class,
+            OparlConsultationDto::class,
+            OparlFileDto::class,
+            OparlLegislativeTermDto::class,
+            OparlLocationDto::class,
+            OparlMeetingDto::class,
+            OparlMembershipDto::class,
+            OparlOrganizationDto::class,
+            OparlPaperDto::class,
+            OparlPersonDto::class,
+            OparlSystemDto::class,
+        )
 }
