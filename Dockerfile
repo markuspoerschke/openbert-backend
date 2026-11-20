@@ -12,6 +12,10 @@ RUN ./gradlew bootJar --no-daemon \
 
 FROM eclipse-temurin:25-jre-noble AS runtime
 
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends curl \
+    && rm -rf /var/lib/apt/lists/*
+
 RUN groupadd --system --gid 1001 spring \
     && useradd --system --uid 1001 --gid spring --home-dir /app --shell /usr/sbin/nologin spring
 
@@ -23,5 +27,8 @@ EXPOSE 8080
 
 # Also expose the Jobrunr dashboard
 EXPOSE 8000
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=60s --retries=3 \
+    CMD curl -fsS http://localhost:8080/actuator/health || exit 1
 
 ENTRYPOINT ["java", "-jar", "/app/app.jar"]
