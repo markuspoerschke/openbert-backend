@@ -56,7 +56,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-webmvc")
     implementation("org.flywaydb:flyway-database-postgresql")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
-    implementation("org.jobrunr:jobrunr-spring-boot-4-starter:9.0.3")
+    implementation("org.jobrunr:jobrunr-spring-boot-4-starter:9.0.4")
     implementation("tools.jackson.module:jackson-module-kotlin")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     developmentOnly("org.springframework.boot:spring-boot-devtools")
@@ -74,11 +74,11 @@ dependencies {
     testImplementation("org.springframework.restdocs:spring-restdocs-mockmvc")
     testImplementation("org.testcontainers:testcontainers-junit-jupiter")
     testImplementation("org.testcontainers:testcontainers-postgresql")
-    testImplementation("io.mockk:mockk:1.14.11")
+    testImplementation("io.mockk:mockk:1.14.12")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.2.0")
     implementation("org.springframework.ai:spring-ai-starter-mcp-server-webmvc:2.0.2")
-    implementation("io.sentry:sentry-spring-boot-4:8.62.0")
+    implementation("io.sentry:sentry-spring-boot-4:8.64.0")
     implementation("org.springframework.security:spring-security-crypto")
 }
 
