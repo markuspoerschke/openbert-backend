@@ -2,19 +2,15 @@ package nrw.openbert.backend.parldata.application.port.outbound.repository
 
 import nrw.openbert.backend.parldata.domain.entity.embeddable.OparlResource
 import nrw.openbert.backend.parldata.domain.entity.resolved.ResolvedLocation
-import org.springframework.data.domain.Page
-import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.JpaRepository
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor
 import java.util.Optional
 import java.util.UUID
 
-interface ResolvedLocationRepository : JpaRepository<ResolvedLocation, UUID> {
+interface ResolvedLocationRepository :
+    JpaRepository<ResolvedLocation, UUID>,
+    JpaSpecificationExecutor<ResolvedLocation> {
     fun findByResource(resource: OparlResource): ResolvedLocation?
-
-    fun findAllByBodyIdOrderById(
-        bodyId: UUID,
-        pageable: Pageable,
-    ): Page<ResolvedLocation>
 
     fun findByIdAndBodyId(
         id: UUID,

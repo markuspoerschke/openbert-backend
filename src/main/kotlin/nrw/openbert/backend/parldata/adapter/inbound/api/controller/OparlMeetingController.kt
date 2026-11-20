@@ -11,6 +11,7 @@ import nrw.openbert.backend.parldata.adapter.inbound.api.error.NotFoundProblem
 import nrw.openbert.backend.parldata.adapter.inbound.api.mapper.OparlListLinksMapper
 import nrw.openbert.backend.parldata.adapter.inbound.api.mapper.OparlListPaginationMapper
 import nrw.openbert.backend.parldata.adapter.inbound.api.mapper.OparlMeetingMapper
+import nrw.openbert.backend.parldata.adapter.inbound.api.specification.toListSpecification
 import nrw.openbert.backend.parldata.adapter.inbound.api.urlGenerator.OparlUrlGenerator
 import nrw.openbert.backend.parldata.application.port.outbound.repository.ResolvedBodyRepository
 import nrw.openbert.backend.parldata.application.port.outbound.repository.ResolvedMeetingRepository
@@ -53,18 +54,18 @@ class OparlMeetingController(
 
         val meetings =
             resolvedMeetingRepository
-                .findAllByBodyIdOrderById(bodyId, pagination.toSpringPageRequest())
+                .findAll(pagination.toListSpecification(bodyId = bodyId), pagination.toSpringPageRequest())
                 .map(meetingMapper::toDto)
 
         return ResponseEntity.ok(
             OparlListDto(
-                id = urlGenerator.meeting.list(bodyId, pagination.page, pagination.size),
+                id = urlGenerator.meeting.list(bodyId, pagination),
                 data = meetings.toList(),
                 pagination = listPaginationMapper.toDto(meetings),
                 links =
                     listLinksMapper.toDto(
                         meetings,
-                        { page -> urlGenerator.meeting.list(bodyId, page, pagination.size) },
+                        { page -> urlGenerator.meeting.list(bodyId, pagination.copy(page = page)) },
                     ),
             ),
         )

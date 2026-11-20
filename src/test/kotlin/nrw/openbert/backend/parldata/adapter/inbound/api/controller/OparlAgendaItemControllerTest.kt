@@ -26,10 +26,10 @@ class OparlAgendaItemControllerTest(
     @Test
     fun `lists resolved agenda items belonging to a body`() {
         mockMvc
-            .get("$bodyUrl/agendaitem")
+            .get("$bodyUrl/agendaitem?sort=id,asc")
             .andExpect {
                 status { isOk() }
-                jsonPath("$.id") { value("$bodyUrl/agendaitem?page=1") }
+                jsonPath("$.id") { value("$bodyUrl/agendaitem?page=1&sort=id,asc") }
                 jsonPath("$.type") { value("https://schema.oparl.org/1.1/List") }
                 jsonPath("$.data.length()") { value(2) }
                 jsonPath("$.data[1].id") { value(agendaItemUrl) }
@@ -65,9 +65,9 @@ class OparlAgendaItemControllerTest(
                 jsonPath("$.pagination.elementsPerPage") { value(25) }
                 jsonPath("$.pagination.totalElements") { value(2) }
                 jsonPath("$.pagination.totalPages") { value(1) }
-                jsonPath("$.links.first") { value("$bodyUrl/agendaitem?page=1") }
-                jsonPath("$.links.self") { value("$bodyUrl/agendaitem?page=1") }
-                jsonPath("$.links.last") { value("$bodyUrl/agendaitem?page=1") }
+                jsonPath("$.links.first") { value("$bodyUrl/agendaitem?page=1&sort=id,asc") }
+                jsonPath("$.links.self") { value("$bodyUrl/agendaitem?page=1&sort=id,asc") }
+                jsonPath("$.links.last") { value("$bodyUrl/agendaitem?page=1&sort=id,asc") }
                 jsonPath("$.links.prev") { doesNotExist() }
                 jsonPath("$.links.next") { doesNotExist() }
             }
@@ -166,6 +166,50 @@ class OparlAgendaItemControllerTest(
                     "00000000-0000-0000-0000-000000000000/agendaitem",
             ).andExpect {
                 status { isNotFound() }
+            }
+    }
+
+    @Test
+    fun `paginates with stable id descending order and next link on every page except the last`() {
+        mockMvc
+            .get("$bodyUrl/agendaitem?size=1&page=1")
+            .andExpect {
+                status { isOk() }
+                jsonPath("$.data.length()") { value(1) }
+                jsonPath("$.data[0].id") { value(agendaItemUrl) }
+                jsonPath("$.pagination.totalElements") { value(2) }
+                jsonPath("$.pagination.totalPages") { value(2) }
+                jsonPath("$.links.next") { value("$bodyUrl/agendaitem?page=2&size=1") }
+                jsonPath("$.links.prev") { doesNotExist() }
+            }
+
+        mockMvc
+            .get("$bodyUrl/agendaitem?size=1&page=2")
+            .andExpect {
+                status { isOk() }
+                jsonPath("$.data.length()") { value(1) }
+                jsonPath("$.data[0].id") { value("$bodyUrl/agendaitem/11111111-1111-4111-a111-111111111111") }
+                jsonPath("$.pagination.totalPages") { value(2) }
+                jsonPath("$.links.next") { doesNotExist() }
+                jsonPath("$.links.prev") { value("$bodyUrl/agendaitem?page=1&size=1") }
+            }
+    }
+
+    @Test
+    fun `filters agenda items by modified_until and modified_since boundaries`() {
+        mockMvc
+            .get("$bodyUrl/agendaitem?modified_until=2026-07-24T00:00:00Z")
+            .andExpect {
+                status { isOk() }
+                jsonPath("$.data.length()") { value(0) }
+                jsonPath("$.pagination.totalElements") { value(0) }
+            }
+
+        mockMvc
+            .get("$bodyUrl/agendaitem?modified_since=2026-07-24T13:05:27Z")
+            .andExpect {
+                status { isOk() }
+                jsonPath("$.data.length()") { value(2) }
             }
     }
 }

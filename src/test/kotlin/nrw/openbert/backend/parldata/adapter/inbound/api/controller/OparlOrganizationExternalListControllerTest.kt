@@ -247,4 +247,26 @@ class OparlOrganizationExternalListControllerTest(
                 status { isNotFound() }
             }
     }
+
+    @Test
+    fun `filters organization meetings and preserves the filter in the links`() {
+        mockMvc
+            .get("$organizationUrl/meeting?modified_since=2026-07-25T00:00:00Z")
+            .andExpect {
+                status { isOk() }
+                jsonPath("$.data.length()") { value(0) }
+                jsonPath("$.pagination.totalElements") { value(0) }
+                jsonPath("$.links.self") {
+                    value("$organizationUrl/meeting?page=1&modified_since=2026-07-25T00:00:00Z")
+                }
+            }
+
+        mockMvc
+            .get("$organizationUrl/meeting?modified_since=2026-07-24T13:05:27Z")
+            .andExpect {
+                status { isOk() }
+                jsonPath("$.data.length()") { value(1) }
+                jsonPath("$.data[0].id") { value(meetingUrl) }
+            }
+    }
 }

@@ -192,4 +192,65 @@ class OparlPaperControllerTest(
                 status { isNotFound() }
             }
     }
+
+    @Test
+    fun `filters papers by modified_since and preserves the filter in the links`() {
+        mockMvc
+            .get("$bodyUrl/paper?modified_since=2026-07-22T00:00:00Z")
+            .andExpect {
+                status { isOk() }
+                jsonPath("$.data.length()") { value(1) }
+                jsonPath("$.pagination.totalElements") { value(1) }
+                jsonPath("$.id") { value("$bodyUrl/paper?page=1&modified_since=2026-07-22T00:00:00Z") }
+                jsonPath("$.links.self") { value("$bodyUrl/paper?page=1&modified_since=2026-07-22T00:00:00Z") }
+                jsonPath("$.links.first") { value("$bodyUrl/paper?page=1&modified_since=2026-07-22T00:00:00Z") }
+                jsonPath("$.links.last") { value("$bodyUrl/paper?page=1&modified_since=2026-07-22T00:00:00Z") }
+            }
+
+        mockMvc
+            .get("$bodyUrl/paper?modified_since=2026-07-23T00:00:00Z")
+            .andExpect {
+                status { isOk() }
+                jsonPath("$.data.length()") { value(0) }
+                jsonPath("$.pagination.totalElements") { value(0) }
+                jsonPath("$.links.self") { value("$bodyUrl/paper?page=1&modified_since=2026-07-23T00:00:00Z") }
+            }
+    }
+
+    @Test
+    fun `filters papers by created_until and preserves combined filters in the links`() {
+        mockMvc
+            .get("$bodyUrl/paper?created_until=2026-07-22T00:00:00Z")
+            .andExpect {
+                status { isOk() }
+                jsonPath("$.data.length()") { value(0) }
+                jsonPath("$.pagination.totalElements") { value(0) }
+            }
+
+        mockMvc
+            .get("$bodyUrl/paper?created_since=2026-07-01T00:00:00Z&modified_until=2026-07-23T00:00:00Z")
+            .andExpect {
+                status { isOk() }
+                jsonPath("$.data.length()") { value(1) }
+                jsonPath("$.pagination.totalElements") { value(1) }
+                jsonPath("$.links.self") {
+                    value(
+                        "$bodyUrl/paper?page=1&created_since=2026-07-01T00:00:00Z" +
+                            "&modified_until=2026-07-23T00:00:00Z",
+                    )
+                }
+            }
+    }
+
+    @Test
+    fun `accepts the oparl limit parameter without breaking the list`() {
+        mockMvc
+            .get("$bodyUrl/paper?limit=5")
+            .andExpect {
+                status { isOk() }
+                jsonPath("$.data.length()") { value(1) }
+                jsonPath("$.pagination.elementsPerPage") { value(25) }
+                jsonPath("$.links.self") { value("$bodyUrl/paper?page=1") }
+            }
+    }
 }

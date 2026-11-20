@@ -30,10 +30,8 @@ class OparlUrlGenerator {
     val membership = OparlEntityUrlGenerator(OparlMembershipController::class.java)
     val location = OparlEntityUrlGenerator(OparlLocationController::class.java)
 
-    fun bodyList(
-        page: Int = 1,
-        size: Int = OparlPaginationRequestDto.PAGE_SIZE,
-    ): String = paginatedList(OparlBodyController::class.java, "list", page, size)
+    fun bodyList(request: OparlPaginationRequestDto = OparlPaginationRequestDto()): String =
+        paginatedList(OparlBodyController::class.java, "list", request)
 
     fun body(bodyId: UUID): String =
         MvcUriComponentsBuilder
@@ -44,14 +42,12 @@ class OparlUrlGenerator {
     fun organizationMeetingList(
         bodyId: UUID,
         organizationId: UUID,
-        page: Int = 1,
-        size: Int = OparlPaginationRequestDto.PAGE_SIZE,
+        request: OparlPaginationRequestDto = OparlPaginationRequestDto(),
     ): String =
         paginatedList(
             OparlOrganizationController::class.java,
             "listMeetings",
-            page,
-            size,
+            request,
             bodyId,
             organizationId,
         )
@@ -59,14 +55,12 @@ class OparlUrlGenerator {
     fun organizationConsultationList(
         bodyId: UUID,
         organizationId: UUID,
-        page: Int = 1,
-        size: Int = OparlPaginationRequestDto.PAGE_SIZE,
+        request: OparlPaginationRequestDto = OparlPaginationRequestDto(),
     ): String =
         paginatedList(
             OparlOrganizationController::class.java,
             "listConsultations",
-            page,
-            size,
+            request,
             bodyId,
             organizationId,
         )

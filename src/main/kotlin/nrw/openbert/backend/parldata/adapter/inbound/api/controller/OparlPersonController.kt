@@ -11,6 +11,7 @@ import nrw.openbert.backend.parldata.adapter.inbound.api.error.NotFoundProblem
 import nrw.openbert.backend.parldata.adapter.inbound.api.mapper.OparlListLinksMapper
 import nrw.openbert.backend.parldata.adapter.inbound.api.mapper.OparlListPaginationMapper
 import nrw.openbert.backend.parldata.adapter.inbound.api.mapper.OparlPersonMapper
+import nrw.openbert.backend.parldata.adapter.inbound.api.specification.toListSpecification
 import nrw.openbert.backend.parldata.adapter.inbound.api.urlGenerator.OparlUrlGenerator
 import nrw.openbert.backend.parldata.application.port.outbound.repository.ResolvedBodyRepository
 import nrw.openbert.backend.parldata.application.port.outbound.repository.ResolvedPersonRepository
@@ -53,18 +54,18 @@ class OparlPersonController(
 
         val persons =
             resolvedPersonRepository
-                .findAllByBodyIdOrderById(bodyId, pagination.toSpringPageRequest())
+                .findAll(pagination.toListSpecification(bodyId = bodyId), pagination.toSpringPageRequest())
                 .map(personMapper::toDto)
 
         return ResponseEntity.ok(
             OparlListDto(
-                id = urlGenerator.person.list(bodyId, pagination.page, pagination.size),
+                id = urlGenerator.person.list(bodyId, pagination),
                 data = persons.toList(),
                 pagination = listPaginationMapper.toDto(persons),
                 links =
                     listLinksMapper.toDto(
                         persons,
-                        { page -> urlGenerator.person.list(bodyId, page, pagination.size) },
+                        { page -> urlGenerator.person.list(bodyId, pagination.copy(page = page)) },
                     ),
             ),
         )

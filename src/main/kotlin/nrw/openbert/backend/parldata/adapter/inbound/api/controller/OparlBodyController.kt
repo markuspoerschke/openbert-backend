@@ -11,6 +11,7 @@ import nrw.openbert.backend.parldata.adapter.inbound.api.error.NotFoundProblem
 import nrw.openbert.backend.parldata.adapter.inbound.api.mapper.OparlBodyMapper
 import nrw.openbert.backend.parldata.adapter.inbound.api.mapper.OparlListLinksMapper
 import nrw.openbert.backend.parldata.adapter.inbound.api.mapper.OparlListPaginationMapper
+import nrw.openbert.backend.parldata.adapter.inbound.api.specification.toListSpecification
 import nrw.openbert.backend.parldata.adapter.inbound.api.urlGenerator.OparlUrlGenerator
 import nrw.openbert.backend.parldata.application.port.outbound.repository.ResolvedBodyRepository
 import org.springdoc.core.annotations.ParameterObject
@@ -45,18 +46,18 @@ class OparlBodyController(
     ): ResponseEntity<OparlListDto<OparlBodyDto>> {
         val bodies =
             resolvedBodyRepository
-                .findAllByOrderById(pagination.toSpringPageRequest())
+                .findAll(pagination.toListSpecification(), pagination.toSpringPageRequest())
                 .map(bodyMapper::toDto)
 
         return ResponseEntity.ok(
             OparlListDto(
-                id = urlGenerator.bodyList(pagination.page, pagination.size),
+                id = urlGenerator.bodyList(pagination),
                 data = bodies.toList(),
                 pagination = listPaginationMapper.toDto(bodies),
                 links =
                     listLinksMapper.toDto(
                         bodies,
-                        { page -> urlGenerator.bodyList(page, pagination.size) },
+                        { page -> urlGenerator.bodyList(pagination.copy(page = page)) },
                     ),
             ),
         )

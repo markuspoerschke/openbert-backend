@@ -20,10 +20,10 @@ class OparlOrganizationControllerTest(
     @Test
     fun `lists resolved organizations belonging to a body`() {
         mockMvc
-            .get("$bodyUrl/organization")
+            .get("$bodyUrl/organization?sort=id,asc")
             .andExpect {
                 status { isOk() }
-                jsonPath("$.id") { value("$bodyUrl/organization?page=1") }
+                jsonPath("$.id") { value("$bodyUrl/organization?page=1&sort=id,asc") }
                 jsonPath("$.type") { value("https://schema.oparl.org/1.1/List") }
                 jsonPath("$.data.length()") { value(2) }
                 jsonPath("$.data[0].id") { value("$bodyUrl/organization/9f7d37f9-cd93-4b11-a868-19a6c1e39318") }
@@ -57,9 +57,9 @@ class OparlOrganizationControllerTest(
                 jsonPath("$.pagination.elementsPerPage") { value(25) }
                 jsonPath("$.pagination.totalElements") { value(2) }
                 jsonPath("$.pagination.totalPages") { value(1) }
-                jsonPath("$.links.first") { value("$bodyUrl/organization?page=1") }
-                jsonPath("$.links.self") { value("$bodyUrl/organization?page=1") }
-                jsonPath("$.links.last") { value("$bodyUrl/organization?page=1") }
+                jsonPath("$.links.first") { value("$bodyUrl/organization?page=1&sort=id,asc") }
+                jsonPath("$.links.self") { value("$bodyUrl/organization?page=1&sort=id,asc") }
+                jsonPath("$.links.last") { value("$bodyUrl/organization?page=1&sort=id,asc") }
                 jsonPath("$.links.prev") { doesNotExist() }
                 jsonPath("$.links.next") { doesNotExist() }
             }
