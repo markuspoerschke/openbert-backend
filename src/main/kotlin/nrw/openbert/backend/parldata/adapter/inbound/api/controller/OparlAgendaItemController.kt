@@ -6,6 +6,8 @@ import jakarta.validation.Valid
 import nrw.openbert.backend.parldata.adapter.inbound.api.dto.OparlAgendaItemDto
 import nrw.openbert.backend.parldata.adapter.inbound.api.dto.OparlListDto
 import nrw.openbert.backend.parldata.adapter.inbound.api.dto.OparlPaginationRequestDto
+import nrw.openbert.backend.parldata.adapter.inbound.api.error.BadRequestProblem
+import nrw.openbert.backend.parldata.adapter.inbound.api.error.NotFoundProblem
 import nrw.openbert.backend.parldata.adapter.inbound.api.mapper.OparlAgendaItemMapper
 import nrw.openbert.backend.parldata.adapter.inbound.api.mapper.OparlListLinksMapper
 import nrw.openbert.backend.parldata.adapter.inbound.api.mapper.OparlListPaginationMapper
@@ -13,11 +15,13 @@ import nrw.openbert.backend.parldata.adapter.inbound.api.urlGenerator.OparlUrlGe
 import nrw.openbert.backend.parldata.application.port.outbound.repository.ResolvedAgendaItemRepository
 import nrw.openbert.backend.parldata.application.port.outbound.repository.ResolvedBodyRepository
 import org.springdoc.core.annotations.ParameterObject
+import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RestController
-import java.util.UUID
+import org.springframework.web.server.ResponseStatusException
+import java.util.*
 
 @Tag(
     name = "Oparl Agenda Item",
@@ -36,13 +40,15 @@ class OparlAgendaItemController(
     private val resolvedBodyRepository: ResolvedBodyRepository,
     private val resolvedAgendaItemRepository: ResolvedAgendaItemRepository,
 ) {
+    @BadRequestProblem
+    @NotFoundProblem
     @GetMapping("oparl/v1.1/body/{bodyId}/agendaitem")
     fun list(
         @PathVariable bodyId: UUID,
         @ParameterObject @Valid pagination: OparlPaginationRequestDto,
     ): ResponseEntity<OparlListDto<OparlAgendaItemDto>> {
         if (!resolvedBodyRepository.existsById(bodyId)) {
-            return ResponseEntity.notFound().build()
+            throw ResponseStatusException(HttpStatus.NOT_FOUND, "Body $bodyId does not exist.")
         }
 
         val agendaItems =
@@ -64,17 +70,22 @@ class OparlAgendaItemController(
         )
     }
 
+    @NotFoundProblem
     @GetMapping("oparl/v1.1/body/{bodyId}/agendaitem/{agendaItemId}")
     fun get(
         @PathVariable bodyId: UUID,
         @PathVariable agendaItemId: UUID,
     ): ResponseEntity<OparlAgendaItemDto> {
-        val agendaItem = resolvedAgendaItemRepository.findByIdAndBodyId(agendaItemId, bodyId)
+        val agendaItem =
+            resolvedAgendaItemRepository
+                .findByIdAndBodyId(agendaItemId, bodyId)
+                .orElseThrow {
+                    ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Agenda item $agendaItemId does not exist in body $bodyId.",
+                    )
+                }
 
-        if (!agendaItem.isPresent) {
-            return ResponseEntity.notFound().build()
-        }
-
-        return ResponseEntity.ok(agendaItemMapper.toDto(agendaItem.get()))
+        return ResponseEntity.ok(agendaItemMapper.toDto(agendaItem))
     }
 }

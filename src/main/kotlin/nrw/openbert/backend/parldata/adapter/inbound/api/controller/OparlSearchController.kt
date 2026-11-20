@@ -8,15 +8,19 @@ import nrw.openbert.backend.parldata.adapter.inbound.api.dto.OparlListLinksDto
 import nrw.openbert.backend.parldata.adapter.inbound.api.dto.OparlListPaginationDto
 import nrw.openbert.backend.parldata.adapter.inbound.api.dto.OparlPaginationRequestDto
 import nrw.openbert.backend.parldata.adapter.inbound.api.dto.OparlSearchResultListDto
+import nrw.openbert.backend.parldata.adapter.inbound.api.error.BadRequestProblem
+import nrw.openbert.backend.parldata.adapter.inbound.api.error.NotFoundProblem
 import nrw.openbert.backend.parldata.adapter.inbound.api.mapper.OparlSearchResultMapper
 import nrw.openbert.backend.parldata.application.port.inbound.OparlEntitySearchServiceInterface
 import nrw.openbert.backend.parldata.application.port.model.SearchCriteria
 import nrw.openbert.backend.parldata.domain.enums.OparlType
 import org.springdoc.core.annotations.ParameterObject
+import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.server.ResponseStatusException
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder
 
 @Tag(
@@ -32,6 +36,7 @@ class OparlSearchController(
     private val searchService: OparlEntitySearchServiceInterface,
     private val mapper: OparlSearchResultMapper,
 ) {
+    @BadRequestProblem
     @GetMapping("oparl/v1.1/search")
     fun search(
         @Parameter(description = "Literal substring containing at least three consecutive letters or digits")
@@ -45,7 +50,10 @@ class OparlSearchController(
         val searchText = text?.trim()
         val invalidText = searchText != null && !SEARCHABLE_TEXT.containsMatchIn(searchText)
         if (invalidText) {
-            return ResponseEntity.badRequest().build()
+            throw ResponseStatusException(
+                HttpStatus.BAD_REQUEST,
+                "The text parameter must contain at least three consecutive letters or digits.",
+            )
         }
 
         val typeEnums = resolveTypes(types)

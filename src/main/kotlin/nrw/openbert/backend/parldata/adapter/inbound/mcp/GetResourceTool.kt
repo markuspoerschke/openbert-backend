@@ -17,7 +17,8 @@ class GetResourceTool(
                 "meeting, agenda item, paper, consultation, file, or location) by its ID. " +
                 "Use the id value of a resource returned by the oparl_search or oparl_body_list tools. " +
                 "Fails with an error result when the id is not the URL of a supported OParl resource; " +
-                "the error message then explains the expected URL format.",
+                "the error message then explains the expected URL format. " +
+                "Also fails with an error result when no resource exists for a well-formed id.",
     )
     fun getResource(
         @McpToolParam(
@@ -32,7 +33,11 @@ class GetResourceTool(
             OparlResourceId.fromUrl(id)
                 ?: throw IllegalArgumentException(unsupportedResourceIdMessage(id))
 
-        return mapper.toDto(OparlSearchReference(reference.type, reference.id))
+        return try {
+            mapper.toDto(OparlSearchReference(reference.type, reference.id))
+        } catch (e: IllegalStateException) {
+            throw IllegalArgumentException("No OParl resource exists for id '$id'.", e)
+        }
     }
 
     private fun unsupportedResourceIdMessage(id: String): String =
