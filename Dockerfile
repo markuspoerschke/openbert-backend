@@ -25,9 +25,6 @@ COPY --from=build --chown=spring:spring /workspace/app.jar ./app.jar
 USER spring:spring
 EXPOSE 8080
 
-# Also expose the Jobrunr dashboard
-EXPOSE 8000
-
 HEALTHCHECK --interval=30s --timeout=5s --start-period=60s --retries=3 \
     CMD curl -fsS http://localhost:8080/actuator/health || exit 1
 

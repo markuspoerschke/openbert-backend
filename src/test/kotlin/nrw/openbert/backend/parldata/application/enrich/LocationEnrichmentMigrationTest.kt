@@ -8,12 +8,11 @@ import nrw.openbert.backend.parldata.application.port.outbound.repository.Resolv
 import nrw.openbert.backend.parldata.application.port.outbound.repository.ResolvedLocationRepository
 import nrw.openbert.backend.parldata.application.resolve.Resolver
 import nrw.openbert.backend.parldata.domain.enums.OparlType
-import org.junit.jupiter.params.ParameterizedTest
-import org.junit.jupiter.params.provider.ValueSource
+import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.annotation.Import
-import org.springframework.core.io.ClassPathResource
+import org.springframework.core.io.ByteArrayResource
 import org.springframework.data.domain.PageRequest
 import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator
 import org.springframework.transaction.annotation.Transactional
@@ -40,25 +39,18 @@ class LocationEnrichmentMigrationTest(
 ) {
     private val existingTargetId = UUID.fromString("40000000-0000-4000-8000-000000000002")
 
-    @ParameterizedTest
-    @ValueSource(
-        strings = [
-            "V11__enqueue_existing_locations_for_enrichment.sql",
-            "V13__reenrich_location_addresses.sql",
-        ],
-    )
-    fun `queues every existing location and updates resolved values through enrichment`(migration: String) {
+    @Test
+    fun `queues every existing location and updates resolved values through enrichment`() {
         val rawIds = rawLocationRepository.findAll().map { it.id }.toSet()
         val existingTarget = targetRepository.findById(existingTargetId).orElseThrow()
 
-        migrate(migration)
+        migrate()
 
         val dueTargets = targetRepository.findDue(Instant.now(), PageRequest.of(0, 100))
         assertEquals(rawIds, dueTargets.map { it.rawEntityId }.toSet())
         dueTargets.forEach {
             assertEquals(OparlType.LOCATION, it.entityType)
             assertEquals(1, it.referenceCount)
-            assertNull(it.jobId)
             assertNull(it.scheduledAt)
         }
         val requeued = targetRepository.findById(existingTargetId).orElseThrow()
@@ -89,23 +81,16 @@ class LocationEnrichmentMigrationTest(
         assertEquals("  Rathausplatz 1  ", raw.streetAddress)
     }
 
-    @ParameterizedTest
-    @ValueSource(
-        strings = [
-            "V11__enqueue_existing_locations_for_enrichment.sql",
-            "V13__reenrich_location_addresses.sql",
-        ],
-    )
-    fun `clears old scheduling markers so previously scheduled locations become due again`(migration: String) {
+    @Test
+    fun `clears old scheduling markers so previously scheduled locations become due again`() {
         val existingTarget = targetRepository.findById(existingTargetId).orElseThrow()
-        existingTarget.enqueue().markAsScheduled(UUID.randomUUID())
+        existingTarget.enqueue()
         existingTarget.scheduledAt = Instant.now().plusSeconds(3600)
 
-        migrate(migration)
+        migrate()
 
         val requeued = targetRepository.findById(existingTargetId).orElseThrow()
         assertEquals(2, requeued.referenceCount)
-        assertNull(requeued.jobId)
         assertNull(requeued.scheduledAt)
         assertEquals(existingTarget.createdAt, requeued.createdAt)
         assertEquals(existingTarget.lastEnrichedAt, requeued.lastEnrichedAt)
@@ -113,11 +98,22 @@ class LocationEnrichmentMigrationTest(
         assertTrue(existingTargetId in dueIds)
     }
 
-    private fun migrate(migration: String) {
+    private fun migrate() {
         entityManager.flush()
-        ResourceDatabasePopulator(
-            ClassPathResource("db/migration/$migration"),
-        ).execute(dataSource)
+        // V11 and V13 contain identical SQL and still reference the job_id column dropped by V17,
+        // so apply the equivalent statement without it.
+        val sql =
+            """
+            INSERT INTO enrich_target
+                (id, raw_entity_id, entity_type, created_at, modified_at, reference_count)
+            SELECT gen_random_uuid(), id, 'LOCATION', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 1
+            FROM oparl_raw_location
+            ON CONFLICT (raw_entity_id, entity_type) DO UPDATE
+            SET reference_count = enrich_target.reference_count + 1,
+                modified_at = EXCLUDED.modified_at,
+                scheduled_at = NULL;
+            """.trimIndent()
+        ResourceDatabasePopulator(ByteArrayResource(sql.toByteArray())).execute(dataSource)
         entityManager.clear()
     }
 }

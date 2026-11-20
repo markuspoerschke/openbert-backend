@@ -21,7 +21,7 @@ interface EnrichTargetRepository : JpaRepository<EnrichTarget, UUID> {
             FROM EnrichTarget target
             WHERE target.referenceCount > 0
               AND (target.scheduledAt <= :now OR target.scheduledAt IS NULL)
-              AND target.jobId IS NULL
+              AND target.failedAt IS NULL
             ORDER BY CASE target.entityType
                 WHEN nrw.openbert.backend.parldata.domain.enums.OparlType.SYSTEM THEN 0
                 WHEN nrw.openbert.backend.parldata.domain.enums.OparlType.BODY THEN 1

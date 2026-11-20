@@ -12,7 +12,6 @@ import org.mockito.Mockito.mock
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
 import java.time.Instant
-import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
@@ -45,7 +44,6 @@ class CrawlTargetEnqueuerTest {
                 resource = resource,
                 referenceCount = 4,
                 scheduledAt = Instant.parse("2026-07-31T08:00:00Z"),
-                jobId = UUID.randomUUID(),
             )
         `when`(repository.findByResource(resource))
             .thenReturn(target)
@@ -55,7 +53,6 @@ class CrawlTargetEnqueuerTest {
         assertNotNull(target.lastCrawledAt)
         assertEquals(0, target.referenceCount)
         assertNull(target.scheduledAt)
-        assertNull(target.jobId)
         verify(repository).save(target)
     }
 

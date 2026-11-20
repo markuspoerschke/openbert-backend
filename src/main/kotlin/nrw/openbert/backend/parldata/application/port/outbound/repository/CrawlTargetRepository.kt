@@ -14,7 +14,6 @@ interface CrawlTargetRepository : JpaRepository<CrawlTarget, UUID> {
             FROM crawl_target
             WHERE reference_count > 0
               AND (scheduled_at <= ?1 OR scheduled_at IS NULL)
-              AND job_id IS NULL
               AND last_crawled_at IS NULL
               AND failed_at IS NULL
             ORDER BY CASE entity_type

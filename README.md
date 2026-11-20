@@ -39,7 +39,7 @@ flowchart TD
 
 ## Implementation
 
-**Kotlin · Spring Boot 4 · Spring MVC · Spring Data JPA · PostgreSQL · Flyway · JobRunr · Spring AI MCP · Testcontainers**
+**Kotlin · Spring Boot 4 · Spring MVC · Spring Data JPA · PostgreSQL · Flyway · Spring AI MCP · Testcontainers**
 
 ```mermaid
 flowchart LR

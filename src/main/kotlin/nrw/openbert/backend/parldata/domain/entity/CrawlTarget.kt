@@ -21,7 +21,7 @@ import java.util.UUID
 )
 class CrawlTarget(
     @Id
-    var id: UUID = UUID.randomUUID(),
+    override var id: UUID = UUID.randomUUID(),
     @Embedded
     val resource: OparlResource,
     @Enumerated(EnumType.STRING)
@@ -31,10 +31,9 @@ class CrawlTarget(
     var modifiedAt: Instant = Instant.now(),
     var referenceCount: Int = 0,
     var scheduledAt: Instant? = null,
-    var jobId: UUID? = null,
-    var failedAt: Instant? = null,
-    var failureReason: String? = null,
-) {
+    override var failedAt: Instant? = null,
+    override var failureReason: String? = null,
+) : QueueTarget {
     companion object {
         const val FAILURE_REASON_MAX_LENGTH = 1024
 
@@ -62,17 +61,15 @@ class CrawlTarget(
             modifiedAt = Instant.now()
             referenceCount = 0
             scheduledAt = null
-            jobId = null
             failedAt = null
             failureReason = null
             lastCrawledAt = modifiedAt
         }
 
-    fun markAsFailed(reason: String) =
+    override fun markAsFailed(reason: String): CrawlTarget =
         apply {
             modifiedAt = Instant.now()
             scheduledAt = null
-            jobId = null
             failedAt = modifiedAt
             failureReason = reason.take(FAILURE_REASON_MAX_LENGTH)
         }

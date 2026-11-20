@@ -33,6 +33,10 @@ Application-specific properties use the `app.` prefix and can be overridden thro
 | --- | --- | --- | --- |
 | `app.crawl.scheduler.enabled` | `APP_CRAWL_SCHEDULER_ENABLED` | `true` | Enables or disables the crawl cronjob. When set to `false`, no crawl targets are processed. |
 | `app.crawl.scheduler.cron` | `APP_CRAWL_SCHEDULER_CRON` | `0 * * * * *` | Cron expression for the crawl cronjob (every 60 seconds by default). The special value `-` disables the schedule. |
+| `app.enrich.scheduler.enabled` | `APP_ENRICH_SCHEDULER_ENABLED` | `true` | Enables or disables the enrichment cronjob. When set to `false`, no enrich targets are processed. |
+| `app.enrich.scheduler.cron` | `APP_ENRICH_SCHEDULER_CRON` | `*/15 * * * * *` | Cron expression for the enrichment cronjob (every 15 seconds by default). The special value `-` disables the schedule. |
+| `app.resolve.scheduler.enabled` | `APP_RESOLVE_SCHEDULER_ENABLED` | `true` | Enables or disables the resolve cronjob. When set to `false`, no resolve targets are processed. |
+| `app.resolve.scheduler.cron` | `APP_RESOLVE_SCHEDULER_CRON` | `*/15 * * * * *` | Cron expression for the resolve cronjob (every 15 seconds by default). The special value `-` disables the schedule. |
 | `app.crypto.key-base64` | `APP_CRYPTO_KEY_BASE64` | none (required) | Base64-encoded 256-bit AES key used for encrypting sensitive database fields (such as OParl system authorization headers). The app fails to start without it. |
 
 ### Encryption key
@@ -45,7 +49,7 @@ openssl rand -base64 32
 
 Provide this key in development or production via the `APP_CRYPTO_KEY_BASE64` environment variable.
 
-The crawl runs directly inside the cronjob, so crawls are paced by the cron expression instead of piling up in the JobRunr queue. Only resolve and enrich jobs are still dispatched through JobRunr.
+All three queues (crawl, enrich, resolve) run directly inside their cronjobs: due targets are processed inline and paced by the cron expression. A failing target is marked with `failed_at`/`failure_reason` on its queue row and reported to Sentry; it is not retried automatically.
 
 ## Build, test, and format
 
@@ -100,5 +104,3 @@ Configure Coolify to build the repository's root `Dockerfile`, then set:
 - `SPRING_DATASOURCE_USERNAME`: the PostgreSQL user
 - `SPRING_DATASOURCE_PASSWORD`: the PostgreSQL password, stored as a secret
 - `APP_CRYPTO_KEY_BASE64`: the Base64-encoded AES key, stored as a secret
-
-JobRunr's dashboard can listen on port `8000` (`jobrunr.dashboard.port`; disabled by default via `jobrunr.dashboard.enabled=false`). Do not expose or publicly route that port unless the dashboard is separately secured.

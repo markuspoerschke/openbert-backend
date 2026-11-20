@@ -17,7 +17,7 @@ import java.util.UUID
 )
 class ResolveTarget(
     @Id
-    val id: UUID = UUID.randomUUID(),
+    override val id: UUID = UUID.randomUUID(),
     val rawEntityId: UUID,
     @Enumerated(EnumType.STRING)
     val entityType: OparlType,
@@ -26,18 +26,13 @@ class ResolveTarget(
     var modifiedAt: Instant = Instant.now(),
     var referenceCount: Int = 0,
     var scheduledAt: Instant? = null,
-    var jobId: UUID? = null,
-) {
+    override var failedAt: Instant? = null,
+    override var failureReason: String? = null,
+) : QueueTarget {
     fun enqueue() =
         apply {
             referenceCount++
             modifiedAt = Instant.now()
-        }
-
-    fun markAsScheduled(jobId: UUID) =
-        apply {
-            scheduledAt = Instant.now()
-            this.jobId = jobId
         }
 
     fun markAsResolved() =
@@ -46,10 +41,21 @@ class ResolveTarget(
             lastResolvedAt = modifiedAt
             referenceCount = 0
             scheduledAt = null
-            jobId = null
+            failedAt = null
+            failureReason = null
+        }
+
+    override fun markAsFailed(reason: String): ResolveTarget =
+        apply {
+            modifiedAt = Instant.now()
+            scheduledAt = null
+            failedAt = modifiedAt
+            failureReason = reason.take(FAILURE_REASON_MAX_LENGTH)
         }
 
     companion object {
+        const val FAILURE_REASON_MAX_LENGTH = 1024
+
         fun create(entity: AbstractOparlEntity) =
             ResolveTarget(
                 rawEntityId = entity.id,

@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.annotation.Import
-import org.springframework.core.io.ClassPathResource
+import org.springframework.core.io.ByteArrayResource
 import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator
 import org.springframework.transaction.annotation.Transactional
 import java.time.Instant
@@ -30,12 +30,20 @@ class RecrawlMigrationTest(
         assertTrue(previousTargets.any { it.lastCrawledAt != null && it.referenceCount == 0 })
         assertTrue(previousTargets.any { it.lastCrawledAt != null && it.referenceCount > 1 })
         assertTrue(previousTargets.any { it.lastCrawledAt != null && it.entityType == null })
-        assertTrue(previousTargets.any { it.lastCrawledAt == null && it.jobId != null })
+        assertTrue(previousTargets.any { it.lastCrawledAt == null && it.scheduledAt != null })
 
         entityManager.flush()
-        ResourceDatabasePopulator(
-            ClassPathResource("db/migration/V14__recrawl_previously_crawled_resources.sql"),
-        ).execute(dataSource)
+        // V14 still references the job_id column dropped by V17, so apply the equivalent without it.
+        val sql =
+            """
+            UPDATE crawl_target
+            SET last_crawled_at = NULL,
+                reference_count = GREATEST(reference_count, 1),
+                scheduled_at = NULL,
+                modified_at = CURRENT_TIMESTAMP
+            WHERE last_crawled_at IS NOT NULL;
+            """.trimIndent()
+        ResourceDatabasePopulator(ByteArrayResource(sql.toByteArray())).execute(dataSource)
         entityManager.clear()
 
         val dueIds = repository.findDue(Instant.now(), 100).map { it.id }.toSet()
@@ -50,14 +58,12 @@ class RecrawlMigrationTest(
                 assertNull(current.lastCrawledAt)
                 assertEquals(maxOf(previous.referenceCount, 1), current.referenceCount)
                 assertNull(current.scheduledAt)
-                assertNull(current.jobId)
                 assertTrue(current.modifiedAt > previous.modifiedAt)
                 assertTrue(current.id in dueIds)
             } else {
                 assertNull(current.lastCrawledAt)
                 assertEquals(previous.referenceCount, current.referenceCount)
                 assertEquals(previous.scheduledAt, current.scheduledAt)
-                assertEquals(previous.jobId, current.jobId)
                 assertEquals(previous.modifiedAt, current.modifiedAt)
             }
         }

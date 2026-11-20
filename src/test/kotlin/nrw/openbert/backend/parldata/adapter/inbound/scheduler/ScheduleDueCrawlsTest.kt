@@ -19,8 +19,8 @@ import java.time.Instant
 class ScheduleDueCrawlsTest {
     private val crawlTargetRepository = mock(CrawlTargetRepository::class.java)
     private val crawler = mock(Crawler::class.java)
-    private val crawlFailureRecorder = mock(CrawlFailureRecorder::class.java)
-    private val scheduleDueCrawls = ScheduleDueCrawls(crawlTargetRepository, crawler, crawlFailureRecorder)
+    private val failureRecorder = mock(CrawlFailureRecorder::class.java)
+    private val scheduleDueCrawls = ScheduleDueCrawls(crawlTargetRepository, crawler, failureRecorder)
 
     @Test
     fun `crawls due targets directly instead of enqueueing them`() {
@@ -30,7 +30,7 @@ class ScheduleDueCrawlsTest {
         scheduleDueCrawls.run()
 
         verify(crawler).run(target.id)
-        verifyNoMoreInteractions(crawler, crawlFailureRecorder)
+        verifyNoMoreInteractions(crawler, failureRecorder)
     }
 
     @Test
@@ -39,7 +39,7 @@ class ScheduleDueCrawlsTest {
 
         scheduleDueCrawls.run()
 
-        verifyNoMoreInteractions(crawler, crawlFailureRecorder)
+        verifyNoMoreInteractions(crawler, failureRecorder)
     }
 
     @Test
@@ -51,8 +51,8 @@ class ScheduleDueCrawlsTest {
 
         scheduleDueCrawls.run()
 
-        verify(crawlFailureRecorder).record(target.id, error)
-        verifyNoMoreInteractions(crawlFailureRecorder)
+        verify(failureRecorder).record(target.id, error)
+        verifyNoMoreInteractions(failureRecorder)
     }
 
     private fun anyInstant(): Instant = any(Instant::class.java) ?: Instant.EPOCH
