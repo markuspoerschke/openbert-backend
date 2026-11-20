@@ -67,8 +67,6 @@ class EnricherTest {
         verifyNoInteractions(resolveTargetEnqueuer)
         assertNull(target.lastEnrichedAt)
         assertEquals(1, target.referenceCount)
-        assertNotNull(target.jobId)
-        assertNotNull(target.scheduledAt)
     }
 
     @Test
@@ -84,10 +82,7 @@ class EnricherTest {
     }
 
     private fun target(entityType: OparlType): EnrichTarget {
-        val target =
-            EnrichTarget(rawEntityId = UUID.randomUUID(), entityType = entityType)
-                .enqueue()
-                .markAsScheduled(UUID.randomUUID())
+        val target = EnrichTarget(rawEntityId = UUID.randomUUID(), entityType = entityType).enqueue()
         `when`(repository.findById(target.id)).thenReturn(Optional.of(target))
         return target
     }
@@ -95,7 +90,6 @@ class EnricherTest {
     private fun assertCompleted(target: EnrichTarget) {
         assertNotNull(target.lastEnrichedAt)
         assertEquals(0, target.referenceCount)
-        assertNull(target.jobId)
         assertNull(target.scheduledAt)
     }
 }

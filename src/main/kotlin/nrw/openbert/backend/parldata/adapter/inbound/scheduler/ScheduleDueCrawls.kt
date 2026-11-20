@@ -13,7 +13,7 @@ import java.time.Instant
 class ScheduleDueCrawls(
     private val crawlTargetRepository: CrawlTargetRepository,
     private val crawler: Crawler,
-    private val crawlFailureRecorder: CrawlFailureRecorder,
+    private val failureRecorder: CrawlFailureRecorder,
 ) {
     private val logger = LoggerFactory.getLogger(javaClass)
 
@@ -28,7 +28,7 @@ class ScheduleDueCrawls(
             try {
                 crawler.run(crawlTarget.id)
             } catch (error: Exception) {
-                crawlFailureRecorder.record(crawlTarget.id, error)
+                failureRecorder.record(crawlTarget.id, error)
             }
         }
 

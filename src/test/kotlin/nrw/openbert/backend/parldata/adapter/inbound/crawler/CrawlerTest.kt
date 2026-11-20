@@ -45,7 +45,6 @@ import org.mockito.Mockito.never
 import org.mockito.Mockito.verify
 import java.time.Instant
 import java.util.Optional
-import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertNotNull
@@ -110,7 +109,6 @@ class CrawlerTest {
         assertNotNull(target.lastCrawledAt)
         assertEquals(0, target.referenceCount)
         assertNull(target.scheduledAt)
-        assertNull(target.jobId)
         verify(fixture.crawlTargetRepository).save(target)
     }
 
@@ -148,7 +146,6 @@ class CrawlerTest {
         assertNull(target.lastCrawledAt)
         assertEquals(3, target.referenceCount)
         assertNotNull(target.scheduledAt)
-        assertNotNull(target.jobId)
         verify(fixture.crawlTargetRepository, never()).save(target)
     }
 
@@ -209,7 +206,6 @@ class CrawlerTest {
                 resource = resource(url),
                 referenceCount = 3,
                 scheduledAt = Instant.parse("2026-07-31T08:00:00Z"),
-                jobId = UUID.randomUUID(),
             )
 
         fun respondWith(

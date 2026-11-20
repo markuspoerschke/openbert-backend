@@ -21,7 +21,7 @@ interface ResolveTargetRepository : JpaRepository<ResolveTarget, UUID> {
             FROM ResolveTarget target
             WHERE target.referenceCount > 0
               AND (target.scheduledAt <= :now OR target.scheduledAt IS NULL)
-              AND target.jobId IS NULL
+              AND target.failedAt IS NULL
               AND target.entityType IN :entityTypes
             ORDER BY CASE target.entityType
                 WHEN nrw.openbert.backend.parldata.domain.enums.OparlType.SYSTEM THEN 0

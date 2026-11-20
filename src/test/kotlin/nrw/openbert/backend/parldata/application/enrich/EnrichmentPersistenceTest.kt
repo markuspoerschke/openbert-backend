@@ -4,6 +4,7 @@ import jakarta.persistence.EntityManager
 import nrw.openbert.backend.TestcontainersConfiguration
 import nrw.openbert.backend.parldata.adapter.inbound.crawler.processor.LocationProcessor
 import nrw.openbert.backend.parldata.adapter.inbound.crawler.processor.SystemProcessor
+import nrw.openbert.backend.parldata.adapter.inbound.scheduler.EnrichFailureRecorder
 import nrw.openbert.backend.parldata.adapter.inbound.scheduler.ScheduleDueEnriches
 import nrw.openbert.backend.parldata.adapter.outbound.client.oparl.dto.OparlLocationDto
 import nrw.openbert.backend.parldata.adapter.outbound.client.oparl.dto.OparlSystemDto
@@ -21,17 +22,9 @@ import nrw.openbert.backend.parldata.domain.entity.OparlSystem
 import nrw.openbert.backend.parldata.domain.entity.embeddable.OparlResource
 import nrw.openbert.backend.parldata.domain.enums.OparlType
 import nrw.openbert.backend.parldata.domain.valueObject.OparlUrl
-import org.jobrunr.jobs.JobId
-import org.jobrunr.jobs.lambdas.JobLambda
-import org.jobrunr.scheduling.JobScheduler
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
-import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito.mock
-import org.mockito.Mockito.times
-import org.mockito.Mockito.verify
-import org.mockito.Mockito.`when`
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.annotation.Import
@@ -62,6 +55,7 @@ class EnrichmentPersistenceTest(
     @Autowired private val enrichedLocationRepository: EnrichedLocationInterface,
     @Autowired private val resolvedLocationRepository: ResolvedLocationRepository,
     @Autowired private val resolvedSystemRepository: ResolvedSystemRepository,
+    @Autowired private val failureRecorder: EnrichFailureRecorder,
     @Autowired private val entityManager: EntityManager,
 ) {
     @ParameterizedTest
@@ -264,27 +258,20 @@ class EnrichmentPersistenceTest(
     }
 
     @Test
-    fun `scheduler queues due enrichment once and excludes inactive future and scheduled targets`() {
+    fun `scheduler enriches due targets inline and excludes inactive and future-scheduled targets`() {
         val due = targetRepository.save(target().enqueue())
         targetRepository.save(target())
-        targetRepository.save(target().enqueue().apply { scheduledAt = Instant.now().plusSeconds(3600) })
-        targetRepository.save(target().enqueue().markAsScheduled(UUID.randomUUID()))
-        val jobScheduler = mock(JobScheduler::class.java)
-        val jobId = UUID.randomUUID()
-        `when`(jobScheduler.enqueue(any(JobLambda::class.java))).thenReturn(JobId(jobId))
-        val scheduler = ScheduleDueEnriches(targetRepository, enricher, jobScheduler)
+        val future = targetRepository.save(target().enqueue().apply { scheduledAt = Instant.now().plusSeconds(3600) })
+        val scheduler = ScheduleDueEnriches(targetRepository, enricher, failureRecorder)
 
         assertEquals(listOf(due.id), dueTargets().map { it.id })
-        scheduler.run()
         scheduler.run()
         entityManager.flush()
         entityManager.clear()
 
-        verify(jobScheduler, times(1)).enqueue(any(JobLambda::class.java))
-        val scheduled = targetRepository.findById(due.id).orElseThrow()
-        assertEquals(jobId, scheduled.jobId)
-        assertNotNull(scheduled.scheduledAt)
+        assertCompleted(due.id)
         assertTrue(dueTargets().isEmpty())
+        assertNull(targetRepository.findById(future.id).orElseThrow().lastEnrichedAt)
     }
 
     private fun dueTargets() = targetRepository.findDue(Instant.now(), PageRequest.of(0, 100))
@@ -295,7 +282,6 @@ class EnrichmentPersistenceTest(
         val target = targetRepository.findById(targetId).orElseThrow()
         assertNotNull(target.lastEnrichedAt)
         assertEquals(0, target.referenceCount)
-        assertNull(target.jobId)
         assertNull(target.scheduledAt)
     }
 
