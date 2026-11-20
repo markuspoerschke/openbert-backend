@@ -7,6 +7,9 @@ import jakarta.validation.Valid
 import nrw.openbert.backend.parldata.adapter.inbound.api.dto.OparlFileDto
 import nrw.openbert.backend.parldata.adapter.inbound.api.dto.OparlListDto
 import nrw.openbert.backend.parldata.adapter.inbound.api.dto.OparlPaginationRequestDto
+import nrw.openbert.backend.parldata.adapter.inbound.api.error.BadGatewayProblem
+import nrw.openbert.backend.parldata.adapter.inbound.api.error.BadRequestProblem
+import nrw.openbert.backend.parldata.adapter.inbound.api.error.NotFoundProblem
 import nrw.openbert.backend.parldata.adapter.inbound.api.mapper.OparlFileMapper
 import nrw.openbert.backend.parldata.adapter.inbound.api.mapper.OparlListLinksMapper
 import nrw.openbert.backend.parldata.adapter.inbound.api.mapper.OparlListPaginationMapper
@@ -19,12 +22,14 @@ import nrw.openbert.backend.parldata.domain.entity.resolved.ResolvedFile
 import org.springdoc.core.annotations.ParameterObject
 import org.springframework.http.ContentDisposition
 import org.springframework.http.HttpHeaders
+import org.springframework.http.HttpStatus
 import org.springframework.http.HttpStatusCode
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.server.ResponseStatusException
 import java.io.IOException
 import java.nio.charset.StandardCharsets
 import java.util.UUID
@@ -47,13 +52,15 @@ class OparlFileController(
     private val resolvedFileRepository: ResolvedFileRepository,
     private val fileContentFetcher: FileContentFetcher,
 ) {
+    @BadRequestProblem
+    @NotFoundProblem
     @GetMapping("oparl/v1.1/body/{bodyId}/file")
     fun list(
         @PathVariable bodyId: UUID,
         @ParameterObject @Valid pagination: OparlPaginationRequestDto,
     ): ResponseEntity<OparlListDto<OparlFileDto>> {
         if (!resolvedBodyRepository.existsById(bodyId)) {
-            return ResponseEntity.notFound().build()
+            throw ResponseStatusException(HttpStatus.NOT_FOUND, "Body $bodyId does not exist.")
         }
 
         val files =
@@ -75,20 +82,27 @@ class OparlFileController(
         )
     }
 
+    @NotFoundProblem
     @GetMapping("oparl/v1.1/body/{bodyId}/file/{fileId}")
     fun get(
         @PathVariable bodyId: UUID,
         @PathVariable fileId: UUID,
     ): ResponseEntity<OparlFileDto> {
-        val file = resolvedFileRepository.findByIdAndBodyId(fileId, bodyId)
+        val file =
+            resolvedFileRepository
+                .findByIdAndBodyId(fileId, bodyId)
+                .orElseThrow {
+                    ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "File $fileId does not exist in body $bodyId.",
+                    )
+                }
 
-        if (!file.isPresent) {
-            return ResponseEntity.notFound().build()
-        }
-
-        return ResponseEntity.ok(fileMapper.toDto(file.get()))
+        return ResponseEntity.ok(fileMapper.toDto(file))
     }
 
+    @NotFoundProblem
+    @BadGatewayProblem
     @GetMapping("oparl/v1.1/body/{bodyId}/file/{fileId}/access")
     fun access(
         @PathVariable bodyId: UUID,
@@ -98,6 +112,8 @@ class OparlFileController(
         serveFile(bodyId, fileId, response, attachment = false)
     }
 
+    @NotFoundProblem
+    @BadGatewayProblem
     @GetMapping("oparl/v1.1/body/{bodyId}/file/{fileId}/download")
     fun download(
         @PathVariable bodyId: UUID,

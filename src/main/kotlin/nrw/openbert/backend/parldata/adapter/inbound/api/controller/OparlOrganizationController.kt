@@ -8,6 +8,8 @@ import nrw.openbert.backend.parldata.adapter.inbound.api.dto.OparlListDto
 import nrw.openbert.backend.parldata.adapter.inbound.api.dto.OparlMeetingDto
 import nrw.openbert.backend.parldata.adapter.inbound.api.dto.OparlOrganizationDto
 import nrw.openbert.backend.parldata.adapter.inbound.api.dto.OparlPaginationRequestDto
+import nrw.openbert.backend.parldata.adapter.inbound.api.error.BadRequestProblem
+import nrw.openbert.backend.parldata.adapter.inbound.api.error.NotFoundProblem
 import nrw.openbert.backend.parldata.adapter.inbound.api.mapper.OparlConsultationMapper
 import nrw.openbert.backend.parldata.adapter.inbound.api.mapper.OparlListLinksMapper
 import nrw.openbert.backend.parldata.adapter.inbound.api.mapper.OparlListPaginationMapper
@@ -19,10 +21,12 @@ import nrw.openbert.backend.parldata.application.port.outbound.repository.Resolv
 import nrw.openbert.backend.parldata.application.port.outbound.repository.ResolvedMeetingRepository
 import nrw.openbert.backend.parldata.application.port.outbound.repository.ResolvedOrganizationRepository
 import org.springdoc.core.annotations.ParameterObject
+import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.server.ResponseStatusException
 import java.util.UUID
 
 @Tag(
@@ -46,13 +50,15 @@ class OparlOrganizationController(
     private val resolvedMeetingRepository: ResolvedMeetingRepository,
     private val resolvedOrganizationRepository: ResolvedOrganizationRepository,
 ) {
+    @BadRequestProblem
+    @NotFoundProblem
     @GetMapping("oparl/v1.1/body/{bodyId}/organization")
     fun list(
         @PathVariable bodyId: UUID,
         @ParameterObject @Valid pagination: OparlPaginationRequestDto,
     ): ResponseEntity<OparlListDto<OparlOrganizationDto>> {
         if (!resolvedBodyRepository.existsById(bodyId)) {
-            return ResponseEntity.notFound().build()
+            throw ResponseStatusException(HttpStatus.NOT_FOUND, "Body $bodyId does not exist.")
         }
 
         val organizations =
@@ -74,20 +80,27 @@ class OparlOrganizationController(
         )
     }
 
+    @NotFoundProblem
     @GetMapping("oparl/v1.1/body/{bodyId}/organization/{organizationId}")
     fun get(
         @PathVariable bodyId: UUID,
         @PathVariable organizationId: UUID,
     ): ResponseEntity<OparlOrganizationDto> {
-        val organization = resolvedOrganizationRepository.findByIdAndBodyId(organizationId, bodyId)
+        val organization =
+            resolvedOrganizationRepository
+                .findByIdAndBodyId(organizationId, bodyId)
+                .orElseThrow {
+                    ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Organization $organizationId does not exist in body $bodyId.",
+                    )
+                }
 
-        if (!organization.isPresent) {
-            return ResponseEntity.notFound().build()
-        }
-
-        return ResponseEntity.ok(organizationMapper.toDto(organization.get()))
+        return ResponseEntity.ok(organizationMapper.toDto(organization))
     }
 
+    @BadRequestProblem
+    @NotFoundProblem
     @GetMapping("oparl/v1.1/body/{bodyId}/organization/{organizationId}/meeting")
     fun listMeetings(
         @PathVariable bodyId: UUID,
@@ -95,7 +108,10 @@ class OparlOrganizationController(
         @ParameterObject @Valid pagination: OparlPaginationRequestDto,
     ): ResponseEntity<OparlListDto<OparlMeetingDto>> {
         if (!resolvedOrganizationRepository.findByIdAndBodyId(organizationId, bodyId).isPresent) {
-            return ResponseEntity.notFound().build()
+            throw ResponseStatusException(
+                HttpStatus.NOT_FOUND,
+                "Organization $organizationId does not exist in body $bodyId.",
+            )
         }
 
         val meetings =
@@ -120,6 +136,8 @@ class OparlOrganizationController(
         )
     }
 
+    @BadRequestProblem
+    @NotFoundProblem
     @GetMapping("oparl/v1.1/body/{bodyId}/organization/{organizationId}/consultation")
     fun listConsultations(
         @PathVariable bodyId: UUID,
@@ -127,7 +145,10 @@ class OparlOrganizationController(
         @ParameterObject @Valid pagination: OparlPaginationRequestDto,
     ): ResponseEntity<OparlListDto<OparlConsultationDto>> {
         if (!resolvedOrganizationRepository.findByIdAndBodyId(organizationId, bodyId).isPresent) {
-            return ResponseEntity.notFound().build()
+            throw ResponseStatusException(
+                HttpStatus.NOT_FOUND,
+                "Organization $organizationId does not exist in body $bodyId.",
+            )
         }
 
         val consultations =

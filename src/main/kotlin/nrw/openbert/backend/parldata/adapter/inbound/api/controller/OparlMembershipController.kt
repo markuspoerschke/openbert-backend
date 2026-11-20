@@ -6,6 +6,8 @@ import jakarta.validation.Valid
 import nrw.openbert.backend.parldata.adapter.inbound.api.dto.OparlListDto
 import nrw.openbert.backend.parldata.adapter.inbound.api.dto.OparlMembershipDto
 import nrw.openbert.backend.parldata.adapter.inbound.api.dto.OparlPaginationRequestDto
+import nrw.openbert.backend.parldata.adapter.inbound.api.error.BadRequestProblem
+import nrw.openbert.backend.parldata.adapter.inbound.api.error.NotFoundProblem
 import nrw.openbert.backend.parldata.adapter.inbound.api.mapper.OparlListLinksMapper
 import nrw.openbert.backend.parldata.adapter.inbound.api.mapper.OparlListPaginationMapper
 import nrw.openbert.backend.parldata.adapter.inbound.api.mapper.OparlMembershipMapper
@@ -13,10 +15,12 @@ import nrw.openbert.backend.parldata.adapter.inbound.api.urlGenerator.OparlUrlGe
 import nrw.openbert.backend.parldata.application.port.outbound.repository.ResolvedBodyRepository
 import nrw.openbert.backend.parldata.application.port.outbound.repository.ResolvedMembershipRepository
 import org.springdoc.core.annotations.ParameterObject
+import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.server.ResponseStatusException
 import java.util.UUID
 
 @Tag(
@@ -36,13 +40,15 @@ class OparlMembershipController(
     private val resolvedBodyRepository: ResolvedBodyRepository,
     private val resolvedMembershipRepository: ResolvedMembershipRepository,
 ) {
+    @BadRequestProblem
+    @NotFoundProblem
     @GetMapping("oparl/v1.1/body/{bodyId}/membership")
     fun list(
         @PathVariable bodyId: UUID,
         @ParameterObject @Valid pagination: OparlPaginationRequestDto,
     ): ResponseEntity<OparlListDto<OparlMembershipDto>> {
         if (!resolvedBodyRepository.existsById(bodyId)) {
-            return ResponseEntity.notFound().build()
+            throw ResponseStatusException(HttpStatus.NOT_FOUND, "Body $bodyId does not exist.")
         }
 
         val memberships =
@@ -64,17 +70,22 @@ class OparlMembershipController(
         )
     }
 
+    @NotFoundProblem
     @GetMapping("oparl/v1.1/body/{bodyId}/membership/{membershipId}")
     fun get(
         @PathVariable bodyId: UUID,
         @PathVariable membershipId: UUID,
     ): ResponseEntity<OparlMembershipDto> {
-        val membership = resolvedMembershipRepository.findByIdAndBodyId(membershipId, bodyId)
+        val membership =
+            resolvedMembershipRepository
+                .findByIdAndBodyId(membershipId, bodyId)
+                .orElseThrow {
+                    ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Membership $membershipId does not exist in body $bodyId.",
+                    )
+                }
 
-        if (!membership.isPresent) {
-            return ResponseEntity.notFound().build()
-        }
-
-        return ResponseEntity.ok(membershipMapper.toDto(membership.get()))
+        return ResponseEntity.ok(membershipMapper.toDto(membership))
     }
 }
