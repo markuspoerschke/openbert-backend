@@ -13,6 +13,7 @@ import nrw.openbert.backend.parldata.adapter.inbound.api.error.NotFoundProblem
 import nrw.openbert.backend.parldata.adapter.inbound.api.mapper.OparlFileMapper
 import nrw.openbert.backend.parldata.adapter.inbound.api.mapper.OparlListLinksMapper
 import nrw.openbert.backend.parldata.adapter.inbound.api.mapper.OparlListPaginationMapper
+import nrw.openbert.backend.parldata.adapter.inbound.api.specification.toListSpecification
 import nrw.openbert.backend.parldata.adapter.inbound.api.urlGenerator.OparlUrlGenerator
 import nrw.openbert.backend.parldata.application.port.model.FileContent
 import nrw.openbert.backend.parldata.application.port.outbound.FileContentFetcher
@@ -65,18 +66,18 @@ class OparlFileController(
 
         val files =
             resolvedFileRepository
-                .findAllByBodyIdOrderById(bodyId, pagination.toSpringPageRequest())
+                .findAll(pagination.toListSpecification(bodyId = bodyId), pagination.toSpringPageRequest())
                 .map(fileMapper::toDto)
 
         return ResponseEntity.ok(
             OparlListDto(
-                id = urlGenerator.file.list(bodyId, pagination.page, pagination.size),
+                id = urlGenerator.file.list(bodyId, pagination),
                 data = files.toList(),
                 pagination = listPaginationMapper.toDto(files),
                 links =
                     listLinksMapper.toDto(
                         files,
-                        { page -> urlGenerator.file.list(bodyId, page, pagination.size) },
+                        { page -> urlGenerator.file.list(bodyId, pagination.copy(page = page)) },
                     ),
             ),
         )

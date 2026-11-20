@@ -11,6 +11,7 @@ import nrw.openbert.backend.parldata.adapter.inbound.api.error.NotFoundProblem
 import nrw.openbert.backend.parldata.adapter.inbound.api.mapper.OparlAgendaItemMapper
 import nrw.openbert.backend.parldata.adapter.inbound.api.mapper.OparlListLinksMapper
 import nrw.openbert.backend.parldata.adapter.inbound.api.mapper.OparlListPaginationMapper
+import nrw.openbert.backend.parldata.adapter.inbound.api.specification.toListSpecification
 import nrw.openbert.backend.parldata.adapter.inbound.api.urlGenerator.OparlUrlGenerator
 import nrw.openbert.backend.parldata.application.port.outbound.repository.ResolvedAgendaItemRepository
 import nrw.openbert.backend.parldata.application.port.outbound.repository.ResolvedBodyRepository
@@ -53,18 +54,18 @@ class OparlAgendaItemController(
 
         val agendaItems =
             resolvedAgendaItemRepository
-                .findAllByBodyIdOrderById(bodyId, pagination.toSpringPageRequest())
+                .findAll(pagination.toListSpecification(bodyId = bodyId), pagination.toSpringPageRequest())
                 .map(agendaItemMapper::toDto)
 
         return ResponseEntity.ok(
             OparlListDto(
-                id = urlGenerator.agendaItem.list(bodyId, pagination.page, pagination.size),
+                id = urlGenerator.agendaItem.list(bodyId, pagination),
                 data = agendaItems.toList(),
                 pagination = listPaginationMapper.toDto(agendaItems),
                 links =
                     listLinksMapper.toDto(
                         agendaItems,
-                        { page -> urlGenerator.agendaItem.list(bodyId, page, pagination.size) },
+                        { page -> urlGenerator.agendaItem.list(bodyId, pagination.copy(page = page)) },
                     ),
             ),
         )

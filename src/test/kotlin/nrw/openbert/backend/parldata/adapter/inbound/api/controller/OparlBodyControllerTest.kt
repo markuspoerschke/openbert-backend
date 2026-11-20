@@ -20,10 +20,10 @@ class OparlBodyControllerTest(
     @Test
     fun `lists only resolved bodies`() {
         mockMvc
-            .get("https://example.org:8443/oparl/v1.1/body")
+            .get("https://example.org:8443/oparl/v1.1/body?sort=id,asc")
             .andExpect {
                 status { isOk() }
-                jsonPath("$.id") { value("https://example.org:8443/oparl/v1.1/body?page=1") }
+                jsonPath("$.id") { value("https://example.org:8443/oparl/v1.1/body?page=1&sort=id,asc") }
                 jsonPath("$.type") { value("https://schema.oparl.org/1.1/List") }
                 jsonPath("$.data.length()") { value(2) }
                 jsonPath("$.data[0].id") { value(bodyUrl) }
@@ -53,11 +53,42 @@ class OparlBodyControllerTest(
                 jsonPath("$.pagination.elementsPerPage") { value(25) }
                 jsonPath("$.pagination.totalElements") { value(2) }
                 jsonPath("$.pagination.totalPages") { value(1) }
-                jsonPath("$.links.first") { value("https://example.org:8443/oparl/v1.1/body?page=1") }
-                jsonPath("$.links.self") { value("https://example.org:8443/oparl/v1.1/body?page=1") }
-                jsonPath("$.links.last") { value("https://example.org:8443/oparl/v1.1/body?page=1") }
+                jsonPath("$.links.first") { value("https://example.org:8443/oparl/v1.1/body?page=1&sort=id,asc") }
+                jsonPath("$.links.self") { value("https://example.org:8443/oparl/v1.1/body?page=1&sort=id,asc") }
+                jsonPath("$.links.last") { value("https://example.org:8443/oparl/v1.1/body?page=1&sort=id,asc") }
                 jsonPath("$.links.prev") { doesNotExist() }
                 jsonPath("$.links.next") { doesNotExist() }
+            }
+    }
+
+    @Test
+    fun `sorts by id descending by default and allows overriding the sort order`() {
+        mockMvc
+            .get("https://example.org:8443/oparl/v1.1/body")
+            .andExpect {
+                status { isOk() }
+                jsonPath("$.data.length()") { value(2) }
+                jsonPath("$.data[0].id") {
+                    value("https://example.org:8443/oparl/v1.1/body/ffffffff-ffff-4fff-afff-ffffffffffff")
+                }
+                jsonPath("$.data[1].id") { value(bodyUrl) }
+                jsonPath("$.links.self") { value("https://example.org:8443/oparl/v1.1/body?page=1") }
+            }
+
+        mockMvc
+            .get("https://example.org:8443/oparl/v1.1/body?sort=created,desc")
+            .andExpect {
+                status { isOk() }
+                jsonPath("$.data.length()") { value(2) }
+                jsonPath("$.links.self") {
+                    value("https://example.org:8443/oparl/v1.1/body?page=1&sort=created,desc")
+                }
+            }
+
+        mockMvc
+            .get("https://example.org:8443/oparl/v1.1/body?sort=name")
+            .andExpect {
+                status { isBadRequest() }
             }
     }
 
@@ -93,6 +124,27 @@ class OparlBodyControllerTest(
             .get("https://example.org:8443/oparl/v1.1/body?page=-1")
             .andExpect {
                 status { isBadRequest() }
+            }
+    }
+
+    @Test
+    fun `filters the body list by created_until and preserves the filter in the links`() {
+        mockMvc
+            .get("https://example.org:8443/oparl/v1.1/body?created_until=2026-07-22T00:00:00Z")
+            .andExpect {
+                status { isOk() }
+                jsonPath("$.data.length()") { value(0) }
+                jsonPath("$.pagination.totalElements") { value(0) }
+                jsonPath("$.links.self") {
+                    value("https://example.org:8443/oparl/v1.1/body?page=1&created_until=2026-07-22T00:00:00Z")
+                }
+            }
+
+        mockMvc
+            .get("https://example.org:8443/oparl/v1.1/body?created_until=2026-07-23T00:00:00Z")
+            .andExpect {
+                status { isOk() }
+                jsonPath("$.data.length()") { value(2) }
             }
     }
 }

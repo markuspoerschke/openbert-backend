@@ -447,6 +447,33 @@ class OparlFileControllerTest(
         }
     }
 
+    @Test
+    fun `excludes deleted files from lists unless modified_since is set`() {
+        val secondBodyUrl =
+            "https://example.org:8443/oparl/v1.1/body/ffffffff-ffff-4fff-afff-ffffffffffff"
+
+        mockMvc
+            .get("$secondBodyUrl/file")
+            .andExpect {
+                status { isOk() }
+                jsonPath("$.data.length()") { value(2) }
+                jsonPath("$.pagination.totalElements") { value(2) }
+            }
+
+        mockMvc
+            .get("$secondBodyUrl/file?modified_since=2026-07-22T00:00:00Z")
+            .andExpect {
+                status { isOk() }
+                jsonPath("$.data.length()") { value(3) }
+                jsonPath("$.pagination.totalElements") { value(3) }
+                jsonPath("$.data[0].id") { value("$secondBodyUrl/file/66666666-6666-4666-a666-666666666666") }
+                jsonPath("$.data[0].deleted") { value(true) }
+                jsonPath("$.links.self") {
+                    value("$secondBodyUrl/file?page=1&modified_since=2026-07-22T00:00:00Z")
+                }
+            }
+    }
+
     private fun updateFile(assignments: String) {
         jdbcTemplate.update(
             "UPDATE oparl_resolved_file SET $assignments WHERE id = '3d663f77-05ca-4a14-b788-68ad340ea271'",
