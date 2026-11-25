@@ -147,4 +147,54 @@ class OparlBodyControllerTest(
                 jsonPath("$.data.length()") { value(2) }
             }
     }
+
+    @Test
+    fun `counts only non-deleted resources belonging to the requested body`() {
+        mockMvc.get("$bodyUrl/statistics").andExpect {
+            status { isOk() }
+            jsonPath("$.persons") { value(1) }
+            jsonPath("$.organizations") { value(2) }
+            jsonPath("$.paper") { value(1) }
+            jsonPath("$.files") { value(1) }
+            jsonPath("$.meetings") { value(1) }
+            jsonPath("$.agendaItems") { value(2) }
+            jsonPath("$.locations") { value(1) }
+            jsonPath("$.consultations") { value(1) }
+            jsonPath("$.legislativeTerms") { value(1) }
+            jsonPath("$.memberships") { value(1) }
+        }
+
+        mockMvc.get("/oparl/v1.1/body/ffffffff-ffff-4fff-afff-ffffffffffff/statistics").andExpect {
+            status { isOk() }
+            jsonPath("$.persons") { value(0) }
+            jsonPath("$.organizations") { value(0) }
+            jsonPath("$.paper") { value(0) }
+            jsonPath("$.files") { value(2) }
+            jsonPath("$.meetings") { value(0) }
+            jsonPath("$.agendaItems") { value(0) }
+            jsonPath("$.locations") { value(0) }
+            jsonPath("$.consultations") { value(0) }
+            jsonPath("$.legislativeTerms") { value(0) }
+            jsonPath("$.memberships") { value(0) }
+        }
+    }
+
+    @Test
+    fun `returns not found for statistics of an unknown body`() {
+        mockMvc.get("/oparl/v1.1/body/00000000-0000-4000-8000-000000000000/statistics").andExpect {
+            status { isNotFound() }
+        }
+    }
+
+    @Test
+    fun `documents body statistics in OpenAPI`() {
+        val responses = "$.paths['/oparl/v1.1/body/{bodyId}/statistics'].get.responses"
+        mockMvc.get("/docs/openapi.json").andExpect {
+            status { isOk() }
+            jsonPath("$responses['200'].content['application/json'].schema['\$ref']") {
+                value("#/components/schemas/OparlBodyStatisticsDto")
+            }
+            jsonPath("$responses['404'].content['application/problem+json']") { exists() }
+        }
+    }
 }
