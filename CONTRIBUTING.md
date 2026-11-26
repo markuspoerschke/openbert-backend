@@ -99,7 +99,6 @@ Do not put database credentials in the image, Dockerfile, or repository. The exi
 Configure Coolify to build the repository's root `Dockerfile`, then set:
 
 - Container port: `8080`
-- Health-check path: `/actuator/health`
 - `SPRING_DATASOURCE_URL`: the external PostgreSQL JDBC URL, for example `jdbc:postgresql://postgres-host:5432/openbert`
 - `SPRING_DATASOURCE_USERNAME`: the PostgreSQL user
 - `SPRING_DATASOURCE_PASSWORD`: the PostgreSQL password, stored as a secret
