@@ -31,6 +31,7 @@ Application-specific properties use the `app.` prefix and can be overridden thro
 
 | Property | Environment variable | Default | Description |
 | --- | --- | --- | --- |
+| `app.cors.domain` | `APP_CORS_DOMAIN` | `openbert.de` | Allows HTTP and HTTPS origins on subdomains of this domain. `localhost` is always allowed on any port. |
 | `app.crawl.scheduler.enabled` | `APP_CRAWL_SCHEDULER_ENABLED` | `true` | Enables or disables the crawl cronjob. When set to `false`, no crawl targets are processed. |
 | `app.crawl.scheduler.cron` | `APP_CRAWL_SCHEDULER_CRON` | `0 * * * * *` | Cron expression for the crawl cronjob (every 60 seconds by default). The special value `-` disables the schedule. |
 | `app.enrich.scheduler.enabled` | `APP_ENRICH_SCHEDULER_ENABLED` | `true` | Enables or disables the enrichment cronjob. When set to `false`, no enrich targets are processed. |
