@@ -197,4 +197,17 @@ class OparlBodyControllerTest(
             jsonPath("$responses['404'].content['application/problem+json']") { exists() }
         }
     }
+
+    @Test
+    fun `documents the public HTTPS server URL behind a reverse proxy`() {
+        mockMvc
+            .get("http://backend:8080/docs/openapi.json") {
+                header("X-Forwarded-Host", "api.example.org")
+                header("X-Forwarded-Proto", "https")
+                header("X-Forwarded-Port", "443")
+            }.andExpect {
+                status { isOk() }
+                jsonPath("$.servers[0].url") { value("https://api.example.org") }
+            }
+    }
 }
