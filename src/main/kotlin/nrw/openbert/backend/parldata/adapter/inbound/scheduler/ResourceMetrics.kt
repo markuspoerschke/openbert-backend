@@ -62,7 +62,7 @@ class ResourceMetrics(
         }
     }
 
-    @Scheduled(fixedDelayString = "\${metrics.refresh-interval:300000}")
+    @Scheduled(fixedDelayString = "30s")
     fun refresh() {
         val refreshedCounts = repositories.mapValues { (_, repository) -> repository.count() }
         counts.set(refreshedCounts)
