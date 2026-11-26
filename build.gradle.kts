@@ -79,6 +79,7 @@ dependencies {
     implementation("org.springframework.ai:spring-ai-starter-mcp-server-webmvc:2.0.2")
     implementation("io.sentry:sentry-spring-boot-4:8.64.0")
     implementation("org.springframework.security:spring-security-crypto")
+    runtimeOnly("io.micrometer:micrometer-registry-prometheus")
 }
 
 kotlin {
